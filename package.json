@@ -1,0 +1,73 @@
+{
+  "name": "@agentlab/sparql-jsld-client",
+  "version": "1.0.0",
+  "description": "SPARQL JSON Schema Linked Data Client",
+  "keywords": [
+    "sparql",
+    "json-ld",
+    "shacl",
+    "shacl shapes",
+    "json schema"
+  ],
+  "license": "EPL",
+  "author": "Alexey Ivanov <amivanoff@gmail.com>",
+  "contributors": [
+    "Ivan Shport"
+  ],
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "module": "dist/sparql-jsld-client.esm.js",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "engines": {
+    "node": ">=10"
+  },
+  "scripts": {
+    "start": "tsdx watch",
+    "build": "tsdx build",
+    "test": "tsdx test",
+    "lint": "tsdx lint",
+    "prepare": "tsdx build"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "tsdx lint"
+    }
+  },
+  "prettier": {
+    "printWidth": 120,
+    "semi": true,
+    "singleQuote": true,
+    "trailingComma": "es5"
+  },
+  "peerDependencies": {},
+  "dependencies": {
+    "@rdfjs/data-model": "^1.1.2",
+    "@types/is-url": "^1.2.28",
+    "@types/json-schema": "^7.0.4",
+    "@types/lodash-es": "^4.17.3",
+    "@types/rdf-js": "^2.0.12",
+    "@types/sparqljs": "2.1.0",
+    "axios": "^0.19.2",
+    "is-url": "^1.2.4",
+    "lodash": "^4.17.15",
+    "moment": "^2.24.0",
+    "rdf-literal": "^1.1.0",
+    "sparqljs": "^3.0.1",
+    "uuid62": "^1.0.1"
+  },
+  "devDependencies": {
+    "@types/jest": "^25.2.1",
+    "husky": "^4.2.5",
+    "jest-extended": "^0.11.5",
+    "tsdx": "^0.13.1",
+    "tslib": "^1.11.1",
+    "typescript": "^3.8.3"
+  }
+}

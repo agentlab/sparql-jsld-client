@@ -1,33 +1,45 @@
 # SPARQL JSON Schema Linked Data Client
 
+It is an intelligent SPARQL Client with SHACL Shapes support. You could use JSON objects and JSON Schemas to query SPARQL Endpoint, semi-similar to GraphQL style.
 
+Some core features requires:
+- RDF4J REST API in addition to standard SPARQL 1.1 Query and SPARQL 1.1 Update.
+- SHACL Shapes for rdfs classes in server RDF repository.
 
+## Features
+- Retrieves lazily SPARQL Prefixes (namespaces) from server (requires RDF4J REST API)
+- Retrieves lazily SHACL Shapes from server, converts it into JSON Schems and UI Schems and caches them
+- Uses JS objects and JSON Schemas (converted from shapes) to generate SPARQL Select Queries and SPARQL Update queries
+- Converts SPARQL Results into JS objects for consumption in apps
+- Have API server RDF repository creation and deletion  (requires RDF4J REST API)
+- Supports bulk-load data from local files to server RDF repository (requires RDF4J REST API)
+
+## Usage
+
+```typescript
+const provider = new ObjectProviderImpl();
+provider.setUser('users:guest');
+const client = provider.getClient();
+client.setServerUrl('<url to ref4j rest api server>');
+await client.createRepository(rmRepositoryID);
+client.setRepositoryId(rmRepositoryID);
+await client.uploadFiles(files, rootFolder);
+
+//select all objects by schema (by rdfs class)
+const artifacts = await provider.selectObjects('rm:Artifact');
+
+//select all objects by schema (by rdfs class) with explisit schema object
+const artifactSchema = await provider.getSchemaByUri('rm:Artifact');
+const artifacts2 = await provider.selectObjects(artifactSchema);
+
+//select all objects by schema and conditions
+const artifact30000 = await provider.selectObjectsWithTypeInfo(artifactSchema, { identifier: 30000 });
+const artifactsFromFolder = await provider.selectObjects(artifactSchema, { assetFolder: 'folders:folder1_1' });
+```
 
 ## Local Development
 
 This project was bootstrapped with [TSDX](https://github.com/jaredpalmer/tsdx).
-Below is a list of commands you will probably find useful.
-
-### `npm start` or `yarn start`
-
-Runs the project in development/watch mode. Your project will be rebuilt upon changes. TSDX has a special logger for you convenience. Error messages are pretty printed and formatted for compatibility VS Code's Problems tab.
-
-<img src="https://user-images.githubusercontent.com/4060187/52168303-574d3a00-26f6-11e9-9f3b-71dbec9ebfcb.gif" width="600" />
-
-Your library will be rebuilt if you make edits.
-
-### `npm run build` or `yarn build`
-
-Bundles the package to the `dist` folder.
-The package is optimized and bundled with Rollup into multiple formats (CommonJS, UMD, and ES Module).
-
-<img src="https://user-images.githubusercontent.com/4060187/52168322-a98e5b00-26f6-11e9-8cf6-222d716b75ef.gif" width="600" />
-
-### `npm test` or `yarn test`
-
-Runs the test watcher (Jest) in an interactive mode.
-By default, runs tests related to files changed since the last commit.
-
 
 ## License
 

@@ -19,7 +19,7 @@ beforeAll(async () => {
     client.setRepositoryId(rmRepositoryID);
     const files = vocabsFiles.concat(shapesFiles);
     await client.uploadFiles(files, rootFolder);
-    
+
     await provider.reloadQueryPrefixes();
     //await sleep(5000); // give RDF classifier some time to classify resources after upload
   } catch (err) {

@@ -37,7 +37,6 @@ export const queryPrefixes: { [s: string]: string } = {
   reqs: 'http://cpgu.kbpm.ru/ns/rm/reqs#',
 };
 
-
 export const rootFolder = '../rdf-data-expert/';
 
 export const vocabsFiles: FileUploadConfig[] = [

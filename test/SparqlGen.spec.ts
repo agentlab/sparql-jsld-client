@@ -155,7 +155,10 @@ describe('SparqlGen/SchemaWithArrayProperty', () => {
   it('select two schemas should generate correctly', async () => {
     provider.addSchema(SchemaWithArrayProperty);
     provider.addSchema(SchemaWithoutArrayProperties);
-    sparqlGen.addSparqlShape(SchemaWithArrayProperty).addSparqlShape(SchemaWithoutArrayProperties).selectObjectsQuery();
+    sparqlGen
+      .addSparqlShape(SchemaWithArrayProperty)
+      .addSparqlShape(SchemaWithoutArrayProperties)
+      .selectObjectsQuery();
     const genQueryStr = sparqlGen.stringify();
     //console.log('Two Schemas WithArrayProperty', genQueryStr);
     const correctParsedQuery = parser.parse(`
@@ -181,7 +184,11 @@ describe('SparqlGen/ArtifactSchema', () => {
     const variables = {
       identifier: artifactSchema.properties.identifier,
     };
-    sparqlGen.addSparqlShape(artifactSchema, {}, variables).selectObjectsWithTypeInfoQuery().limit(1).orderBy(order);
+    sparqlGen
+      .addSparqlShape(artifactSchema, {}, variables)
+      .selectObjectsWithTypeInfoQuery()
+      .limit(1)
+      .orderBy(order);
     const genQueryStr = sparqlGen.stringify();
     //console.log('deleteObjectQuery', genQueryStr);
     const correctParsedQuery = parser.parse(`

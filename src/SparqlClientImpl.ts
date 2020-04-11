@@ -85,7 +85,7 @@ export class SparqlClientImpl implements SparqlClient {
 
   async getNamespaces(): Promise<{ [s: string]: string }> {
     let url = this.repositoryUrl + '/namespaces';
-    let response = await sendGet(url)
+    let response = await sendGet(url);
     if (response.status < 200 && response.status > 204) return Promise.reject('Cannot get namespaces');
     let queryPrefixes: { [s: string]: string } = {};
     //console.log('response.data', response.data);
@@ -93,7 +93,7 @@ export class SparqlClientImpl implements SparqlClient {
       let results: Results = { bindings: [] };
       results = response.data.results;
       if (results) {
-        results.bindings.forEach(b => {
+        results.bindings.forEach((b) => {
           if (b.prefix && b.namespace && b.prefix.value && b.namespace.value) {
             queryPrefixes[b.prefix.value] = b.namespace.value;
           }
@@ -103,7 +103,7 @@ export class SparqlClientImpl implements SparqlClient {
     return queryPrefixes;
   }
 
-  async uploadStatements(statements: string, baseURI?: string/*, graph?: string*/): Promise<void> {
+  async uploadStatements(statements: string, baseURI?: string /*, graph?: string*/): Promise<void> {
     //console.debug(() => `uploadStatements url=${this.statementsUrl} graph=${graph}`);
     statements = statements.replace(/^#.*$/gm, '');
     //console.debug(() => `uploadStatements statements=${statements}`);

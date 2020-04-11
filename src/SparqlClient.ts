@@ -25,10 +25,7 @@ export interface FileUploadConfig {
  * @param url
  * @param queryParams
  */
-export async function sendGet(
-  url: string,
-  queryParams: JsObject = {},
-): Promise<AxiosResponse<ServerResponse>> {
+export async function sendGet(url: string, queryParams: JsObject = {}): Promise<AxiosResponse<ServerResponse>> {
   let queryParamsInUrl = '';
   if (Object.keys(queryParams).length > 0) {
     queryParamsInUrl = `?${Object.keys(queryParams)

@@ -193,7 +193,7 @@ export class SparqlGen {
    */
   abbreviateIri(fillQualifiedIri: string): string {
     if (fillQualifiedIri) {
-      const [, value] = fillQualifiedIri.match(/[\/#]([\d\w-_а-яА-ЯёЁ]+)$/i) || ['', ''];
+      const [, value] = fillQualifiedIri.match(/[#]([\d\w-_а-яА-ЯёЁ]+)$/i) || ['', ''];
       if (value) {
         const shortUri = fillQualifiedIri.substring(0, fillQualifiedIri.lastIndexOf(value));
         const prefix = Object.keys(this.queryPrefixesMap).find((key) => this.queryPrefixesMap[key] === shortUri);

@@ -259,7 +259,7 @@ function propertyShapeToUiSchema(
       propUiSchema['ui:widget'] = 'BaseInput'; //TODO create default widget for object
     }
   }
-  if (propShape.valueModifiability != 'user') propUiSchema['ui:disabled'] = true;
+  if (propShape.valueModifiability !== 'user') propUiSchema['ui:disabled'] = true;
   if (propShape.order) propUiSchema['ui:order'] = propShape.order;
 }
 
@@ -360,8 +360,7 @@ export class ObjectProviderImpl implements ObjectProvider {
   }
 
   async getQueryPrefixes(): Promise<{ [s: string]: string }> {
-    if (this.queryPrefixes !== this.defaultQueryPrefixes)
-      return this.queryPrefixes;
+    if (this.queryPrefixes !== this.defaultQueryPrefixes) return this.queryPrefixes;
     await this.reloadQueryPrefixes();
     return this.queryPrefixes;
   }
@@ -1192,7 +1191,7 @@ export class ObjectProviderImpl implements ObjectProvider {
   async selectSubclasses(schemaOrString: JSONSchema6forRdf | string, conditions: any = {}): Promise<JsObject[]> {
     const schema: JSONSchema6forRdf =
       typeof schemaOrString === 'string' ? await this.getSchemaByUri(schemaOrString) : schemaOrString;
-      let queryPrefixes = await this.getQueryPrefixes();
+    let queryPrefixes = await this.getQueryPrefixes();
     const sparqlGen = new SparqlGen(queryPrefixes);
     sparqlGen
       .addSparqlShape(schema, conditions)

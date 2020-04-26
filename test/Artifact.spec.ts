@@ -26,9 +26,10 @@ beforeAll(async () => {
     const files = vocabsFiles.concat(shapesFiles, usersFiles, projectsFoldersFiles);
     //console.log('uploadFiles ', files);
     await client.uploadFiles(files, rootFolder);
-
-    await provider.reloadQueryPrefixes();
     //await sleep(5000); // give RDF classifier some time to classify resources after upload
+
+    //let queryPrefixes = await this.getQueryPrefixes();
+    //this.sparqlGen.setQueryPrefixes(queryPrefixes);
     artifactSchema = await provider.getSchemaByUri('rm:Artifact');
     classifierGroupSchema = await provider.getSchemaByUri('cpgu:Группировка');
   } catch (err) {

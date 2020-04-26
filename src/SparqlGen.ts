@@ -158,6 +158,7 @@ export interface SparqlShape {
 export class SparqlGen {
   shapes: SparqlShape[] = [];
   queryPrefixesMap: { [s: string]: string } = {};
+  //queryPrefixesMapRevert: { [s: string]: string } = {};
   query: { [s: string]: any } = {};
   generator = new Generator();
 
@@ -188,18 +189,31 @@ export class SparqlGen {
   /**
    * See https://www.w3.org/TR/rdf11-concepts/#vocabularies
    * @param fillQualifiedIri
-   * @returns abbreviated Iri
+   * @returns abbreviated IRI based on this.queryPrefixesMap
    * For example, the IRI http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral would be abbreviated as rdf:XMLLiteral
    */
   abbreviateIri(fillQualifiedIri: string): string {
+    let nsEntries: { prefix: string; ns: string }[] = [];
     if (fillQualifiedIri) {
-      const [, value] = fillQualifiedIri.match(/[#]([\d\w-_а-яА-ЯёЁ]+)$/i) || ['', ''];
-      if (value) {
-        const shortUri = fillQualifiedIri.substring(0, fillQualifiedIri.lastIndexOf(value));
-        const prefix = Object.keys(this.queryPrefixesMap).find((key) => this.queryPrefixesMap[key] === shortUri);
+      Object.keys(this.queryPrefixesMap).forEach((prefix) => {
+        let ns = this.queryPrefixesMap[prefix];
+        if (fillQualifiedIri.startsWith(ns)) nsEntries.push({ prefix, ns });
+      });
+      if (nsEntries.length > 1) {
+        nsEntries = [nsEntries.reduce((prev, curr) => (curr.ns.length > prev.ns.length ? curr : prev))];
+      }
+      if (nsEntries.length === 1) {
+        const value = fillQualifiedIri.substring(nsEntries[0].ns.length);
+        return `${nsEntries[0].prefix}:${value}`;
+      } else {
+        const [, value] = fillQualifiedIri.match(/[#]([\d\w-_а-яА-ЯёЁ]+)$/i) || ['', ''];
+        if (value) {
+          const shortUri = fillQualifiedIri.substring(0, fillQualifiedIri.lastIndexOf(value));
+          const prefix = Object.keys(this.queryPrefixesMap).find((key) => this.queryPrefixesMap[key] === shortUri);
 
-        if (prefix) {
-          return `${prefix}:${value}`;
+          if (prefix) {
+            return `${prefix}:${value}`;
+          }
         }
       }
     }

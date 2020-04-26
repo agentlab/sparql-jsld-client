@@ -193,15 +193,14 @@ export class SparqlGen {
    * For example, the IRI http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral would be abbreviated as rdf:XMLLiteral
    */
   abbreviateIri(fillQualifiedIri: string): string {
-    let nsEntries: { prefix: string; ns: string; }[] = [];
+    let nsEntries: { prefix: string; ns: string }[] = [];
     if (fillQualifiedIri) {
-      Object.keys(this.queryPrefixesMap).forEach(prefix => {
+      Object.keys(this.queryPrefixesMap).forEach((prefix) => {
         let ns = this.queryPrefixesMap[prefix];
-        if (fillQualifiedIri.startsWith(ns))
-          nsEntries.push({prefix, ns});
+        if (fillQualifiedIri.startsWith(ns)) nsEntries.push({ prefix, ns });
       });
       if (nsEntries.length > 1) {
-        nsEntries = [nsEntries.reduce((prev, curr) => curr.ns.length > prev.ns.length ? curr : prev)];
+        nsEntries = [nsEntries.reduce((prev, curr) => (curr.ns.length > prev.ns.length ? curr : prev))];
       }
       if (nsEntries.length === 1) {
         const value = fillQualifiedIri.substring(nsEntries[0].ns.length);

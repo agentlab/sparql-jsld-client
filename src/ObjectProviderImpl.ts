@@ -170,8 +170,7 @@ function propertyShapeToJsonSchemaProperty(
       if (shapeProp.datatype === 'xsd:dateTime') {
         schemaProp.type = 'string';
         schemaProp.format = 'date-time';
-      }
-      else if (shapeProp.datatype === 'xsd:string') schemaProp.type = 'string';
+      } else if (shapeProp.datatype === 'xsd:string') schemaProp.type = 'string';
       else if (shapeProp.datatype === 'xsd:integer') schemaProp.type = 'integer';
       else if (shapeProp.datatype === 'xsd:positiveInteger') schemaProp.type = 'integer';
       else if (shapeProp.datatype === 'xsd:decimal') schemaProp.type = 'integer';
@@ -181,8 +180,7 @@ function propertyShapeToJsonSchemaProperty(
         schemaProp.contentEncoding = 'base64';
       }
       schemaContexts[shapePropKey] = shapePropUri;
-    }
-    else if (shapeProp.nodeKind) {
+    } else if (shapeProp.nodeKind) {
       if (shapeProp.nodeKind === 'sh:IRI' || shapeProp.nodeKind === 'sh:BlankNodeOrIRI') {
         schemaProp.type = 'string';
         schemaProp.format = 'iri';

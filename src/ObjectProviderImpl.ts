@@ -123,8 +123,14 @@ function createObjectWithoutRepetitions(objects: any[], schema: JSONSchema6forRd
   return schemasProps;
 }*/
 
+//TODO: Proper support for Abbreviated IRI and non abbreviated
 function propertyNameShapeToSchema(shapePropsUri: string): string {
-  const [, , propertyKey] = shapePropsUri.match(/^([\d\w-_]+):([\d\w-_а-яА-ЯёЁ]+)$/i) || ['', '', ''];
+  let [, , propertyKey] = shapePropsUri.match(/^([\d\w-_]+):([\d\w-_а-яА-ЯёЁ]+)$/i) || ['', '', ''];
+  if (propertyKey === '') {
+    let i = shapePropsUri.lastIndexOf('#');
+    if (i < 0) i = shapePropsUri.lastIndexOf('/');
+    propertyKey = shapePropsUri.substring(i + 1) || '';
+  }
   return propertyKey;
 }
 
@@ -165,18 +171,18 @@ function propertyShapeToJsonSchemaProperty(
         schemaProp.type = 'string';
         schemaProp.format = 'date-time';
       }
-      if (shapeProp.datatype === 'xsd:string') schemaProp.type = 'string';
-      if (shapeProp.datatype === 'xsd:integer') schemaProp.type = 'integer';
-      if (shapeProp.datatype === 'xsd:positiveInteger') schemaProp.type = 'integer';
-      if (shapeProp.datatype === 'xsd:decimal') schemaProp.type = 'integer';
-      if (shapeProp.datatype === 'xsd:boolean') schemaProp.type = 'boolean';
-      if (shapeProp.datatype === 'xsd:base64Binary') {
+      else if (shapeProp.datatype === 'xsd:string') schemaProp.type = 'string';
+      else if (shapeProp.datatype === 'xsd:integer') schemaProp.type = 'integer';
+      else if (shapeProp.datatype === 'xsd:positiveInteger') schemaProp.type = 'integer';
+      else if (shapeProp.datatype === 'xsd:decimal') schemaProp.type = 'integer';
+      else if (shapeProp.datatype === 'xsd:boolean') schemaProp.type = 'boolean';
+      else if (shapeProp.datatype === 'xsd:base64Binary') {
         schemaProp.type = 'string';
         schemaProp.contentEncoding = 'base64';
       }
       schemaContexts[shapePropKey] = shapePropUri;
     }
-    if (shapeProp.nodeKind) {
+    else if (shapeProp.nodeKind) {
       if (shapeProp.nodeKind === 'sh:IRI' || shapeProp.nodeKind === 'sh:BlankNodeOrIRI') {
         schemaProp.type = 'string';
         schemaProp.format = 'iri';
@@ -486,7 +492,7 @@ export class ObjectProviderImpl implements ObjectProvider {
   async resolveSchemaFromServer(
     uri: string,
   ): Promise<{ schema: JSONSchema6forRdf | undefined; uiSchema: JsObject | undefined }> {
-    //console.log('resolveSchemaFromServer', { uri });
+    console.log('resolveSchemaFromServer', { uri });
     const shapes = await this.selectObjects(ArtifactShapeSchema, {
       targetClass: uri,
     });

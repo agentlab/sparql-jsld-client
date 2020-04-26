@@ -13,13 +13,13 @@
         "${workspaceRoot}/node_modules/tsdx/dist/index.js",
         "test",
         "--runInBand",
-        "--no-cache",
-        "--env=jsdom",
-        "-t", "should persist artifact in the store"
+        //"--no-cache",
+        //"--env=jsdom",
+        //"-t", "should retrieve schema from server"
+        "ArtifactShapeSchema.spec.ts",
       ],
-      //"args": ["test", "--runInBand", "--no-cache", "--env=jsdom", "ArtifactShapeSchema.spec.ts"],
-      "cwd": "${workspaceRoot}",
-      "protocol": "inspector",
+      //"cwd": "${workspaceRoot}",
+      //"protocol": "inspector",
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen"
     },

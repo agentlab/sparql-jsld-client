@@ -5,11 +5,7 @@
   "keywords": [
     "sparql",
     "json-ld",
-    "shacl",
-    "shacl",
-    "shape",
-    "json",
-    "schema",
+    "shacl-shape",
     "json-schema",
     "rdf",
     "rdf4j",
@@ -21,6 +17,7 @@
   "license": "EPL",
   "author": "Alexey Ivanov <amivanoff@gmail.com>",
   "contributors": [
+    "Alexey Ivanov <amivanoff@gmail.com>",
     "Ivan Shport"
   ],
   "homepage": "https://github.com/agentlab/sparql-jsld-client#README.md",

@@ -1,5 +1,5 @@
 // eslint-disable-next-line @typescript-eslint/camelcase
-import { Triple, Term, NamedNode, Variable, Quad_Subject } from 'rdf-js';
+import { Quad, Term, NamedNode, Variable, Quad_Subject } from 'rdf-js';
 import { literal, namedNode, triple, variable } from '@rdfjs/data-model';
 //import isArray from 'lodash-es/isArray';
 import _isUrl from 'is-url';
@@ -247,8 +247,8 @@ export class SparqlGen {
 
   getWhereVar(shape: SparqlShape): any[] {
     const resultWhereVars = [];
-    const bgp: Triple[] = [];
-    const optionals: Triple[] = [];
+    const bgp: Quad[] = [];
+    const optionals: Quad[] = [];
     Object.keys(shape.variables).forEach((propertyKey) => {
       if (!propertyKey.startsWith('@')) {
         // filter @id, @type,...
@@ -285,7 +285,7 @@ export class SparqlGen {
 
   getWhereVarWithoutOptinals(shape: SparqlShape): any[] {
     const resultWhereVars = [];
-    const bgp: Triple[] = [];
+    const bgp: Quad[] = [];
     Object.keys(shape.data).forEach((propertyKey) => {
       if (!propertyKey.startsWith('@')) {
         // filter @id, @type,...
@@ -863,7 +863,7 @@ export class SparqlGen {
     return this;
   }
 
-  getConditionalTriple(property: JSONSchema6forRdfProperty, subj: any, value: any, propUri: string): Triple {
+  getConditionalTriple(property: JSONSchema6forRdfProperty, subj: any, value: any, propUri: string): Quad {
     if (property.type === 'string') {
       if (property.format === undefined) {
         value = literal(`${value}`, namedNode(`${xsd}string`));
@@ -898,7 +898,7 @@ export class SparqlGen {
   getDataTriples(shape: SparqlShape): any[] {
     let subj = shape.subj;
     if (subj.termType && subj.termType === 'NamedNode') subj = this.getFullIriNamedNode(subj);
-    const triples: Triple[] = [];
+    const triples: Quad[] = [];
     /*triples.push(
       triple(
         subj,
@@ -913,7 +913,7 @@ export class SparqlGen {
         if (!propertyKey.startsWith('@')) {
           const propUri = getSchemaPropUri(shape.schema, propertyKey);
           if (property !== undefined && propUri) {
-            let triple: Triple = this.getConditionalTriple(property, subj, value, propUri);
+            let triple: Quad = this.getConditionalTriple(property, subj, value, propUri);
             if (triple) {
               triples.push(triple);
             } else if (property.type === 'array') {

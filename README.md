@@ -21,8 +21,7 @@ const provider = new ObjectProviderImpl();
 provider.setUser('users:guest');
 const client = provider.getClient();
 client.setServerUrl('<url to ref4j rest api server>');
-await client.createRepository(rmRepositoryID);
-client.setRepositoryId(rmRepositoryID);
+await client.createRepositoryAndSetCurrent(rmRepositoryID);
 await client.uploadFiles(files, rootFolder);
 
 //select all objects by schema (by rdfs class)

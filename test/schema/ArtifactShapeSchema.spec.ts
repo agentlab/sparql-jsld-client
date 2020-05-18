@@ -16,8 +16,7 @@ const { property: artifactShapeProperty, ...artifactShapeNoProperty } = artifact
 beforeAll(async () => {
   rmRepositoryID = 'test_ArtifactSchemaSchema_' + Date.now();
   try {
-    await client.createRepository(rmRepositoryID);
-    client.setRepositoryId(rmRepositoryID);
+    await client.createRepositoryAndSetCurrent(rmRepositoryID);
     const files = vocabsFiles.concat(shapesFiles);
     await client.uploadFiles(files, rootFolder);
 

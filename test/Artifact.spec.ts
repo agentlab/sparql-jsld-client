@@ -21,8 +21,7 @@ const assetFolder = 'folders:folder1';
 beforeAll(async () => {
   rmRepositoryID = 'test_Artifact' + Date.now();
   try {
-    await client.createRepository(rmRepositoryID);
-    client.setRepositoryId(rmRepositoryID);
+    await client.createRepositoryAndSetCurrent(rmRepositoryID);
     const files = vocabsFiles.concat(shapesFiles, usersFiles, projectsFoldersFiles);
     //console.log('uploadFiles ', files);
     await client.uploadFiles(files, rootFolder);

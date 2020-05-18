@@ -24,8 +24,7 @@ export function sleep(ms: number): Promise<NodeJS.Timeout> {
 beforeAll(async () => {
   rmRepositoryID = 'test_SimpleRetrieve' + Date.now();
   try {
-    await client.createRepository(rmRepositoryID);
-    client.setRepositoryId(rmRepositoryID);
+    await client.createRepositoryAndSetCurrent(rmRepositoryID);
     const files = vocabsFiles.concat(shapesFiles, usersFiles, projectsFoldersFiles, samplesFiles);
     //console.log('uploadFiles ', files);
     await client.uploadFiles(files, rootFolder);

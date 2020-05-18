@@ -14,37 +14,30 @@ import axios, { AxiosResponse } from 'axios';
 function createRepositoryConfig(repId: string): string {
   return `
   #
-  # Sesame configuration template for a native repository with
-  # RDFS support and a SPIN reasoner 
+  # Sesame configuration template for a native RDF repository with
+  # RDF Schema inferencing
   #
   @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
   @prefix rep: <http://www.openrdf.org/config/repository#>.
   @prefix sr: <http://www.openrdf.org/config/repository/sail#>.
   @prefix sail: <http://www.openrdf.org/config/sail#>.
-  @prefix spin: <http://www.openrdf.org/config/sail/spin#>.
-  @prefix cgqi: <http://www.openrdf.org/config/sail/customGraphQueryInferencer#>.
   @prefix ns: <http://www.openrdf.org/config/sail/native#>.
-  @prefix sp: <http://spinrdf.org/sp#>.
   @prefix sb: <http://www.openrdf.org/config/sail/base#>.
         
   [] a rep:Repository ;
     rep:repositoryID "${repId}" ;
-    rdfs:label "Native store with RDFS and full SPIN support" ;
+    rdfs:label "Native store with RDF Schema inferencing" ;
     rep:repositoryImpl [
       rep:repositoryType "openrdf:SailRepository" ;
       sr:sailImpl [
-        sail:sailType "openrdf:SpinSail" ;
-        spin:axiomClosureNeeded false ;
+        sail:sailType "rdf4j:SchemaCachingRDFSInferencer" ;
         sail:delegate [
-          sail:sailType "rdf4j:SchemaCachingRDFSInferencer" ;
+          sail:sailType "openrdf:DedupingInferencer" ;
           sail:delegate [
-            sail:sailType "openrdf:DedupingInferencer" ;
-            sail:delegate [
-              sail:sailType "openrdf:NativeStore" ;
-              sail:iterationCacheSyncThreshold "10000";
-              ns:tripleIndexes "spoc,posc";
-              sb:evaluationStrategyFactory "org.eclipse.rdf4j.query.algebra.evaluation.impl.StrictEvaluationStrategyFactory"
-            ]
+            sail:sailType "openrdf:NativeStore" ;
+            sail:iterationCacheSyncThreshold "10000";
+            ns:tripleIndexes "spoc,posc";
+            sb:evaluationStrategyFactory "org.eclipse.rdf4j.query.algebra.evaluation.impl.StrictEvaluationStrategyFactory"
           ]
         ]
       ]
@@ -165,6 +158,11 @@ export class SparqlClientImpl implements SparqlClient {
     });
     if (response.status < 200 && response.status > 204) throw Error(`deleteRepository fault, url=${url}`);
     //console.debug(() => `deleteRepository url=${url}`);
+  }
+
+  async createRepositoryAndSetCurrent(repId: string): Promise<void> {
+    await this.createRepository(repId);
+    this.setRepositoryId(repId);
   }
 
   async createRepository(repId: string): Promise<void> {

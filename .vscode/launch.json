@@ -5,7 +5,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Debug Jest Artifact",
+      "name": "Debug Jest SparqlClient",
       "type": "node",
       "request": "launch",
       "args": [
@@ -16,7 +16,7 @@
         //"--no-cache",
         //"--env=jsdom",
         //"-t", "should retrieve schema from server"
-        "ArtifactShapeSchema.spec.ts",
+        "SparqlClient.spec.ts",
       ],
       //"cwd": "${workspaceRoot}",
       //"protocol": "inspector",

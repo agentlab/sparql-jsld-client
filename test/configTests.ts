@@ -1,9 +1,17 @@
 import { FileUploadConfig } from '../src/SparqlClient';
+import fs from 'fs';
+
+// emulate create-react-app behaviour witn .env files
+if (fs.existsSync('.env.test.local')) {
+  require('custom-env').env('test.local');
+} else if (fs.existsSync('.env.test')) {
+  require('custom-env').env('test');
+}
 
 /**
  * Sparql Endpoint URL (адрес веб-сервиса)
  */
-export const rdfServerUrl = process.env.REACT_APP_SERVER_RDF_URL || 'https://expert.agentlab.ru/rdf4j-server';
+export const rdfServerUrl = process.env.REACT_APP_SERVER_RDF_URL || 'http://localhost:8181/rdf4j-server';
 export const rmRepositoryID = process.env.REACT_APP_RDFREP_RM || 'reqs2';
 export const apiUrl = `${rdfServerUrl}/repositories/${process.env.REACT_APP_RDFREP_RM || 'reqs2'}`;
 

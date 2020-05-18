@@ -11,11 +11,9 @@ const client = provider.getClient();
 client.setServerUrl(rdfServerUrl);
 
 beforeAll(async () => {
-  rmRepositoryID = 'test_ArtifactSchemaSchema_' + Date.now();
+  rmRepositoryID = 'test_SparqlClient_' + Date.now();
   try {
-    await client.createRepository(rmRepositoryID);
-    client.setRepositoryId(rmRepositoryID);
-
+    await client.createRepositoryAndSetCurrent(rmRepositoryID);
     const files = vocabsFiles.concat(shapesFiles);
     await client.uploadFiles(files, rootFolder);
   } catch (err) {
@@ -36,7 +34,7 @@ describe('SparqlClient', () => {
     const namespaces = await provider.client.getNamespaces();
     expect(namespaces.rdf).toBe('http://www.w3.org/1999/02/22-rdf-syntax-ns#');
   });
-  it(`select direct parent classes`, async () => {
+  it(`should select direct parent classes`, async () => {
     const query = `PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
     PREFIX cpgu: <http://cpgu.kbpm.ru/ns/rm/cpgu#>
     SELECT ?superClass WHERE { cpgu:Classifier rdfs:subClassOf ?superClass. }`;

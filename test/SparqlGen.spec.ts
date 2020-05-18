@@ -71,7 +71,7 @@ describe('SparqlGen/SchemaWithoutArrayProperties', () => {
     //console.log(genQueryStr);
     const correctParsedQuery = parser.parse(`
       PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-      PREFIX sh: <http://www.w3.org/ns/shacl#>
+      PREFIX sh:  <http://www.w3.org/ns/shacl#>
       SELECT ?eIri0 ?path0 ?name0 ?minCount0 WHERE {
         ?eIri0 rdf:type sh:PropertyShape;
           sh:path ?path0.
@@ -93,9 +93,9 @@ describe('SparqlGen/SchemaWithoutArrayProperties', () => {
     const genQueryStr = sparqlGen.stringify();
     //console.log(genQueryStr);
     const correctParsedQuery = parser.parse(`
-      PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-      PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-      PREFIX sh: <http://www.w3.org/ns/shacl#>
+      PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+      PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+      PREFIX sh:   <http://www.w3.org/ns/shacl#>
       PREFIX cpgu: <http://cpgu.kbpm.ru/ns/rm/cpgu#>
       SELECT ?eIri0 ?path0 ?name0 ?minCount0 WHERE {
         ?eIri0 rdf:type sh:PropertyShape;
@@ -145,7 +145,7 @@ describe('SparqlGen/SchemaWithArrayProperty', () => {
     //console.log('SchemaWithArrayProperty', genQueryStr);
     const correctParsedQuery = parser.parse(`
       PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-      PREFIX sh: <http://www.w3.org/ns/shacl#>
+      PREFIX sh:  <http://www.w3.org/ns/shacl#>
       SELECT ?eIri0 ?property0 WHERE {
         ?eIri0 rdf:type sh:NodeShape.
         OPTIONAL { ?eIri0 sh:property ?property0. }
@@ -163,7 +163,7 @@ describe('SparqlGen/SchemaWithArrayProperty', () => {
     //console.log('Two Schemas WithArrayProperty', genQueryStr);
     const correctParsedQuery = parser.parse(`
       PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-      PREFIX sh: <http://www.w3.org/ns/shacl#>
+      PREFIX sh:  <http://www.w3.org/ns/shacl#>
       SELECT ?eIri0 ?eIri1 ?path1 ?name1 ?minCount1 WHERE {
         OPTIONAL { ?eIri0 sh:property ?eIri1. }
         ?eIri1 rdf:type sh:PropertyShape.
@@ -192,10 +192,10 @@ describe('SparqlGen/ArtifactSchema', () => {
     const genQueryStr = sparqlGen.stringify();
     //console.log('deleteObjectQuery', genQueryStr);
     const correctParsedQuery = parser.parse(`
-      PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-      PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+      PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
+      PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
       PREFIX dcterms: <http://purl.org/dc/terms/>
-      PREFIX rm: <http://cpgu.kbpm.ru/ns/rm/rdf#>
+      PREFIX rm:      <http://cpgu.kbpm.ru/ns/rm/rdf#>
       SELECT DISTINCT ?identifier0 WHERE {
         OPTIONAL { ?eIri0 dcterms:identifier ?identifier0. }
         ?eIri0 rdf:type ?type0.
@@ -225,7 +225,7 @@ describe('SparqlGen/deleteObjectQuery', () => {
     //console.log('deleteObjectQuery', genQueryStr);
     const correctParsedQuery = parser.parse(`
       PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-      PREFIX rm: <http://cpgu.kbpm.ru/ns/rm/rdf#>
+      PREFIX rm:  <http://cpgu.kbpm.ru/ns/rm/rdf#>
       DELETE { <file:///urn-s2-iisvvt-infosystems-classifier-45950.xml> ?p0 ?o0 }
       WHERE {
         <file:///urn-s2-iisvvt-infosystems-classifier-45950.xml> ?p0 ?o0 .
@@ -239,9 +239,9 @@ describe('SparqlGen/deleteObjectQuery', () => {
     const genQueryStr = sparqlGen.stringify();
     //console.log('deleteObjectQuery', genQueryStr);
     const correctParsedQuery = parser.parse(`
-      PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+      PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
       PREFIX dcterms: <http://purl.org/dc/terms/>
-      PREFIX rm: <http://cpgu.kbpm.ru/ns/rm/rdf#>
+      PREFIX rm:      <http://cpgu.kbpm.ru/ns/rm/rdf#>
       DELETE { ?eIri0 ?p0 ?o0 }
       WHERE {
         ?eIri0 ?p0 ?o0.
@@ -271,11 +271,11 @@ describe('SparqlGen/insertObjectQuery', () => {
     const genQueryStr = sparqlGen.stringify();
     //console.log(genQueryStr);
     const correctParsedQuery = parser.parse(`
-      PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-      PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+      PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+      PREFIX xsd:     <http://www.w3.org/2001/XMLSchema#>
       PREFIX dcterms: <http://purl.org/dc/terms/>
-      PREFIX rm: <http://cpgu.kbpm.ru/ns/rm/rdf#>
-      PREFIX users: <http://cpgu.kbpm.ru/ns/rm/users#>
+      PREFIX rm:      <http://cpgu.kbpm.ru/ns/rm/rdf#>
+      PREFIX users:   <http://cpgu.kbpm.ru/ns/rm/users#>
       INSERT DATA {
         <file:///urn-45952.xml> rdf:type rm:Artifact;
           dcterms:creator users:amivanoff;
@@ -296,27 +296,28 @@ describe('SparqlGen/updateObjectQuery', () => {
     sparqlGen.addSparqlShape(artifactSchema, { identifier: 1 }, {}, data).updateObjectQuery();
     const genQueryStr = sparqlGen.stringify();
     const correctParsedQuery = parser.parse(`
-      PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-      PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+      PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+      PREFIX xsd:     <http://www.w3.org/2001/XMLSchema#>
       PREFIX dcterms: <http://purl.org/dc/terms/>
-      PREFIX rm: <http://cpgu.kbpm.ru/ns/rm/rdf#>
-      PREFIX users: <http://cpgu.kbpm.ru/ns/rm/users#>
+      PREFIX oslc:    <http://open-services.net/ns/core#>
+      PREFIX rm:      <http://cpgu.kbpm.ru/ns/rm/rdf#>
+      PREFIX users:   <http://cpgu.kbpm.ru/ns/rm/users#>
       DELETE {
         ?eIri0 dcterms:title ?title0;
           dcterms:modified ?modified0;
-          dcterms:modifiedBy ?modifiedBy0.
+          oslc:modifiedBy ?modifiedBy0.
       }
       INSERT {
         ?eIri0 dcterms:title "title"^^xsd:string;
           dcterms:modified "2019-08-07T05:21:43.581Z"^^xsd:dateTime;
-          dcterms:modifiedBy users:amivanoff.
+          oslc:modifiedBy users:amivanoff.
       }
       WHERE {
         ?eIri0 rdf:type rm:Artifact.
         OPTIONAL { ?eIri0 dcterms:identifier ?identifier0. }
         OPTIONAL { ?eIri0 dcterms:title ?title0. }
         OPTIONAL { ?eIri0 dcterms:modified ?modified0. }
-        OPTIONAL { ?eIri0 dcterms:modifiedBy ?modifiedBy0. }
+        OPTIONAL { ?eIri0 oslc:modifiedBy ?modifiedBy0. }
         FILTER(?identifier0 = 1 )
       }`);
     expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery);
@@ -332,27 +333,28 @@ describe('SparqlGen/updateObjectQuery', () => {
     sparqlGen.addSparqlShape(artifactSchema, { '@id': id, identifier: 1 }, {}, data).updateObjectQuery();
     const genQueryStr = sparqlGen.stringify();
     const correctParsedQuery = parser.parse(`
-      PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-      PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+      PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+      PREFIX xsd:     <http://www.w3.org/2001/XMLSchema#>
       PREFIX dcterms: <http://purl.org/dc/terms/>
-      PREFIX rm: <http://cpgu.kbpm.ru/ns/rm/rdf#>
-      PREFIX users: <http://cpgu.kbpm.ru/ns/rm/users#>
+      PREFIX oslc:    <http://open-services.net/ns/core#>
+      PREFIX rm:      <http://cpgu.kbpm.ru/ns/rm/rdf#>
+      PREFIX users:   <http://cpgu.kbpm.ru/ns/rm/users#>
       DELETE {
         ${id} dcterms:title ?title0;
           dcterms:modified ?modified0;
-          dcterms:modifiedBy ?modifiedBy0.
+          oslc:modifiedBy ?modifiedBy0.
       }
       INSERT {
         ${id} dcterms:title "title"^^xsd:string;
           dcterms:modified "2019-08-07T05:21:43.581Z"^^xsd:dateTime;
-          dcterms:modifiedBy users:amivanoff.
+          oslc:modifiedBy users:amivanoff.
       }
       WHERE {
         ${id} rdf:type rm:Artifact.
         OPTIONAL { ${id} dcterms:identifier ?identifier0. }
         OPTIONAL { ${id} dcterms:title ?title0. }
         OPTIONAL { ${id} dcterms:modified ?modified0. }
-        OPTIONAL { ${id} dcterms:modifiedBy ?modifiedBy0. }
+        OPTIONAL { ${id} oslc:modifiedBy ?modifiedBy0. }
       }`);
     expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery);
   });

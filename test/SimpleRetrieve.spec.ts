@@ -60,7 +60,7 @@ describe('api/simple-retrieve', () => {
       assetFolder: 'folders:folder1_1',
       created: '2014-02-10T10:12:16.000Z',
       creator: 'users:amivanoff',
-      description: 'ТН ВЭД ТС',
+      xhtmlText: 'ТН ВЭД ТС',
       artifactFormat: 'rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Module',
       identifier: 30000,
       modifiedBy: 'users:amivanoff',

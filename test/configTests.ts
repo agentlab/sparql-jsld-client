@@ -23,7 +23,7 @@ export const queryPrefixes: { [s: string]: string } = {
   //dc: 'http://purl.org/dc/elements/1.1/',
   foaf: 'http://xmlns.com/foaf/0.1/',
   schema: 'http://schema.org/',
-  //oslc: 'http://open-services.net/ns/core#',
+  oslc: 'http://open-services.net/ns/core#',
   //oslc_rm: 'http://open-services.net/ns/rm#',
   // eslint-disable-next-line @typescript-eslint/camelcase
   oslc_asset: 'http://open-services.net/ns/asset#',

@@ -23,7 +23,7 @@ export const artifactSchema: JSONSchema6forRdf = {
     },
     created: 'dcterms:created',
     modifiedBy: {
-      '@id': 'dcterms:modifiedBy',
+      '@id': 'oslc:modifiedBy',
       '@type': 'pporoles:User',
     },
     modified: 'dcterms:modified',
@@ -289,7 +289,7 @@ export const artifactShape: JsObject = {
       name: 'Кем изменен',
       nodeKind: 'sh:BlankNodeOrIRI',
       order: 7,
-      path: 'dcterms:modifiedBy',
+      path: 'oslc:modifiedBy',
       shapeModifiability: 'system',
       valueModifiability: 'system',
     },

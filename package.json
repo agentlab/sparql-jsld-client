@@ -1,6 +1,6 @@
 {
   "name": "@agentlab/sparql-jsld-client",
-  "version": "2.0.5",
+  "version": "3.0.0",
   "description": "SPARQL JSON Schema Linked Data Client",
   "keywords": [
     "sparql",
@@ -57,7 +57,7 @@
     "@types/is-url": "^1.2.28",
     "@types/json-schema": "^7.0.4",
     "@types/lodash-es": "^4.17.3",
-    "@types/node": "^14.0.1",
+    "@types/node": "^14.0.5",
     "@types/rdf-js": "^3.0.0",
     "@types/sparqljs": "3.0.0",
     "axios": "^0.19.2",
@@ -69,12 +69,12 @@
     "uuid62": "^1.0.1"
   },
   "devDependencies": {
-    "@types/jest": "^25.2.2",
+    "@types/jest": "^25.2.3",
     "custom-env": "^2.0.1",
     "husky": "^4.2.5",
     "jest-extended": "^0.11.5",
     "tsdx": "^0.13.2",
     "tslib": "^2.0.0",
-    "typescript": "^3.9.2"
+    "typescript": "^3.9.3"
   }
 }

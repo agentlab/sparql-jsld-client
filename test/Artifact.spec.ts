@@ -1,6 +1,15 @@
 import { JSONSchema6forRdf, JsObject } from '../src/ObjectProvider';
 import { ObjectProviderImpl } from '../src/ObjectProviderImpl';
-import { rdfServerUrl, vocabsFiles, shapesFiles, rootFolder, usersFiles, projectsFoldersFiles } from './configTests';
+import {
+  rdfServerUrl,
+  rmRepositoryParam,
+  rmRepositoryType,
+  vocabsFiles,
+  shapesFiles,
+  rootFolder,
+  usersFiles,
+  projectsFoldersFiles,
+} from './configTests';
 import { textFormatUri } from './schema/TestSchemas';
 
 import uuid62 from 'uuid62';
@@ -21,7 +30,13 @@ const assetFolder = 'folders:folder1';
 beforeAll(async () => {
   rmRepositoryID = 'test_Artifact' + Date.now();
   try {
-    await client.createRepositoryAndSetCurrent(rmRepositoryID);
+    await client.createRepositoryAndSetCurrent(
+      {
+        ...rmRepositoryParam,
+        'Repository ID': rmRepositoryID,
+      },
+      rmRepositoryType,
+    );
     const files = vocabsFiles.concat(shapesFiles, usersFiles, projectsFoldersFiles);
     //console.log('uploadFiles ', files);
     await client.uploadFiles(files, rootFolder);

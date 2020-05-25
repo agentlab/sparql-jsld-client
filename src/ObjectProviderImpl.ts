@@ -170,6 +170,10 @@ function propertyShapeToJsonSchemaProperty(
       if (shapeProp.datatype === 'xsd:dateTime') {
         schemaProp.type = 'string';
         schemaProp.format = 'date-time';
+      } else if (shapeProp.datatype === 'rdf:HTML') {
+        schemaProp.type = 'string';
+        schemaProp.contentMediaType = 'text/html';
+        //schemaProp.format = 'date-time';
       } else if (shapeProp.datatype === 'xsd:string') schemaProp.type = 'string';
       else if (shapeProp.datatype === 'xsd:integer') schemaProp.type = 'integer';
       else if (shapeProp.datatype === 'xsd:positiveInteger') schemaProp.type = 'integer';
@@ -224,6 +228,9 @@ const uiMapping: JsObject = {
   },
   description: {
     'ui:widget': 'textarea',
+  },
+  xhtmlText: {
+    'ui:widget': 'TinyMCEWidget',
   },
   /*type: {
     'ui:widget': 'ArtifactTypeWidget',
@@ -361,6 +368,10 @@ export class ObjectProviderImpl implements ObjectProvider {
 
   getClient(): SparqlClient {
     return this.client;
+  }
+
+  setQueryPrefixes(queryPrefixes: { [s: string]: string }): void {
+    this.queryPrefixes = queryPrefixes;
   }
 
   async getQueryPrefixes(): Promise<{ [s: string]: string }> {

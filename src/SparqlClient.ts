@@ -226,8 +226,10 @@ export interface SparqlClient {
 
   clearGraph(graph?: string): Promise<any>;
 
-  createRepositoryAndSetCurrent(repId: string): Promise<void>;
+  createRepositoryAndSetCurrent(repParam: JsObject): Promise<void>;
+  createRepositoryAndSetCurrent(repParam: JsObject, repType: string): Promise<void>;
 
-  createRepository(repId: string): Promise<void>;
+  createRepository(repParam: JsObject): Promise<void>;
+  createRepository(repParam: JsObject, repType: string): Promise<void>;
   deleteRepository(repId: string): Promise<void>;
 }

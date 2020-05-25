@@ -11,8 +11,9 @@ import {
 import { JsObject } from './ObjectProvider';
 import axios, { AxiosResponse } from 'axios';
 
-function createRepositoryConfig(repId: string): string {
-  return `
+function createRepositoryConfig(repParam: JsObject = {}, repType: string = 'native-rdfs'): string {
+  if (repType === 'native-rdfs')
+    return `
   #
   # Sesame configuration template for a native RDF repository with
   # RDF Schema inferencing
@@ -25,24 +26,53 @@ function createRepositoryConfig(repId: string): string {
   @prefix sb: <http://www.openrdf.org/config/sail/base#>.
         
   [] a rep:Repository ;
-    rep:repositoryID "${repId}" ;
-    rdfs:label "Native store with RDF Schema inferencing" ;
+    rep:repositoryID "${repParam['Repository ID']}" ;
+    rdfs:label "${repParam['Repository title'] || 'Native store with RDF Schema inferencing'}" ;
     rep:repositoryImpl [
       rep:repositoryType "openrdf:SailRepository" ;
       sr:sailImpl [
         sail:sailType "rdf4j:SchemaCachingRDFSInferencer" ;
         sail:delegate [
-          sail:sailType "openrdf:DedupingInferencer" ;
-          sail:delegate [
-            sail:sailType "openrdf:NativeStore" ;
-            sail:iterationCacheSyncThreshold "10000";
-            ns:tripleIndexes "spoc,posc";
-            sb:evaluationStrategyFactory "org.eclipse.rdf4j.query.algebra.evaluation.impl.StrictEvaluationStrategyFactory"
-          ]
+          sail:sailType "openrdf:NativeStore" ;
+          sail:iterationCacheSyncThreshold "${repParam['Query Iteration Cache size'] || 10000}";
+          ns:tripleIndexes "${repParam['Triple indexes'] || 'spoc,posc'}";
+          sb:evaluationStrategyFactory "${repParam['EvaluationStrategyFactory'] ||
+            'org.eclipse.rdf4j.query.algebra.evaluation.impl.StrictEvaluationStrategyFactory'}"
         ]
       ]
     ].
   `;
+  if (repType === 'virtuoso')
+    return `
+  #
+  # Sesame configuration template for a virtuoso repository
+  #
+  @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+  @prefix rep: <http://www.openrdf.org/config/repository#>.
+  @prefix vr: <http://www.openrdf.org/config/repository/virtuoso#>.
+    
+  [] a rep:Repository ;
+    rep:repositoryID "${repParam['Repository ID'] || 'virtuoso'}" ;
+    rdfs:label "${repParam['Repository title'] || 'Virtuoso repository'}" ;
+    rep:repositoryImpl [
+      rep:repositoryType "openrdf:VirtuosoRepository" ;
+      vr:hostList "${repParam['Host list'] || 'localhost:1111'}" ;
+      vr:username "${repParam['Username'] || 'dba'}" ;
+      vr:password "${repParam['Password'] || 'dba'}" ;
+      vr:defGraph "${repParam['Default graph name'] || 'sesame:nil'}" ;
+      vr:roundRobin ${repParam['Use RoundRobin for connection'] || false} ;
+      vr:useLazyAdd ${repParam['Enable using batch optimization'] || false} ;
+      vr:batchSize ${repParam['Batch size for Inserts data'] || 5000} ;
+      vr:insertBNodeAsVirtuosoIRI ${repParam['Insert BNode as Virtuoso IRI'] || false} ;
+      vr:fetchSize ${repParam['Buffer fetch size'] || 100} ;
+      vr:ruleSet "${repParam['Inference RuleSet name'] || null}";
+      vr:macroLib "${repParam['Inference MacroLib name'] || null}";
+      vr:concurrency ${repParam['ConcurrencyMode'] || 0} ;
+      vr:useDefGraphForQueries ${repParam["Use defGraph with SPARQL queries, if query default graph wasn't set"] ||
+        true}
+    ].
+  `;
+  return '';
 }
 
 /**
@@ -143,10 +173,12 @@ export class SparqlClientImpl implements SparqlClient {
   async clearGraph(graph = 'null'): Promise<any> {
     const query = `CLEAR GRAPH <${graph}> `;
     //console.debug(() => `clearGraph url=${this.repositoryUrl} query=${query}`);
-    return sendPostQuery(this.repositoryUrl, query);
+    //return sendPostQuery(this.repositoryUrl, query);
+    return executeUpdate(this.statementsUrl, query);
   }
 
   async deleteRepository(repId: string): Promise<void> {
+    await this.clearGraph(`http://cpgu.kbpm.ru/ns/rm/${repId}`);
     const url = this.createRepositoryUrl(repId);
     const response = await axios.request({
       method: 'delete',
@@ -160,20 +192,20 @@ export class SparqlClientImpl implements SparqlClient {
     //console.debug(() => `deleteRepository url=${url}`);
   }
 
-  async createRepositoryAndSetCurrent(repId: string): Promise<void> {
-    await this.createRepository(repId);
-    this.setRepositoryId(repId);
+  async createRepositoryAndSetCurrent(repParam: JsObject = {}, repType: string = 'native-rdfs'): Promise<void> {
+    await this.createRepository(repParam, repType);
+    this.setRepositoryId(repParam['Repository ID']);
   }
 
-  async createRepository(repId: string): Promise<void> {
-    const url = this.createRepositoryUrl(repId);
+  async createRepository(repParam: JsObject = {}, repType: string = 'native-rdfs'): Promise<void> {
+    const url = this.createRepositoryUrl(repParam['Repository ID']);
     const response = await axios.request({
       method: 'put',
       url,
       headers: {
         'Content-Type': 'text/turtle',
       },
-      data: createRepositoryConfig(repId),
+      data: createRepositoryConfig(repParam, repType),
     });
     if (response.status < 200 && response.status > 204) throw Error(`createRepository fault, url=${url}`);
     //console.debug(() => `createRepository url=${url}`);

@@ -1,5 +1,5 @@
 import { ObjectProviderImpl } from '../src/ObjectProviderImpl';
-import { rdfServerUrl, vocabsFiles, shapesFiles, rootFolder } from './configTests';
+import { rdfServerUrl, rmRepositoryParam, rmRepositoryType, vocabsFiles, shapesFiles, rootFolder } from './configTests';
 
 // See https://stackoverflow.com/questions/49603939/async-callback-was-not-invoked-within-the-5000ms-timeout-specified-by-jest-setti
 jest.setTimeout(50000);
@@ -13,7 +13,13 @@ client.setServerUrl(rdfServerUrl);
 beforeAll(async () => {
   rmRepositoryID = 'test_SparqlClient_' + Date.now();
   try {
-    await client.createRepositoryAndSetCurrent(rmRepositoryID);
+    await client.createRepositoryAndSetCurrent(
+      {
+        ...rmRepositoryParam,
+        'Repository ID': rmRepositoryID,
+      },
+      rmRepositoryType,
+    );
     const files = vocabsFiles.concat(shapesFiles);
     await client.uploadFiles(files, rootFolder);
   } catch (err) {

@@ -10,6 +10,14 @@ export interface JsObject {
   [key: string]: any;
 }
 
+export function idComparator(a: JsObject, b: JsObject): number {
+  const nameA = a['@id'].toLowerCase(),
+    nameB = b['@id'].toLowerCase();
+  if (nameA < nameB) return -1;
+  if (nameA > nameB) return 1;
+  return 0;
+}
+
 export type JSONSchema6DefinitionForRdfProperty = JSONSchema6forRdfProperty;
 export interface JSONSchema6forRdfProperty extends JSONSchema6 {
   //uri: string;
@@ -133,6 +141,8 @@ export interface ObjectProvider {
   setClient(client: SparqlClient): void;
   getClient(): SparqlClient;
 
+  getQueryPrefixes(): Promise<{ [s: string]: string }>;
+  setQueryPrefixes(queryPrefixes: { [s: string]: string }): void;
   reloadQueryPrefixes(): Promise<void>;
 
   setUser(user: string): void;

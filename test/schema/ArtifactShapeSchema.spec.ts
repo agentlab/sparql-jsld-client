@@ -1,7 +1,16 @@
 import { ObjectProviderImpl } from '../../src/ObjectProviderImpl';
 import { ArtifactShapeSchema, PropertyShapeSchema } from '../../src/schema/ArtifactShapeSchema';
 import { artifactSchema, classifierSchema, artifactShape } from './TestSchemas';
-import { rdfServerUrl, vocabsFiles, shapesFiles, rootFolder } from '../configTests';
+import {
+  rdfServerUrl,
+  rmRepositoryParam,
+  rmRepositoryType,
+  vocabsFiles,
+  shapesFiles,
+  rootFolder,
+  queryPrefixes,
+} from '../configTests';
+import { idComparator } from '../../src/ObjectProvider';
 
 // See https://stackoverflow.com/questions/49603939/async-callback-was-not-invoked-within-the-5000ms-timeout-specified-by-jest-setti
 jest.setTimeout(50000);
@@ -16,11 +25,18 @@ const { property: artifactShapeProperty, ...artifactShapeNoProperty } = artifact
 beforeAll(async () => {
   rmRepositoryID = 'test_ArtifactSchemaSchema_' + Date.now();
   try {
-    await client.createRepositoryAndSetCurrent(rmRepositoryID);
+    await client.createRepositoryAndSetCurrent(
+      {
+        ...rmRepositoryParam,
+        'Repository ID': rmRepositoryID,
+      },
+      rmRepositoryType,
+    );
     const files = vocabsFiles.concat(shapesFiles);
     await client.uploadFiles(files, rootFolder);
 
     //await provider.reloadQueryPrefixes();
+    provider.setQueryPrefixes(queryPrefixes);
     //await sleep(5000); // give RDF classifier some time to classify resources after upload
   } catch (err) {
     fail(err);
@@ -47,7 +63,9 @@ describe('api/classshape-scenario', () => {
       });
       expect(artifactShapeSchema1).toHaveLength(1);
       expect(artifactShapeSchema1[0]).toEqual(expect.objectContaining(artifactShapeNoProperty));
-      expect(artifactShapeSchema1[0].property).toEqual(expect.arrayContaining(artifactShapeProperty));
+      expect(artifactShapeSchema1[0].property.sort(idComparator)).toEqual(
+        expect.arrayContaining(artifactShapeProperty.sort(idComparator)),
+      );
       expect(artifactShapeSchema11).toHaveLength(1);
       expect(artifactShapeSchema11[0]).toEqual(expect.objectContaining(artifactShapeNoProperty));
       expect(artifactShapeSchema11[0].property).toEqual(expect.arrayContaining(artifactShapeProperty));

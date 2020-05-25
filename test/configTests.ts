@@ -12,8 +12,8 @@ if (fs.existsSync('.env.test.local')) {
  * Sparql Endpoint URL (адрес веб-сервиса)
  */
 export const rdfServerUrl = process.env.REACT_APP_SERVER_RDF_URL || 'http://localhost:8181/rdf4j-server';
-export const rmRepositoryID = process.env.REACT_APP_RDFREP_RM || 'reqs2';
-export const apiUrl = `${rdfServerUrl}/repositories/${process.env.REACT_APP_RDFREP_RM || 'reqs2'}`;
+export const rmRepositoryParam = JSON.parse(process.env.REACT_APP_RM_REPOSITORY_PARAM || '{}');
+export const rmRepositoryType = process.env.REACT_APP_RM_REPOSITORY_TYPE || 'native-rdfs';
 
 export const queryPrefixes: { [s: string]: string } = {
   rdfs: 'http://www.w3.org/2000/01/rdf-schema#',

@@ -314,8 +314,8 @@ describe('SparqlGen/updateObjectQuery', () => {
       }
       WHERE {
         ?eIri0 rdf:type rm:Artifact.
+        ?eIri0 dcterms:title ?title0.
         OPTIONAL { ?eIri0 dcterms:identifier ?identifier0. }
-        OPTIONAL { ?eIri0 dcterms:title ?title0. }
         OPTIONAL { ?eIri0 dcterms:modified ?modified0. }
         OPTIONAL { ?eIri0 oslc:modifiedBy ?modifiedBy0. }
         FILTER(?identifier0 = 1 )
@@ -351,8 +351,8 @@ describe('SparqlGen/updateObjectQuery', () => {
       }
       WHERE {
         ${id} rdf:type rm:Artifact.
+        ${id} dcterms:title ?title0.
         OPTIONAL { ${id} dcterms:identifier ?identifier0. }
-        OPTIONAL { ${id} dcterms:title ?title0. }
         OPTIONAL { ${id} dcterms:modified ?modified0. }
         OPTIONAL { ${id} oslc:modifiedBy ?modifiedBy0. }
       }`);

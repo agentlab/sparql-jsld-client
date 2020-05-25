@@ -1,6 +1,8 @@
 import { ObjectProviderImpl } from '../src/ObjectProviderImpl';
 import {
   rdfServerUrl,
+  rmRepositoryParam,
+  rmRepositoryType,
   vocabsFiles,
   shapesFiles,
   usersFiles,
@@ -24,7 +26,13 @@ export function sleep(ms: number): Promise<NodeJS.Timeout> {
 beforeAll(async () => {
   rmRepositoryID = 'test_SimpleRetrieve' + Date.now();
   try {
-    await client.createRepositoryAndSetCurrent(rmRepositoryID);
+    await client.createRepositoryAndSetCurrent(
+      {
+        ...rmRepositoryParam,
+        'Repository ID': rmRepositoryID,
+      },
+      rmRepositoryType,
+    );
     const files = vocabsFiles.concat(shapesFiles, usersFiles, projectsFoldersFiles, samplesFiles);
     //console.log('uploadFiles ', files);
     await client.uploadFiles(files, rootFolder);

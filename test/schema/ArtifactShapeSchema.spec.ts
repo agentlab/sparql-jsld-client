@@ -1,15 +1,8 @@
 import { ObjectProviderImpl } from '../../src/ObjectProviderImpl';
 import { ArtifactShapeSchema, PropertyShapeSchema } from '../../src/schema/ArtifactShapeSchema';
 import { artifactSchema, classifierSchema, artifactShape } from './TestSchemas';
-import {
-  rdfServerUrl,
-  rmRepositoryParam,
-  rmRepositoryType,
-  vocabsFiles,
-  shapesFiles,
-  rootFolder,
-  queryPrefixes,
-} from '../configTests';
+import { rdfServerUrl, rmRepositoryParam, rmRepositoryType } from '../config';
+import { vocabsFiles, shapesFiles, rootFolder, queryPrefixes } from '../configTests';
 import { idComparator } from '../../src/ObjectProvider';
 
 // See https://stackoverflow.com/questions/49603939/async-callback-was-not-invoked-within-the-5000ms-timeout-specified-by-jest-setti
@@ -70,6 +63,7 @@ describe('api/classshape-scenario', () => {
       expect(artifactShapeSchema11[0]).toEqual(expect.objectContaining(artifactShapeNoProperty));
       expect(artifactShapeSchema11[0].property).toEqual(expect.arrayContaining(artifactShapeProperty));
 
+      // search node shape by shape uri
       const artifactShapeSchema2 = await provider.selectObjects(ArtifactShapeSchema, {
         '@id': 'rm:ArtifactShape',
       });
@@ -87,13 +81,12 @@ describe('api/classshape-scenario', () => {
     it('should retrieve schema from server', async () => {
       //const propertySchema = await provider.getSchemaByUri('rm:identifierShape');
       //expect(propertySchema).toEqual(expect.anything());
-      console.log('start');
       const artifactSchema1 = await provider.getSchemaByUriInternal(artifactSchema['@id']);
       expect(artifactSchema1).toMatchObject(artifactSchema);
 
       const artifactSchema2 = await provider.getSchemaByUri(artifactSchema['@id']);
+      expect(artifactSchema2).toEqual(expect.anything());
       expect(artifactSchema2).toMatchObject(artifactSchema);
-      console.log('end');
     });
 
     it('get all shape properties from 1 parent shape', async () => {

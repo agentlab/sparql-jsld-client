@@ -1,15 +1,7 @@
 import { JSONSchema6forRdf, JsObject } from '../src/ObjectProvider';
 import { ObjectProviderImpl } from '../src/ObjectProviderImpl';
-import {
-  rdfServerUrl,
-  rmRepositoryParam,
-  rmRepositoryType,
-  vocabsFiles,
-  shapesFiles,
-  rootFolder,
-  usersFiles,
-  projectsFoldersFiles,
-} from './configTests';
+import { rdfServerUrl, rmRepositoryParam, rmRepositoryType } from './config';
+import { vocabsFiles, shapesFiles, rootFolder, usersFiles, projectsFoldersFiles } from './configTests';
 import { textFormatUri } from './schema/TestSchemas';
 
 import uuid62 from 'uuid62';

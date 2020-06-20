@@ -1,6 +1,6 @@
 {
   "name": "@agentlab/sparql-jsld-client",
-  "version": "3.0.3",
+  "version": "3.0.7",
   "description": "SPARQL JSON Schema Linked Data Client",
   "keywords": [
     "sparql",

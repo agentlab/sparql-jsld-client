@@ -33,7 +33,7 @@ const artifacts2 = await provider.selectObjects(artifactSchema);
 
 //select all objects by schema and conditions
 const artifact30000 = await provider.selectObjectsWithTypeInfo(artifactSchema, { identifier: 30000 });
-const artifactsFromFolder = await provider.selectObjects(artifactSchema, { assetFolder: 'folders:folder1_1' });
+const artifactsFromFolder = await provider.selectObjects(artifactSchema, { assetFolder: 'folders:samples_module' });
 ```
 
 ## Local Development

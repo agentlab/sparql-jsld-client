@@ -56,10 +56,10 @@ describe('api/simple-retrieve', () => {
     const artifact30000Orig = {
       '@id': 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml',
       '@type': 'cpgu:Classifier',
-      assetFolder: 'folders:folder1_1',
+      assetFolder: 'folders:samples_module',
       created: '2014-02-10T10:12:16.000Z',
       creator: 'users:amivanoff',
-      xhtmlText: 'ТН ВЭД ТС',
+      description: 'ТН ВЭД ТС',
       artifactFormat: 'rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Module',
       identifier: 30000,
       modifiedBy: 'users:amivanoff',
@@ -72,7 +72,7 @@ describe('api/simple-retrieve', () => {
     expect(artifact30000.length).toBe(1);
     expect(artifact30000[0]).toMatchObject(artifact30000Orig);
 
-    const artifactsFromFolder = await provider.selectObjects(artifactSchema, { assetFolder: 'folders:folder1_1' });
+    const artifactsFromFolder = await provider.selectObjects(artifactSchema, { assetFolder: 'folders:samples_module' });
     expect(artifactsFromFolder.length).toBe(11);
   });
   it('should return NO Artifacts with unexisted values', async () => {
@@ -92,7 +92,7 @@ describe('api/simple-retrieve', () => {
     const classifierGroups30001 = await provider.selectObjects(classifierGroupSchema, { identifier: 30001 });
     expect(classifierGroups30001.length).toBe(1);
     const classifierGroupsFromFolder = await provider.selectObjects(classifierGroupSchema, {
-      assetFolder: 'folders:folder1_1',
+      assetFolder: 'folders:samples_module',
     });
     expect(classifierGroupsFromFolder.length).toBe(10);
   });
@@ -101,7 +101,7 @@ describe('api/simple-retrieve', () => {
     const classifierGroups40001 = await provider.selectObjects(classifierGroupSchema, { identifier: 40001 });
     expect(classifierGroups40001.length).toBe(0);
     const classifierGroupsFromFolder1 = await provider.selectObjects(classifierGroupSchema, {
-      assetFolder: 'folders:folder1',
+      assetFolder: 'folders:samples_collection',
     });
     expect(classifierGroupsFromFolder1.length).toBe(0);
   });
@@ -121,7 +121,7 @@ describe('api/simple-retrieve', () => {
     const folderSchema = await provider.getSchemaByUri('nav:folder');
     const folders = await provider.selectObjects(folderSchema);
     //console.log('dataTypes', json2str(folders));
-    expect(folders.length).toBe(6);
+    expect(folders.length).toBe(8);
   });
   it('should return ArtifactClasses with expected schema', async () => {
     const artifactClasses0 = await provider.selectObjectsWithTypeInfo('rm:ArtifactClasses');

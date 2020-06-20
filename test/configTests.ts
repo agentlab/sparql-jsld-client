@@ -110,7 +110,6 @@ export const projectsFoldersFiles: FileUploadConfig[] = [
     file: 'data/projects.ttl',
     baseURI: '<http://cpgu.kbpm.ru/ns/rm/projects#>',
   },
-
   {
     file: 'data/folders.ttl',
     baseURI: '<http://cpgu.kbpm.ru/ns/rm/folders#>',
@@ -119,7 +118,7 @@ export const projectsFoldersFiles: FileUploadConfig[] = [
 
 export const samplesFiles: FileUploadConfig[] = [
   {
-    file: 'data/cpgu/sample.ttl',
+    file: 'data/cpgu/sample-module.ttl',
     baseURI: '<http://cpgu.kbpm.ru/ns/rm/reqs#>',
   },
   {

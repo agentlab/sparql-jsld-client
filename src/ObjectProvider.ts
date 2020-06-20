@@ -144,6 +144,8 @@ export interface ObjectProvider {
   getQueryPrefixes(): Promise<{ [s: string]: string }>;
   setQueryPrefixes(queryPrefixes: { [s: string]: string }): void;
   reloadQueryPrefixes(): Promise<void>;
+  abbreviateIri(fillQualifiedIri: string): string;
+  deAbbreviateIri(abbreviatedIri: string): string;
 
   setUser(user: string): void;
   getUser(): string;

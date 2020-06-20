@@ -391,6 +391,14 @@ export class ObjectProviderImpl implements ObjectProvider {
     console.log('reloadQueryPrefixes end');
   }
 
+  abbreviateIri(fillQualifiedIri: string): string {
+    return this.sparqlGen.abbreviateIri(fillQualifiedIri);
+  }
+
+  deAbbreviateIri(abbreviatedIri: string): string {
+    return this.sparqlGen.deAbbreviateIri(abbreviatedIri);
+  }
+
   setUser(user: string): void {
     if (user) user = this.sparqlGen.abbreviateIri(user);
     this.user = user;

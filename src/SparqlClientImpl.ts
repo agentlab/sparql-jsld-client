@@ -178,7 +178,11 @@ export class SparqlClientImpl implements SparqlClient {
   }
 
   async deleteRepository(repId: string): Promise<void> {
-    await this.clearGraph(`http://cpgu.kbpm.ru/ns/rm/${repId}`);
+    try {
+      await this.clearGraph(`http://cpgu.kbpm.ru/ns/rm/${repId}`);
+    } catch (err) {
+      console.log(err);
+    }
     const url = this.createRepositoryUrl(repId);
     const response = await axios.request({
       method: 'delete',

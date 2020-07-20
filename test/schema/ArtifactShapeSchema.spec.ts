@@ -2,7 +2,7 @@ import { ObjectProviderImpl } from '../../src/ObjectProviderImpl';
 import { ArtifactShapeSchema, PropertyShapeSchema } from '../../src/schema/ArtifactShapeSchema';
 import { artifactSchema, classifierSchema, artifactShape } from './TestSchemas';
 import { rdfServerUrl, rmRepositoryParam, rmRepositoryType } from '../config';
-import { vocabsFiles, shapesFiles, rootFolder, queryPrefixes } from '../configTests';
+import { vocabsFiles, shapesFiles, rootFolder } from '../configTests';
 import { idComparator } from '../../src/ObjectProvider';
 
 // See https://stackoverflow.com/questions/49603939/async-callback-was-not-invoked-within-the-5000ms-timeout-specified-by-jest-setti
@@ -28,8 +28,8 @@ beforeAll(async () => {
     const files = vocabsFiles.concat(shapesFiles);
     await client.uploadFiles(files, rootFolder);
 
-    //await provider.reloadQueryPrefixes();
-    provider.setQueryPrefixes(queryPrefixes);
+    await provider.reloadQueryPrefixes();
+    //provider.setQueryPrefixes(queryPrefixes);
     //await sleep(5000); // give RDF classifier some time to classify resources after upload
   } catch (err) {
     fail(err);

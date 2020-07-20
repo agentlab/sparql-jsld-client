@@ -15,7 +15,7 @@
         "--runInBand",
         //"--no-cache",
         //"--env=jsdom",
-        "-t", "should create and delete repository"
+        "-t", "should retrieve shape from server"
         //"ArtifactShapeSchema.spec.ts",
       ],
       //"cwd": "${workspaceRoot}",

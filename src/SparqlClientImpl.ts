@@ -171,7 +171,7 @@ export class SparqlClientImpl implements SparqlClient {
    * @param graph
    */
   async clearGraph(graph = 'null'): Promise<any> {
-    const query = `CLEAR GRAPH <${graph}> `;
+    const query = `CLEAR GRAPH <${graph}>`;
     //console.debug(() => `clearGraph url=${this.repositoryUrl} query=${query}`);
     //return sendPostQuery(this.repositoryUrl, query);
     return executeUpdate(this.statementsUrl, query);
@@ -202,6 +202,15 @@ export class SparqlClientImpl implements SparqlClient {
   }
 
   async createRepository(repParam: JsObject = {}, repType: string = 'native-rdfs'): Promise<void> {
+    if (repType === 'virtuoso') {
+      let repId = repParam['Repository ID'];
+      repParam = {
+        ...repParam,
+        'Default graph name': `http://cpgu.kbpm.ru/ns/rm/${repId}`,
+        'Inference RuleSet name': `http://cpgu.kbpm.ru/ns/rm/${repId}`,
+        "Use defGraph with SPARQL queries, if query default graph wasn't set": true,
+      };
+    }
     const url = this.createRepositoryUrl(repParam['Repository ID']);
     const response = await axios.request({
       method: 'put',

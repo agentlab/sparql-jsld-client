@@ -10,6 +10,26 @@ export interface JsObject {
   [key: string]: any;
 }
 
+export interface QueryShape {
+  '@id'?: string;
+  '@type'?: string;
+  // properties could be changed by client-code only (GUI code, etc.), immutable within SPARQL generation
+  schema: string | JSONSchema6forRdf; // could be class IRI, resolved from local schema reposiory (local cache) or from server
+  conditions?: JsObject;
+  variables?: JsObject;
+  data?: JsObject;
+}
+
+export interface Query {
+  '@id'?: string;
+  '@type'?: string;
+  // properties could be changed by client-code only (GUI code, etc.), immutable within SPARQL generation
+  shapes: QueryShape[];
+  orderBy?: string; // if last digit not specified, we assuming '0' (identifier0)
+  limit?: number;
+  offset?: number;
+}
+
 export function idComparator(a: JsObject, b: JsObject): number {
   const nameA = a['@id'].toLowerCase(),
     nameB = b['@id'].toLowerCase();
@@ -175,6 +195,8 @@ export interface ObjectProvider {
 
   selectObjectsWithTypeInfo(schemaOrString: JSONSchema6forRdf | string): Promise<JsObject[]>;
   selectObjectsWithTypeInfo(schemaOrString: JSONSchema6forRdf | string, conditions: any): Promise<JsObject[]>;
+
+  selectObjectsByQuery(query: Query): Promise<JsObject[]>;
 
   selectObjectById(schemaOrString: JSONSchema6forRdf | string, id: number): Promise<void | JsObject>;
   selectMaxObjectId(schemaOrString: JSONSchema6forRdf | string): Promise<number>;

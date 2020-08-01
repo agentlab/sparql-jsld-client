@@ -1,4 +1,5 @@
 {
     "jest.autoEnable": false,
-    "jest.pathToJest": "npm test --"
+    "jest.pathToJest": "npm test --",
+    "files.autoSave": "afterDelay"
 }

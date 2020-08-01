@@ -372,3 +372,195 @@ export const artifactShape: JsObject = {
   targetClass: 'rm:Artifact',
   title: 'Требование',
 };
+
+export const usedInSchema: JSONSchema6forRdf = {
+  $schema: 'http://json-schema.org/draft-07/schema#',
+  '@id': 'rmUserTypes:UsedIn',
+  '@type': 'rmUserTypes:UsedIn',
+  type: 'object',
+  title: 'Использование',
+  description: 'Собирает информацию о связях между требованиями.',
+  '@context': {
+    '@type': 'rdf:type',
+    /*creator: {
+      '@id': 'dcterms:creator',
+      '@type': 'pporoles:User'
+    },
+    created: 'dcterms:created',
+    modifiedBy: {
+      '@id': 'oslc:modifiedBy',
+      '@type': 'pporoles:User'
+    },
+    modified: 'dcterms:modified',
+    processArea: {
+      '@id': 'nav:processArea',
+      '@type': 'nav:ProjectArea'
+    },*/
+    object: {
+      '@id': 'rdf:object',
+      '@type': 'rm:Artifact',
+    },
+    subject: {
+      '@id': 'rdf:subject',
+      '@type': 'rm:Artifact',
+    },
+  },
+  properties: {
+    '@id': {
+      title: 'URI',
+      type: 'string',
+      format: 'iri',
+    },
+    '@type': {
+      title: 'Тип',
+      type: 'string',
+      format: 'iri',
+    },
+    /*creator: {
+      type: 'string',
+      format: 'iri',
+      title: 'Кем создан',
+      description: 'Пользователь, создавший требование',
+      shapeModifiability: 'system'
+    },
+    created: {
+      type: 'string',
+      format: 'date-time',
+      title: 'Когда создан',
+      description: 'Когда требование было создано',
+      shapeModifiability: 'system'
+    },
+    modifiedBy: {
+      type: 'string',
+      format: 'iri',
+      title: 'Кем изменен',
+      description: 'Пользователь, изменивший требование',
+      shapeModifiability: 'system'
+    },
+    modified: {
+      type: 'string',
+      format: 'date-time',
+      title: 'Когда изменен',
+      description: 'Когда требование было изменено',
+      shapeModifiability: 'system'
+    },
+    processArea: {
+      type: 'string',
+      format: 'iri',
+      title: 'Проект',
+      description: 'Связано с проектной областью',
+      shapeModifiability: 'system'
+    },*/
+    object: {
+      type: 'string',
+      format: 'iri',
+      title: 'Object',
+      description: 'The object of the subject RDF statement.',
+      shapeModifiability: 'system',
+    },
+    subject: {
+      type: 'string',
+      format: 'iri',
+      title: 'Subject',
+      description: 'The subject of the subject RDF statement.',
+      shapeModifiability: 'system',
+    },
+  },
+  required: ['@id', '@type', 'object', 'subject'],
+};
+
+export const usedInModuleSchema: JSONSchema6forRdf = {
+  $schema: 'http://json-schema.org/draft-07/schema#',
+  allOf: [{ $ref: 'rmUserTypes:UsedIn' }],
+  '@id': 'rmUserTypes:UsedInModule',
+  '@type': 'rmUserTypes:UsedInModule',
+  type: 'object',
+  title: 'Использование в модуле',
+  description: 'Собирает информацию о связях между требованиями в модуле.',
+  '@context': {
+    '@type': 'rdf:type', //from parent
+    object: {
+      '@id': 'rdf:object', //from parent
+      '@type': 'rm:Artifact',
+    },
+    subject: {
+      '@id': 'rdf:subject', //from parent
+      '@type': 'rm:Artifact',
+    },
+    parentBinding: {
+      '@id': 'rmUserTypes:parentBinding', //from parent
+      '@type': 'rm:Artifact',
+    },
+    depth: 'rmUserTypes:depth',
+    bookOrder:
+      'rmUserTypes:bookOrder' /*,
+    sectionNumber: 'rmUserTypes:sectionNumber',
+    isHeading: 'rmUserTypes:isHeading'*/,
+  },
+  properties: {
+    '@id': {
+      title: 'URI', //from parent
+      type: 'string',
+      format: 'iri',
+    },
+    '@type': {
+      title: 'Тип', //from parent
+      type: 'string',
+      format: 'iri',
+    },
+    object: {
+      type: 'string', //from parent
+      format: 'iri',
+      title: 'Object',
+      description: 'The object of the subject RDF statement.',
+      shapeModifiability: 'system',
+    },
+    subject: {
+      type: 'string', //from parent
+      format: 'iri',
+      title: 'Subject',
+      description: 'The subject of the subject RDF statement.',
+      shapeModifiability: 'system',
+    },
+    parentBinding: {
+      type: 'string',
+      format: 'iri',
+      title: 'Parent Binding',
+      description: 'Parent Binding.',
+      shapeModifiability: 'system',
+    },
+    depth: {
+      type: 'integer',
+      title: 'Вложенность',
+      description: 'Вложенность',
+      shapeModifiability: 'system',
+    },
+    bookOrder: {
+      type: 'integer',
+      title: 'Порядок',
+      description: 'Порядок',
+      shapeModifiability: 'system',
+    } /*,
+    sectionNumber: {
+      type: 'string',
+      title: 'Номер раздела',
+      description: 'Номер раздела',
+      shapeModifiability: 'system'
+    },
+    isHeading: {
+      type: 'boolean',
+      title: 'Это заголовок',
+      description: 'Это заголовок',
+      shapeModifiability: 'system'
+    }*/,
+  },
+  required: [
+    '@id',
+    '@type',
+    'object',
+    'subject', //from parent
+    'parentBinding',
+    'depth',
+    'bookOrder' /*, 'sectionNumber'*/,
+  ],
+};

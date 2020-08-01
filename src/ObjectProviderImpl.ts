@@ -19,6 +19,9 @@ import {
   copyObjectProps,
   copyUniqueObjectPropsWithRenameOrFilter,
   copyUniqueArrayElements,
+  Query,
+  json2str,
+  QueryShape,
 } from './ObjectProvider';
 
 function allProsFromSchemas(
@@ -946,7 +949,9 @@ export class ObjectProviderImpl implements ObjectProvider {
               const schema2 = await this.getSchemaByUri(schemaUri);
               let queryPrefixes = await this.getQueryPrefixes();
               const sparqlGen = new SparqlGen(queryPrefixes);
-              sparqlGen.addSparqlShape(schemaWithArrayProperty, { '@id': object['@id'] }).addSparqlShape(schema2);
+              sparqlGen
+                .addSparqlShape(schemaWithArrayProperty, { '@id': object['@id'], property: '?eIri1' })
+                .addSparqlShape(schema2);
 
               const query = sparqlGen.selectObjectsQuery().stringify();
               //console.debug(() => `selectObjectsArrayProperties query=${query}`);
@@ -968,6 +973,42 @@ export class ObjectProviderImpl implements ObjectProvider {
         }
       }
     }
+    return objects;
+  }
+
+  async selectObjectsByQuery(query: Query): Promise<JsObject[]> {
+    let queryPrefixes = await this.getQueryPrefixes();
+    const sparqlGen = new SparqlGen(queryPrefixes);
+    await Promise.all(
+      query.shapes.map(async (s: QueryShape) => {
+        if (s.schema) {
+          if (typeof s.schema === 'string') {
+            s.schema = await this.getSchemaByUri(s.schema);
+            console.debug('selectObjectsByQuery s.schema=', json2str(s.schema));
+          }
+        }
+      }),
+    );
+
+    query.shapes.forEach((s: QueryShape) => {
+      if (typeof s.schema !== 'string') sparqlGen.addSparqlShape(s.schema, s.conditions);
+    });
+
+    sparqlGen.selectObjectsQuery();
+    if (query.limit) sparqlGen.limit(query.limit);
+    if (query.offset) sparqlGen.limit(query.offset);
+    if (query.orderBy) {
+      if (typeof query.orderBy === 'string')
+        sparqlGen.orderBy([{ expression: variable(query.orderBy), descending: false }]);
+    }
+    const queryStr = sparqlGen.stringify();
+    console.debug('selectObjectsByQuery query=', queryStr);
+    const selectResults = await this.client.sparqlSelect(queryStr);
+    console.debug('selectObjectsByQuery results=', json2str(selectResults));
+
+    const objects = selectResults.bindings.map((bindings) => {
+      return sparqlGen.sparqlBindingsToObjectProp(bindings);
+    });
     return objects;
   }
 

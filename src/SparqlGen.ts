@@ -12,6 +12,7 @@ import {
   JsObject,
   copyObjectPropsWithRenameOrFilter,
   copyUniqueObjectProps,
+  QueryShape,
 } from './ObjectProvider';
 
 export function isUrl(str: string): boolean {
@@ -42,7 +43,7 @@ function addOperation(operator: string, args: any[]): any {
  * @param propName
  * @param varName
  */
-export function addprops2vars2props(shape: SparqlShape, propName: string, varName: string): void {
+export function addprops2vars2props(shape: SparqlShapeInternal, propName: string, varName: string): void {
   shape.props2vars[propName] = varName;
   shape.vars2props[varName] = propName;
 }
@@ -53,9 +54,9 @@ export function addprops2vars2props(shape: SparqlShape, propName: string, varNam
  * '@id' -> 'uri'
  * @param schemaProps -- map of properties
  */
-function propsToSparqlVars(shape: SparqlShape): Variable[] {
-  if (shape.variables === undefined) return [];
-  const variables = Object.keys(shape.variables).map((key) => {
+function propsToSparqlVars(shape: SparqlShapeInternal): Variable[] {
+  if (shape.query.variables === undefined) return [];
+  const variables = Object.keys(shape.query.variables).map((key) => {
     const val = shape.props2vars[key];
     if (val) key = val;
     return variable(key);
@@ -105,11 +106,11 @@ export function getSchemaPropType(
   return undefined;
 }
 
-export function selectPropertiesWithRefs(shape: SparqlShape): { [key: string]: string } {
+export function selectPropertiesWithRefs(shape: SparqlShapeInternal): { [key: string]: string } {
   const propsWithRefs: { [key: string]: string } = {};
   const anyContext = shape.schema['@context'];
   const context = anyContext !== undefined && typeof anyContext !== 'string' ? anyContext : {};
-  Object.keys(shape.variables).forEach((key) => {
+  Object.keys(shape.query.variables).forEach((key) => {
     if (shape.schema.properties) {
       const propType = getSchemaPropType(shape.schema.properties, context, key);
       if (propType) propsWithRefs[key] = propType;
@@ -126,26 +127,56 @@ export function addTo(query: any, key: string, statements: any[]): void {
 }
 
 export function addToBgp(triples: any[]): any[] {
-  const resultBgp = [];
-  if (triples.length > 0) {
-    resultBgp.push({
+  const resultBgp: any[] = [];
+  addToResult(resultBgp, triples);
+  return resultBgp;
+}
+
+export function addToResult(result: any[], bgpTriples: any[], options?: Quad[], filters?: any[], binds?: any[]): void {
+  if (bgpTriples.length > 0) {
+    result.push({
       type: 'bgp',
-      triples,
+      triples: bgpTriples,
     });
   }
-  return resultBgp;
+  if (options) {
+    options.forEach((option) => {
+      result.push({
+        type: 'optional',
+        patterns: [
+          {
+            type: 'bgp',
+            triples: [option],
+          },
+        ],
+      });
+    });
+  }
+  if (filters) {
+    filters.forEach((filter) => {
+      result.push(filter);
+    });
+  }
+  if (binds) {
+    binds.forEach((bind) => {
+      result.push(bind);
+    });
+  }
 }
 
 const xsd = 'http://www.w3.org/2001/XMLSchema#';
 
-export interface SparqlShape {
-  subj: NamedNode | Variable;
+interface SparqlShapeInternal extends QueryShape {
+  // external properties from SparqlShape could be changed by client-code only (GUI code, etc.), immutable within SPARQL generation
   schema: JSONSchema6forRdf;
   conditions: JsObject;
   variables: JsObject;
   data: JsObject;
+  // internal properties, created and changed within SPARQL generation
+  subj: NamedNode | Variable;
   props2vars: { [s: string]: string };
   vars2props: { [s: string]: string };
+  query: { [s: string]: any }; // partial query (variables and conditions)
 }
 
 /**
@@ -156,7 +187,7 @@ export interface SparqlShape {
  * Всегда работает с полной JSON Schema от ObjectProvider
  */
 export class SparqlGen {
-  shapes: SparqlShape[] = [];
+  shapes: SparqlShapeInternal[] = [];
   queryPrefixesMap: { [s: string]: string } = {};
   //queryPrefixesMapRevert: { [s: string]: string } = {};
   query: { [s: string]: any } = {};
@@ -171,6 +202,43 @@ export class SparqlGen {
   }
 
   stringify(): string {
+    if (this.query.type === 'query') {
+      if (this.query.queryType === 'SELECT') {
+        this.shapes.forEach((shape) => {
+          // generate query
+          // check variables for uniquiness
+          const generatedVariables = propsToSparqlVars(shape);
+          let variablesToAdd: Variable[];
+
+          if (this.query.variables.length === 0) {
+            variablesToAdd = generatedVariables;
+          } else {
+            variablesToAdd = [];
+            let flag = false;
+            generatedVariables.forEach((v1) => {
+              for (let i = 0; i < this.query.variables.length; i++) {
+                const v2 = (this.query.variables as Variable[])[i];
+                if (v1.value === v2.value) {
+                  flag = true;
+                  break;
+                }
+              }
+              if (flag === false) {
+                variablesToAdd.push(v1);
+              } else {
+                flag = false;
+              }
+            });
+          }
+          this.query.variables.push(...variablesToAdd);
+
+          // create result query from partial queries
+          const results: any[] = [];
+          addToResult(results, shape.query.bgps, shape.query.options, shape.query.filters, shape.query.binds);
+          this.addToWhere(results);
+        });
+      }
+    }
     return this.generator.stringify(this.query as SparqlQuery);
   }
 
@@ -245,45 +313,28 @@ export class SparqlGen {
     return namedNode(this.deAbbreviateIri(uri));
   }
 
-  getWhereVar(shape: SparqlShape): any[] {
-    const resultWhereVars = [];
-    const bgp: Quad[] = [];
-    const optionals: Quad[] = [];
-    Object.keys(shape.variables).forEach((propertyKey) => {
-      if (!propertyKey.startsWith('@')) {
-        // filter @id, @type,...
-        const propUri = getSchemaPropUri(shape.schema, propertyKey);
-        if (propUri) {
-          const option = triple(shape.subj, this.getFullIriNamedNode(propUri), variable(shape.props2vars[propertyKey]));
-          if (shape.schema.required && shape.schema.required.includes(propertyKey)) {
-            bgp.push(option);
+  getWhereVar(shape: SparqlShapeInternal): { bgps: Quad[]; options: Quad[] } {
+    const bgps: Quad[] = [];
+    const options: Quad[] = [];
+    Object.keys(shape.query.variables).forEach((key) => {
+      // filter @id, @type,...
+      if (!key.startsWith('@')) {
+        const propUri = getSchemaPropUri(shape.schema, key);
+        const varName = shape.props2vars[key];
+        if (propUri && varName) {
+          const option = triple(shape.subj, this.getFullIriNamedNode(propUri), variable(varName));
+          if (shape.schema.required && shape.schema.required.includes(key)) {
+            bgps.push(option);
           } else {
-            optionals.push(option);
+            options.push(option);
           }
         }
       }
     });
-    if (bgp.length > 0) {
-      resultWhereVars.push({
-        type: 'bgp',
-        triples: bgp,
-      });
-    }
-    optionals.forEach((option) => {
-      resultWhereVars.push({
-        type: 'optional',
-        patterns: [
-          {
-            type: 'bgp',
-            triples: [option],
-          },
-        ],
-      });
-    });
-    return resultWhereVars;
+    return { bgps, options };
   }
 
-  getWhereVarWithoutOptinals(shape: SparqlShape): any[] {
+  getWhereVarWithoutOptinals(shape: SparqlShapeInternal): any[] {
     const resultWhereVars = [];
     const bgp: Quad[] = [];
     Object.keys(shape.data).forEach((propertyKey) => {
@@ -383,7 +434,7 @@ export class SparqlGen {
   //TODO: упростить сигнатуру функции!
   //Гармонизировать сигнатуру с другими функциями (getSimpleFilter, getDataTriples)
   getExtendedFilter(
-    shape: SparqlShape,
+    shape: SparqlShapeInternal,
     filterKey: string,
     schemaProperty: JSONSchema6forRdfProperty,
     filterProperty: any,
@@ -518,7 +569,7 @@ export class SparqlGen {
 
     const propUri = getSchemaPropUri(shape.schema, filterKey);
     switch (filterProperty.relation) {
-      case 'exist':
+      case 'exists':
         if (propUri) {
           filter.operator = 'exists';
           filter.args = [
@@ -529,7 +580,7 @@ export class SparqlGen {
           ];
         }
         break;
-      case 'notExist':
+      case 'notExists':
         if (propUri) {
           filter.operator = 'notexists';
           filter.args = [
@@ -556,7 +607,7 @@ export class SparqlGen {
    * @param schema
    * @param subj
    */
-  addToWhereSuperTypesFilter(shape: SparqlShape, subj: Term): SparqlGen {
+  addToWhereSuperTypesFilter(shape: SparqlShapeInternal, subj: Term): SparqlGen {
     if (shape.schema && shape.schema.properties) {
       if (this.query) {
         const typeFilter = [
@@ -664,20 +715,20 @@ export class SparqlGen {
     return this;
   }
 
-  addToWhereTypeCondition(shape: SparqlShape): SparqlGen {
+  addToBgpTypeCondition(shape: SparqlShapeInternal): SparqlGen {
     if (shape.schema) {
-      this.addToWhereBgpTriple(
-        triple(
-          shape.subj,
-          namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
-          this.getFullIriNamedNode(shape.schema['@id']),
-        ),
+      const t = triple(
+        shape.subj,
+        namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+        this.getFullIriNamedNode(shape.schema['@id']),
       );
+      if (!shape.query.bgps) shape.query.bgps = [t];
+      else shape.query.bgps = [t, ...shape.query.bgps];
     }
     return this;
   }
 
-  getTypeCondition(shape: SparqlShape): any[] {
+  getTypeCondition(shape: SparqlShapeInternal): any[] {
     if (shape.schema) {
       return [
         triple(
@@ -695,35 +746,74 @@ export class SparqlGen {
    * @param schema
    * @param conditions
    */
-  getFilters(shape: SparqlShape): any[] {
-    const resultsFilters: any[] = [];
-    Object.keys(shape.conditions).forEach((filterKey) => {
-      if (shape.schema && shape.schema.properties && !filterKey.startsWith('@')) {
-        const filterProperty = shape.conditions[filterKey];
-        const schemaProperty = shape.schema.properties[filterKey];
-        const propUri = getSchemaPropUri(shape.schema, filterKey);
+  processConditions(shape: SparqlShapeInternal): { bgps: Quad[]; options: Quad[]; filters: any[]; binds: any[] } {
+    const bgps: Quad[] = [];
+    const options: Quad[] = [];
+    const filters: any[] = [];
+    const binds: any[] = [];
+    Object.keys(shape.conditions).forEach((key) => {
+      if (shape.schema && shape.schema.properties && !key.startsWith('@')) {
+        const filterProperty = shape.conditions[key];
+        const schemaProperty = shape.schema.properties[key];
+        const propUri = getSchemaPropUri(shape.schema, key);
+        const varName = shape.props2vars[key];
 
-        if (schemaProperty && propUri) {
-          if (filterProperty.value && filterProperty.relation) {
-            resultsFilters.push(
-              this.getExtendedFilter(
-                shape,
-                filterKey,
-                schemaProperty,
-                filterProperty,
-                variable(shape.props2vars[filterKey]),
-                shape.subj,
-              ),
-            );
-          } else {
-            resultsFilters.push(
-              this.getSimpleFilter(schemaProperty, filterProperty, variable(shape.props2vars[filterKey])),
-            );
+        if (varName) {
+          if (schemaProperty) {
+            if (propUri) {
+              // add FILTER statement
+              if (filterProperty.value && filterProperty.relation) {
+                filters.push(
+                  this.getExtendedFilter(shape, key, schemaProperty, filterProperty, variable(varName), shape.subj),
+                );
+              } else {
+                filters.push(this.getSimpleFilter(schemaProperty, filterProperty, variable(shape.props2vars[key])));
+              }
+            } else {
+              // add BIND statement
+              if (filterProperty.bind) {
+                if (filterProperty.bind.relation) {
+                  if (filterProperty.bind.relation === 'exists') {
+                    const bind: any = {
+                      expression: {
+                        args: [
+                          {
+                            type: 'bgp',
+                            triples: filterProperty.bind.triples,
+                          },
+                        ],
+                        operator: 'exists',
+                        type: 'operation',
+                      },
+                      type: 'bind',
+                      variable: variable(varName),
+                    };
+                    binds.push(bind);
+                  }
+                }
+              }
+            }
+          }
+        } else {
+          // add bgp condition triple
+          if (schemaProperty && propUri) {
+            let option;
+            if (typeof filterProperty === 'string' && filterProperty.startsWith('?')) {
+              option = triple(shape.subj, this.getFullIriNamedNode(propUri), variable(filterProperty.substring(1)));
+            } else {
+              option = this.getConditionalTriple(schemaProperty, shape.subj, filterProperty, propUri);
+            }
+            //all schema-optional properties treats as required if conditional value exists
+            //if (shape.schema.required && shape.schema.required.includes(key)) {
+            bgps.push(option);
+            //} else {
+            //  options.push(option);
+            //}
           }
         }
       }
     });
-    return resultsFilters;
+    return { bgps, options, filters, binds };
   }
 
   addToWhere(whereStatements: any[], query?: any): SparqlGen {
@@ -740,6 +830,7 @@ export class SparqlGen {
    * @param schema
    * @param conditions
    * @param variables
+   *
    */
   createSelect(): SparqlGen {
     this.query.type = 'query';
@@ -748,98 +839,58 @@ export class SparqlGen {
     this.query.variables = [];
 
     this.shapes.forEach((shape, index) => {
+      shape.query.variables = {};
+      copyUniqueObjectProps(shape.query.variables, shape.variables);
       // if variables not set, copy all from schema except @type
-      if (
-        (Object.keys(shape.variables).length === 0 ||
-          (Object.keys(shape.variables).length === 1 && shape.variables['@type'])) &&
-        shape.schema.properties
-      ) {
-        copyUniqueObjectProps(
-          shape.variables,
-          copyObjectPropsWithRenameOrFilter(shape.schema.properties, { '@type': null }),
-        );
+      if (shape.schema.properties) {
+        if (
+          Object.keys(shape.variables).length === 0 ||
+          (Object.keys(shape.variables).length === 1 && shape.variables['@type'])
+        ) {
+          // copy as variables: all non-conditional properties, properties with "extended finter functions" or "bindings"
+          // did not copy properties with conditions with values or reference ?xxx variables
+          const ignoredProperties: JsObject = { '@type': null };
+          if (shape.conditions) {
+            Object.keys(shape.conditions).forEach((key) => {
+              const filterProperty = shape.conditions[key];
+              if (
+                filterProperty.value === undefined &&
+                filterProperty.relation === undefined &&
+                filterProperty.bind === undefined
+              )
+                ignoredProperties[key] = null;
+            });
+          }
+          copyUniqueObjectProps(
+            shape.query.variables,
+            copyObjectPropsWithRenameOrFilter(shape.schema.properties, ignoredProperties),
+          );
+        }
       }
-      //renumerate variables from shape schema to avoid collisions in SPARQL query
-      //but preserve variables not from schema
-      Object.keys(shape.variables).forEach((key) => {
+      //renumerate variables from shape schema to avoid collisions in SPARQL query, but preserve variables not from schema
+      Object.keys(shape.query.variables).forEach((key) => {
         if (!shape.props2vars[key]) {
           if (shape.schema.properties && shape.schema.properties[key]) addprops2vars2props(shape, key, key + index);
           else addprops2vars2props(shape, key, key);
         }
       });
     });
-    this.shapes.forEach((shape, index) => {
-      // process referenced schemas
-      if (index < this.shapes.length - 1) {
-        const propsAndRefs = selectPropertiesWithRefs(shape);
-        Object.keys(propsAndRefs).forEach((key) => {
-          for (let i = index; i < this.shapes.length; i++) {
-            const nextShape = this.shapes[i];
-            if (propsAndRefs[key] === nextShape.schema['@id']) {
-              addprops2vars2props(shape, key, nextShape.props2vars['@id']);
-              //delete shape.variables[key];
-            }
-          }
-        });
-      }
-      // generate query
-      // check variables for uniquiness
-      const generatedVariables = propsToSparqlVars(shape);
-      let variablesToAdd: Variable[];
-
-      if (this.query.variables.length === 0) {
-        variablesToAdd = generatedVariables;
-      } else {
-        variablesToAdd = [];
-        let flag = false;
-        generatedVariables.forEach((v1) => {
-          for (let i = 0; i < this.query.variables.length; i++) {
-            const v2 = (this.query.variables as Variable[])[i];
-            if (v1.value === v2.value) {
-              flag = true;
-              break;
-            }
-          }
-          if (flag === false) {
-            variablesToAdd.push(v1);
-          } else {
-            flag = false;
-          }
-        });
-      }
-      this.query.variables.push(...variablesToAdd);
-      this.addToWhere(this.getWhereVar(shape));
-      this.addToWhere(this.getFilters(shape));
+    this.shapes.forEach((shape) => {
+      const { bgps, options } = this.getWhereVar(shape);
+      const whereConditions = this.processConditions(shape);
+      shape.query.bgps = [...whereConditions.bgps, ...bgps];
+      shape.query.options = [...whereConditions.options, ...options];
+      shape.query.filters = whereConditions.filters;
+      shape.query.binds = whereConditions.binds;
     });
     return this;
   }
 
   addToWhereBgpTriple(triple: any): SparqlGen {
-    if (this.query.where) {
-      const bgp = this.query.where.find((whereItem: any) => whereItem.type === 'bgp');
-      if (bgp) {
-        bgp.triples.unshift(triple);
-      } else {
-        this.query.where.unshift({
-          type: 'bgp',
-          triples: [triple],
-        });
-      }
-    }
-    return this;
-  }
-
-  addToWhereOptionalTriple(triple: any): SparqlGen {
-    if (this.query.where) {
-      this.query.where.push({
-        type: 'optional',
-        patterns: [
-          {
-            type: 'bgp',
-            triples: [triple],
-          },
-        ],
-      });
+    if (this.shapes.length > 0) {
+      const shape = this.shapes[0];
+      if (!shape.query.bgps) shape.query.bgps = [triple];
+      else shape.query.bgps = [...shape.query.bgps, triple];
     }
     return this;
   }
@@ -886,6 +937,11 @@ export class SparqlGen {
         } else {
           value = literal(`${value}`, namedNode(`${xsd}dateTime`));
         }
+      } else {
+        // IRI
+        if (typeof value === 'string') {
+          value = this.getFullIriNamedNode(value);
+        }
       }
     }
     return triple(subj, this.getFullIriNamedNode(propUri), value);
@@ -895,7 +951,7 @@ export class SparqlGen {
    *
    * @param shape
    */
-  getDataTriples(shape: SparqlShape): any[] {
+  getDataTriples(shape: SparqlShapeInternal): any[] {
     let subj = shape.subj;
     if (subj.termType && subj.termType === 'NamedNode') subj = this.getFullIriNamedNode(subj);
     const triples: Quad[] = [];
@@ -961,14 +1017,14 @@ export class SparqlGen {
     this.createSelect().distinct(true);
     this.shapes.forEach((shape) => {
       this.addToWhereSuperTypesFilter(shape, shape.subj);
-      //this.addToWhereTypeCondition(shape);
+      //this.addToBgpTypeCondition(shape);
     });
     return this;
   }
 
   selectObjectsQuery(): SparqlGen {
     this.createSelect();
-    this.shapes.forEach((shape) => this.addToWhereTypeCondition(shape));
+    this.shapes.forEach((shape) => this.addToBgpTypeCondition(shape));
     return this;
   }
 
@@ -984,18 +1040,31 @@ export class SparqlGen {
     ];
     this.shapes.forEach((shape, index) => {
       addTo(this.query.updates[0], 'insert', addToBgp(this.getDataTriples(shape)));
-      shape.variables = {
+      shape.query.variables = {
         ...shape.conditions,
         ...shape.data,
       };
       //renumerate variables to avoid collisions in SPARQL query
-      Object.keys(shape.variables).forEach((key) => {
+      Object.keys(shape.query.variables).forEach((key) => {
         if (!shape.props2vars[key]) addprops2vars2props(shape, key, key + index);
       });
       addTo(this.query.updates[0], 'delete', this.getWhereVarWithoutOptinals(shape));
-      addTo(this.query.updates[0], 'where', addToBgp(this.getTypeCondition(shape)));
-      addTo(this.query.updates[0], 'where', this.getWhereVar(shape));
-      if (!shape.conditions['@id']) addTo(this.query.updates[0], 'where', this.getFilters(shape)); // if element has URI -- its enough otherwise we need to add other conditions
+
+      let { bgps, options } = this.getWhereVar(shape);
+      let filters: any[] = [];
+      let binds: any[] = [];
+      bgps = [...this.getTypeCondition(shape), ...bgps];
+      // if element has URI -- its enough otherwise we need to add other conditions
+      if (!shape.conditions['@id']) {
+        const whereConditions = this.processConditions(shape);
+        bgps = [...whereConditions.bgps, ...bgps];
+        options = [...whereConditions.options, ...options];
+        filters = whereConditions.filters;
+        binds = whereConditions.binds;
+      }
+      const results: any[] = [];
+      addToResult(results, bgps, options, filters, binds);
+      addTo(this.query.updates[0], 'where', results);
     });
     return this;
   }
@@ -1011,22 +1080,36 @@ export class SparqlGen {
       },
     ];
     this.shapes.forEach((shape, index) => {
-      shape.variables = {
+      shape.query.variables = {
         ...shape.conditions,
       };
       //renumerate variables to avoid collisions in SPARQL query
-      Object.keys(shape.variables).forEach((key) => {
+      Object.keys(shape.query.variables).forEach((key) => {
         if (!shape.props2vars[key]) addprops2vars2props(shape, key, key + index);
       });
       const pVarName = this.genUniqueVarName('p', index);
       const oVarName = this.genUniqueVarName('o', index);
       addTo(this.query.updates[0], 'delete', addToBgp([triple(shape.subj, variable(pVarName), variable(oVarName))]));
-      addTo(this.query.updates[0], 'where', addToBgp([triple(shape.subj, variable(pVarName), variable(oVarName))]));
 
-      const tc = this.getTypeCondition(shape);
-      addTo(this.query.updates[0], 'where', addToBgp(tc));
-      addTo(this.query.updates[0], 'where', this.getWhereVar(shape));
-      if (!shape.conditions['@id']) addTo(this.query.updates[0], 'where', this.getFilters(shape)); // if element has URI -- its enough otherwise we need to add other conditions
+      let { bgps, options } = this.getWhereVar(shape);
+      let filters: any[] = [];
+      let binds: any[] = [];
+      bgps = [...this.getTypeCondition(shape), triple(shape.subj, variable(pVarName), variable(oVarName)), ...bgps];
+      // if element has URI -- its enough otherwise we need to add other conditions
+      if (!shape.conditions['@id']) {
+        const whereConditions = this.processConditions(shape);
+        bgps = [...whereConditions.bgps, ...bgps];
+        options = [...whereConditions.options, ...options];
+        filters = whereConditions.filters;
+        binds = whereConditions.binds;
+      }
+      // TODO: create result query from partial queries
+      //shape.query.bgps = bgps;
+      //shape.query.options = options;
+      //shape.query.filters = filters;
+      const results: any[] = [];
+      addToResult(results, bgps, options, filters, binds);
+      addTo(this.query.updates[0], 'where', results);
     });
     return this;
   }
@@ -1046,7 +1129,7 @@ export class SparqlGen {
     variables: JsObject = {},
     data: JsObject = {},
   ): SparqlGen {
-    const shape: SparqlShape = {
+    const shape: SparqlShapeInternal = {
       subj: variable('s'),
       schema,
       conditions,
@@ -1054,6 +1137,7 @@ export class SparqlGen {
       data,
       props2vars: {},
       vars2props: {},
+      query: {},
     };
     this.shapes.push(shape);
     const uriVar = this.genUniqueVarName('eIri', this.shapes.length - 1);
@@ -1108,7 +1192,7 @@ export class SparqlGen {
     return {};
   }
 
-  sparqlBindingsToObjectByShape(bindings: Bindings, shape: SparqlShape): JsObject {
+  sparqlBindingsToObjectByShape(bindings: Bindings, shape: SparqlShapeInternal): JsObject {
     const obj: JsObject = {};
     if (shape.schema.properties) {
       let prop: JSONSchema6forRdfProperty | undefined;
@@ -1120,12 +1204,24 @@ export class SparqlGen {
         obj[propKey] = this.valueRdfsToJson(prop, bindings[varKey]?.value);
       });
     }
-    //
-    Object.keys(shape.conditions).forEach((condition) => {
-      if (!obj[condition] && shape.variables[condition]) {
-        obj[condition] = shape.conditions[condition];
-      }
-    });
+    // if variables not set, copy all unique prop values from conditions
+    if (
+      Object.keys(shape.variables).length === 0 ||
+      (Object.keys(shape.variables).length === 1 && shape.variables['@type'])
+    ) {
+      Object.keys(shape.conditions).forEach((condition) => {
+        if (!obj[condition]) {
+          obj[condition] = shape.conditions[condition];
+        }
+      });
+    } else {
+      // if variables exists, copy only unique prop values which corresponds to variables
+      Object.keys(shape.conditions).forEach((condition) => {
+        if (!obj[condition] && shape.variables[condition]) {
+          obj[condition] = shape.conditions[condition];
+        }
+      });
+    }
     if (!obj['@type'] && shape.schema) obj['@type'] = shape.schema['@type'];
     return obj;
   }

@@ -105,6 +105,3 @@ describe('api/classshape-scenario', () => {
     });
   });
 });
-
-// it('Schema Ref resolution should work', async () => {
-// });

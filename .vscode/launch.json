@@ -5,18 +5,19 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Debug Jest ArtifactShapeSchema",
+      "name": "Debug Jest Tests",
       "type": "node",
       "request": "launch",
-      "args": [
+      // https://github.com/formium/tsdx/issues/577
+      "runtimeArgs": [
         "--inspect-brk",
         "${workspaceRoot}/node_modules/tsdx/dist/index.js",
         "test",
         "--runInBand",
+        //"-t", "should return Module UsedInModules with associated Artifact"
+        "SparqlGen.spec.ts",
         //"--no-cache",
-        //"--env=jsdom",
-        "-t", "should retrieve shape from server"
-        //"ArtifactShapeSchema.spec.ts",
+        //"--env=jsdom"
       ],
       //"cwd": "${workspaceRoot}",
       //"protocol": "inspector",
@@ -24,18 +25,20 @@
       "internalConsoleOptions": "neverOpen"
     },
     {
-      "name": "Debug Jest Tests",
+      "name": "vscode-jest-tests",
       "type": "node",
       "request": "launch",
-      "args": [
+      // https://github.com/formium/tsdx/issues/577
+      "runtimeArgs": [
         "--inspect-brk",
         "${workspaceRoot}/node_modules/tsdx/dist/index.js",
         "test",
         "--runInBand",
-        "--no-cache",
-        "--env=jsdom"],
-      "cwd": "${workspaceRoot}",
-      "protocol": "inspector",
+        //"--no-cache",
+        //"--env=jsdom"
+      ],
+      //"cwd": "${workspaceRoot}",
+      //"protocol": "inspector",
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen"
     },

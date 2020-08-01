@@ -1,10 +1,10 @@
 import { Parser } from 'sparqljs';
-import { variable } from '@rdfjs/data-model';
+import { triple, variable } from '@rdfjs/data-model';
 import { SparqlGen } from '../src/SparqlGen';
 import { JSONSchema6forRdf } from '../src/ObjectProvider';
 import { ObjectProviderImpl } from '../src/ObjectProviderImpl';
 import { ArtifactShapeSchema, PropertyShapeSchema } from '../src/schema/ArtifactShapeSchema';
-import { artifactSchema } from './schema/TestSchemas';
+import { artifactSchema, usedInModuleSchema } from './schema/TestSchemas';
 import { queryPrefixes } from './configTests';
 
 let provider: ObjectProviderImpl;
@@ -94,17 +94,13 @@ describe('SparqlGen/SchemaWithoutArrayProperties', () => {
     //console.log(genQueryStr);
     const correctParsedQuery = parser.parse(`
       PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-      PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
       PREFIX sh:   <http://www.w3.org/ns/shacl#>
       PREFIX cpgu: <http://cpgu.kbpm.ru/ns/rm/cpgu#>
-      SELECT ?eIri0 ?path0 ?name0 ?minCount0 WHERE {
+      SELECT ?eIri0 WHERE {
         ?eIri0 rdf:type sh:PropertyShape;
-          sh:path ?path0.
-        OPTIONAL { ?eIri0 sh:name ?name0. }
-        OPTIONAL { ?eIri0 sh:minCount ?minCount0. }
-        FILTER(?path0 = cpgu:fileName)
-        FILTER(?name0 = "Название"^^xsd:string)
-        FILTER(?minCount0 = 1 )
+          sh:path cpgu:fileName;
+          sh:name "Название";
+          sh:minCount 1.
       }`);
     expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery);
   });
@@ -152,26 +148,94 @@ describe('SparqlGen/SchemaWithArrayProperty', () => {
       }`);
     expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery);
   });
+  // In case of API modification check ObjectProviderImpl.selectObjectsArrayProperties
   it('select two schemas should generate correctly', async () => {
     provider.addSchema(SchemaWithArrayProperty);
     provider.addSchema(SchemaWithoutArrayProperties);
     sparqlGen
-      .addSparqlShape(SchemaWithArrayProperty)
+      .addSparqlShape(SchemaWithArrayProperty, { property: '?eIri1' })
       .addSparqlShape(SchemaWithoutArrayProperties)
       .selectObjectsQuery();
     const genQueryStr = sparqlGen.stringify();
-    //console.log('Two Schemas WithArrayProperty', genQueryStr);
+    console.log('Two Schemas WithArrayProperty', genQueryStr);
     const correctParsedQuery = parser.parse(`
       PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
       PREFIX sh:  <http://www.w3.org/ns/shacl#>
       SELECT ?eIri0 ?eIri1 ?path1 ?name1 ?minCount1 WHERE {
-        OPTIONAL { ?eIri0 sh:property ?eIri1. }
-        ?eIri1 rdf:type sh:PropertyShape.
-        ?eIri0 rdf:type sh:NodeShape.
-        ?eIri1 sh:path ?path1.
+        ?eIri0 rdf:type sh:NodeShape;
+          sh:property ?eIri1.
+        ?eIri1 rdf:type sh:PropertyShape;
+          sh:path ?path1.
         OPTIONAL { ?eIri1 sh:name ?name1. }
         OPTIONAL { ?eIri1 sh:minCount ?minCount1. }
       }`);
+    expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery);
+  });
+});
+
+describe('SparqlGen/ArtifactsInModules', () => {
+  it(`select module arifacts should generate correctly`, async () => {
+    const artifactSchema2: JSONSchema6forRdf = {
+      ...artifactSchema,
+      properties: {
+        ...artifactSchema.properties,
+        // context-less required property!!!
+        hasChild: {
+          title: 'Имеет потомков',
+          description: 'Имеет потомков',
+          type: 'boolean',
+          shapeModifiability: 'system',
+        },
+      },
+      required: [...(artifactSchema.required || []), 'hasChild'],
+    };
+    sparqlGen
+      .addSparqlShape(usedInModuleSchema, {
+        object: 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml',
+        subject: '?eIri1',
+      })
+      .addSparqlShape(artifactSchema2, {
+        hasChild: {
+          bind: {
+            relation: 'exists',
+            triples: [
+              triple(variable('eIri2'), sparqlGen.getFullIriNamedNode('rmUserTypes:parentBinding'), variable('eIri1')),
+            ],
+          },
+        },
+      })
+      .selectObjectsQuery()
+      .orderBy([{ expression: variable('bookOrder0'), descending: false }])
+      .limit(10);
+    const genQueryStr = sparqlGen.stringify();
+    //console.log('selectModuleContentQuery', genQueryStr);
+    const correctParsedQuery = parser.parse(`
+    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+    PREFIX dcterms: <http://purl.org/dc/terms/>
+    PREFIX oslc: <http://open-services.net/ns/core#>
+    PREFIX nav: <http://cpgu.kbpm.ru/ns/rm/navigation#>
+    PREFIX rm: <http://cpgu.kbpm.ru/ns/rm/rdf#>
+    PREFIX rmUserTypes: <http://cpgu.kbpm.ru/ns/rm/user-types#>
+    SELECT ?eIri0 ?parentBinding0 ?depth0 ?bookOrder0 ?eIri1 ?identifier1 ?title1 ?description1 ?creator1 ?created1 ?modifiedBy1 ?modified1 ?processArea1 ?assetFolder1 ?artifactFormat1 ?hasChild1 WHERE {
+      ?eIri0 rdf:type rmUserTypes:UsedInModule;
+        rdf:object <file:///urn-s2-iisvvt-infosystems-classifier-45950.xml>;
+        rdf:subject ?eIri1;
+        rmUserTypes:parentBinding ?parentBinding0;
+        rmUserTypes:depth ?depth0;
+        rmUserTypes:bookOrder ?bookOrder0.
+      ?eIri1 rdf:type rm:Artifact;
+        dcterms:title ?title1.
+      OPTIONAL { ?eIri1 dcterms:identifier ?identifier1. }
+      OPTIONAL { ?eIri1 dcterms:description ?description1. }
+      OPTIONAL { ?eIri1 dcterms:creator ?creator1. }
+      OPTIONAL { ?eIri1 dcterms:created ?created1. }
+      OPTIONAL { ?eIri1 oslc:modifiedBy ?modifiedBy1. }
+      OPTIONAL { ?eIri1 dcterms:modified ?modified1. }
+      OPTIONAL { ?eIri1 nav:processArea ?processArea1. }
+      OPTIONAL { ?eIri1 rm:assetFolder ?assetFolder1. }
+      OPTIONAL { ?eIri1 rm:artifactFormat ?artifactFormat1. }
+      BIND(EXISTS{?eIri2 rmUserTypes:parentBinding ?eIri1} AS ?hasChild1)
+    } ORDER BY (?bookOrder0) LIMIT 10`);
     expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery);
   });
 });
@@ -197,17 +261,17 @@ describe('SparqlGen/ArtifactSchema', () => {
       PREFIX dcterms: <http://purl.org/dc/terms/>
       PREFIX rm:      <http://cpgu.kbpm.ru/ns/rm/rdf#>
       SELECT DISTINCT ?identifier0 WHERE {
-        OPTIONAL { ?eIri0 dcterms:identifier ?identifier0. }
         ?eIri0 rdf:type ?type0.
         FILTER(NOT EXISTS {
-          ?subtype0 ^rdf:type ?eIri0.
-          ?subtype0 rdfs:subClassOf ?type0.
+          ?subtype0 ^rdf:type ?eIri0;
+            rdfs:subClassOf ?type0.
           FILTER(?subtype0 != ?type0)
         })
         FILTER(EXISTS {
           ?type0 rdfs:subClassOf* ?supertype0.
           FILTER(?supertype0 = rm:Artifact)
         })
+        OPTIONAL { ?eIri0 dcterms:identifier ?identifier0. }
       }
       ORDER BY DESC (?identifier0)
       LIMIT 1`);
@@ -228,8 +292,8 @@ describe('SparqlGen/deleteObjectQuery', () => {
       PREFIX rm:  <http://cpgu.kbpm.ru/ns/rm/rdf#>
       DELETE { <file:///urn-s2-iisvvt-infosystems-classifier-45950.xml> ?p0 ?o0 }
       WHERE {
-        <file:///urn-s2-iisvvt-infosystems-classifier-45950.xml> ?p0 ?o0 .
-        <file:///urn-s2-iisvvt-infosystems-classifier-45950.xml> rdf:type rm:Artifact .
+        <file:///urn-s2-iisvvt-infosystems-classifier-45950.xml> rdf:type rm:Artifact;
+          ?p0 ?o0.
       }`);
     expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery);
   });
@@ -244,8 +308,8 @@ describe('SparqlGen/deleteObjectQuery', () => {
       PREFIX rm:      <http://cpgu.kbpm.ru/ns/rm/rdf#>
       DELETE { ?eIri0 ?p0 ?o0 }
       WHERE {
-        ?eIri0 ?p0 ?o0.
-        ?eIri0 rdf:type rm:Artifact.
+        ?eIri0 rdf:type rm:Artifact;
+          ?p0 ?o0.
         OPTIONAL { ?eIri0 dcterms:identifier ?identifier0. }
         FILTER(?identifier0 = 3 )
       }`);

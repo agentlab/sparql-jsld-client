@@ -13,8 +13,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-node@v1
+    - name: Checkout repository
+      uses: actions/checkout@v2
+    - name: Set up Node.js
+      uses: actions/setup-node@v1
       with:
         node-version: 13
     - run: npm ci
@@ -22,3 +24,13 @@ jobs:
 #    - run: npm test
 #      env:
 #        CI: true
+    - name: Publish if version has been updated
+      uses: pascalgn/npm-publish-action@06e0830ea83eea10ed4a62654eeaedafb8bf50fc
+      with: # All of theses inputs are optional
+        tag_name: "v%s"
+#        tag_message: "v%s"
+#        commit_pattern: "^Release (\\S+)"
+        workspace: "."
+      env: # More info about the environment variables in the README
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Leave this as is, it's automatically generated
+        NPM_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }} # You need to set this in your repo settings

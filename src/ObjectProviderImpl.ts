@@ -979,6 +979,32 @@ export class ObjectProviderImpl implements ObjectProvider {
   async selectObjectsByQuery(query: Query): Promise<JsObject[]> {
     let queryPrefixes = await this.getQueryPrefixes();
     const sparqlGen = new SparqlGen(queryPrefixes);
+    // copy query object, filter and rename screened @id and @type in conditions
+    query = {
+      ...query,
+      shapes: query.shapes.map(
+        (shape: QueryShape): QueryShape => {
+          let filteredShape: any;
+          if (shape.conditions) {
+            const filteredConditions: any = {};
+            copyUniqueObjectPropsWithRenameOrFilter(filteredConditions, shape.conditions, {
+              '@id': null,
+              '@type': null,
+              '@_id': '@id',
+              '@_type': '@type',
+            });
+            filteredShape = {
+              ...shape,
+              conditions: filteredConditions,
+            };
+          } else {
+            filteredShape = { ...shape };
+          }
+          return filteredShape;
+        },
+      ),
+    };
+
     await Promise.all(
       query.shapes.map(async (s: QueryShape) => {
         if (s.schema) {

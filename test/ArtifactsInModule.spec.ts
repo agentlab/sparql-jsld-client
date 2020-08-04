@@ -78,11 +78,11 @@ describe('ArtifactsInModules query', () => {
           schema: 'rmUserTypes:UsedInModule', // it could be schema object or class IRI string
           //schema: usedInModuleSchema,
           conditions: {
-            // key-value {}:JsObject
-            //collisions with '@xxx' props
-            //'@id': 'rmUserTypes:my_link', // IRI of an element, but should be iID of condition object itself ('@id': 'rm:UsedInModuleLink_Shape0_Condition')
-            //'@type': 'some conditions type'. // normally gets from schema @id
-            //in future we need escape like '@_'
+            // key-value JsObject
+            // pay attention to the collisions with '@id', '@type' and other JSON-LD props!
+            // it should be screened like '@_id', '@_type'
+            '@id': 'rmUserTypes:my_link', // IRI of an element, but should be ID of condition object itself ('@id': 'rm:UsedInModuleLink_Shape0_Condition')
+            '@type': 'some conditions type', // normally gets from schema @id
             //'@_id':
             //'@_type':
             object: 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml',

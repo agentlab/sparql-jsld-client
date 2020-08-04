@@ -181,7 +181,7 @@ export class SparqlClientImpl implements SparqlClient {
     try {
       await this.clearGraph(`http://cpgu.kbpm.ru/ns/rm/${repId}`);
     } catch (err) {
-      console.log(err);
+      //console.log(err);
     }
     const url = this.createRepositoryUrl(repId);
     const response = await axios.request({

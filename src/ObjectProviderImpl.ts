@@ -20,7 +20,6 @@ import {
   copyUniqueObjectPropsWithRenameOrFilter,
   copyUniqueArrayElements,
   Query,
-  json2str,
   QueryShape,
 } from './ObjectProvider';
 
@@ -355,7 +354,7 @@ export class ObjectProviderImpl implements ObjectProvider {
   client: SparqlClient = new SparqlClientImpl();
 
   public constructor() {
-    console.log('Create ObjectProviderImpl');
+    //console.log('Create ObjectProviderImpl');
     //this.client = client;
     this.addSchema(ResourceSchema);
     this.addSchema(ClassSchema);
@@ -384,14 +383,14 @@ export class ObjectProviderImpl implements ObjectProvider {
   }
 
   async reloadQueryPrefixes(): Promise<void> {
-    console.log('reloadQueryPrefixes start');
+    //console.log('reloadQueryPrefixes start');
     let ns = await this.client.getNamespaces();
-    console.log('reloadQueryPrefixes ns =', ns);
+    //console.log('reloadQueryPrefixes ns =', ns);
     if (ns && !isEmpty(ns)) {
       this.queryPrefixes = ns;
       this.sparqlGen.setQueryPrefixes(this.queryPrefixes);
     }
-    console.log('reloadQueryPrefixes end');
+    //console.log('reloadQueryPrefixes end');
   }
 
   abbreviateIri(fillQualifiedIri: string): string {
@@ -512,7 +511,7 @@ export class ObjectProviderImpl implements ObjectProvider {
   async resolveSchemaFromServer(
     uri: string,
   ): Promise<{ schema: JSONSchema6forRdf | undefined; uiSchema: JsObject | undefined }> {
-    console.log('resolveSchemaFromServer', { uri });
+    //console.log('resolveSchemaFromServer', { uri });
     const shapes = await this.selectObjects(ArtifactShapeSchema, {
       targetClass: uri,
     });
@@ -1004,22 +1003,19 @@ export class ObjectProviderImpl implements ObjectProvider {
         },
       ),
     };
-
     await Promise.all(
       query.shapes.map(async (s: QueryShape) => {
         if (s.schema) {
           if (typeof s.schema === 'string') {
             s.schema = await this.getSchemaByUri(s.schema);
-            console.debug('selectObjectsByQuery s.schema=', json2str(s.schema));
+            //console.debug('selectObjectsByQuery s.schema=', json2str(s.schema));
           }
         }
       }),
     );
-
     query.shapes.forEach((s: QueryShape) => {
       if (typeof s.schema !== 'string') sparqlGen.addSparqlShape(s.schema, s.conditions);
     });
-
     sparqlGen.selectObjectsQuery();
     if (query.limit) sparqlGen.limit(query.limit);
     if (query.offset) sparqlGen.limit(query.offset);
@@ -1028,10 +1024,10 @@ export class ObjectProviderImpl implements ObjectProvider {
         sparqlGen.orderBy([{ expression: variable(query.orderBy), descending: false }]);
     }
     const queryStr = sparqlGen.stringify();
-    console.debug('selectObjectsByQuery query=', queryStr);
+    //console.debug('selectObjectsByQuery query=', queryStr);
     const selectResults = await this.client.sparqlSelect(queryStr);
-    console.debug('selectObjectsByQuery results=', json2str(selectResults));
-
+    //console.debug('selectObjectsByQuery results=', json2str(selectResults));
+    // if no variables
     const objects = selectResults.bindings.map((bindings) => {
       return sparqlGen.sparqlBindingsToObjectProp(bindings);
     });
@@ -1264,7 +1260,7 @@ export class ObjectProviderImpl implements ObjectProvider {
     sparqlGen.addSparqlShape(schema, conditions);
     sparqlGen.deleteObjectQuery();
     const query = sparqlGen.stringify();
-    console.debug(() => `deleteObject query=${query}`);
+    //console.debug('deleteObject query=', query);
     await this.client.sparqlUpdate(query);
   }
 

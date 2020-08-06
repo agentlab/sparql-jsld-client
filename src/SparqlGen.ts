@@ -1169,12 +1169,83 @@ export class SparqlGen {
    * TODO: Add array properties processing
    */
   sparqlBindingsToObjectProp(bindings: Bindings): JsObject {
-    let obj: JsObject | undefined = undefined;
-    this.shapes.forEach((shape) => {
-      obj = this.sparqlBindingsToObjectByShape(bindings, shape);
+    const objects: JsObject[] = [];
+    this.shapes.forEach((shape, shapeIndex) => {
+      objects[shapeIndex] = this.sparqlBindingsToObjectByShape(bindings, shape);
     });
-    if (!obj) obj = {};
-    return obj;
+    if (objects.length === 0) return {};
+    if (objects.length === 1) return objects[0];
+    // resolve cross-references in data objects
+    this.shapes.forEach((shapeFrom, shapeFromIndex) => {
+      Object.keys(shapeFrom.conditions).forEach((propFromKey) => {
+        let condFrom = shapeFrom.conditions[propFromKey];
+        if (typeof condFrom === 'string' && condFrom.startsWith('?')) {
+          condFrom = condFrom.substring(1);
+          let shapeToIndex = shapeFromIndex;
+          do {
+            const shapeTo = this.shapes[shapeToIndex];
+            const props2vars = shapeTo.props2vars;
+            const propToKey = Object.keys(props2vars).find((key) => props2vars[key] === condFrom);
+            if (propToKey) {
+              objects[shapeFromIndex][propFromKey] = objects[shapeToIndex][propToKey];
+            }
+            shapeToIndex++;
+            if (shapeToIndex >= this.shapes.length) shapeToIndex = 0;
+          } while (shapeToIndex != shapeFromIndex);
+        }
+      });
+    });
+    // copy app non-conflicting props into first data object
+    objects.forEach((obj, index) => {
+      if (index > 0) {
+        Object.keys(obj).forEach((fromKey) => {
+          if (!objects[0][fromKey]) {
+            objects[0][fromKey] = objects[index][fromKey];
+          } else {
+            if (fromKey === '@type') {
+              if (typeof objects[0][fromKey] === 'string') {
+                objects[0][fromKey] = [objects[0][fromKey]];
+              }
+              objects[0][fromKey] = [...objects[0][fromKey], objects[index][fromKey]];
+            } else {
+              objects[0][fromKey + index] = objects[index][fromKey];
+            }
+          }
+        });
+      }
+    });
+    if (objects.length > 0) return objects[0];
+    return {};
+  }
+
+  sparqlBindingsToObjectPropTree(bindings: Bindings): JsObject {
+    const objects: JsObject[] = [];
+    this.shapes.forEach((shape, shapeIndex) => {
+      objects[shapeIndex] = this.sparqlBindingsToObjectByShape(bindings, shape);
+    });
+    // resolve cross-references in data objects
+    this.shapes.forEach((shapeFrom, shapeFromIndex) => {
+      Object.keys(shapeFrom.conditions).forEach((propFromKey) => {
+        let condFrom = shapeFrom.conditions[propFromKey];
+        if (typeof condFrom === 'string' && condFrom.startsWith('?')) {
+          condFrom = condFrom.substring(1);
+          let shapeToIndex = shapeFromIndex;
+          do {
+            const shapeTo = this.shapes[shapeToIndex];
+            const props2vars = shapeTo.props2vars;
+            const propToKey = Object.keys(props2vars).find((key) => props2vars[key] === condFrom);
+            if (propToKey) {
+              if (propToKey === '@id') objects[shapeFromIndex][propFromKey] = objects[shapeToIndex];
+              else objects[shapeFromIndex][propFromKey] = objects[shapeToIndex][propToKey];
+            }
+            shapeToIndex++;
+            if (shapeToIndex >= this.shapes.length) shapeToIndex = 0;
+          } while (shapeToIndex != shapeFromIndex);
+        }
+      });
+    });
+    if (objects.length > 0) return objects[0];
+    return {};
   }
 
   /**

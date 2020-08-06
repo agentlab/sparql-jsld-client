@@ -2,7 +2,7 @@ import { ObjectProviderImpl } from '../src/ObjectProviderImpl';
 import { rdfServerUrl, rmRepositoryParam, rmRepositoryType } from './config';
 import { vocabsFiles, shapesFiles, usersFiles, projectsFoldersFiles, samplesFiles, rootFolder } from './configTests';
 import { JSONSchema6forRdf, Query } from '../src/ObjectProvider';
-import { artifactSchema, usedInModuleSchema } from './schema/TestSchemas';
+import { artifactSchema, usedInModuleSchema, usedInSchema } from './schema/TestSchemas';
 import { triple, variable, namedNode } from '@rdfjs/data-model';
 
 // See https://stackoverflow.com/questions/49603939/async-callback-was-not-invoked-within-the-5000ms-timeout-specified-by-jest-setti
@@ -55,7 +55,7 @@ describe('ArtifactsInModules query', () => {
         // context-less required property!!!
         hasChild: {
           title: 'Имеет потомков',
-          description: 'Имеет потомковИмеет потомков',
+          description: 'Имеет потомков',
           type: 'boolean',
           shapeModifiability: 'system',
         },
@@ -66,6 +66,7 @@ describe('ArtifactsInModules query', () => {
     // not nessesary to add, it could be retrieved from server by type IRI
     // used here to increase predictability
     provider.addSchema(artifactSchema2);
+    provider.addSchema(usedInSchema);
     provider.addSchema(usedInModuleSchema);
 
     const query: Query = {
@@ -119,5 +120,26 @@ describe('ArtifactsInModules query', () => {
 
     const linksAndArtifacts = await provider.selectObjectsByQuery(query);
     expect(linksAndArtifacts.length).toBe(10);
+    expect(linksAndArtifacts[0]).toMatchObject({
+      '@id': 'reqs:_M1HusThYEem2Z_XixsC3pQ',
+      '@type': ['rmUserTypes:UsedInModule', 'rm:Artifact'],
+      object: 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml',
+      subject: 'cpgu:///_tHAikozUEeOiy8owVBW5pQ',
+      parentBinding: 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml',
+      depth: 1,
+      bookOrder: 1,
+      '@id1': 'cpgu:///_tHAikozUEeOiy8owVBW5pQ',
+      identifier: 30001,
+      title: 'ТН ВЭД ТС',
+      description: undefined,
+      creator: 'users:amivanoff',
+      created: '2014-02-10T10:12:16.000Z',
+      modifiedBy: 'users:amivanoff',
+      modified: '2014-02-10T10:12:16.000Z',
+      processArea: 'projects:gishbbProject',
+      assetFolder: 'folders:samples_module',
+      artifactFormat: 'rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Text',
+      hasChild: true,
+    });
   });
 });

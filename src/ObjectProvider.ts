@@ -93,7 +93,7 @@ export function copyObjectProps(objTo: JsObject, objFrom: JsObject): void {
 
 export function copyUniqueObjectProps(objTo: JsObject, objFrom: JsObject): void {
   Object.keys(objFrom).forEach((objFromKey) => {
-    if (!objTo[objFromKey]) {
+    if (objTo[objFromKey] === undefined) {
       objTo[objFromKey] = objFrom[objFromKey];
     }
   });
@@ -105,7 +105,7 @@ export function copyUniqueObjectPropsWithRenameOrFilter(
   renameOrFilter: JsObject,
 ): void {
   Object.keys(objFrom).forEach((objFromKey) => {
-    if (!objTo[objFromKey]) {
+    if (objTo[objFromKey] === undefined) {
       const rof = renameOrFilter[objFromKey];
       //copy if not found
       if (rof === undefined) objTo[objFromKey] = objFrom[objFromKey];

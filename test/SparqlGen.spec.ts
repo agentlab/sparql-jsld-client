@@ -175,26 +175,175 @@ describe('SparqlGen/SchemaWithArrayProperty', () => {
 
 describe('SparqlGen/ArtifactsInModules', () => {
   it(`select module arifacts should generate correctly`, async () => {
-    const artifactSchema2: JSONSchema6forRdf = {
-      ...artifactSchema,
-      properties: {
-        ...artifactSchema.properties,
-        // context-less required property!!!
-        hasChild: {
-          title: 'Имеет потомков',
-          description: 'Имеет потомков',
-          type: 'boolean',
-          shapeModifiability: 'system',
-        },
-      },
-      required: [...(artifactSchema.required || []), 'hasChild'],
-    };
     sparqlGen
       .addSparqlShape(usedInModuleSchema, {
         object: 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml',
         subject: '?eIri1',
       })
-      .addSparqlShape(artifactSchema2, {
+      .addSparqlShape(
+        {
+          $schema: 'http://json-schema.org/draft-07/schema#',
+          //$id: 'rm:Artifact',
+          '@id': 'rm:Artifact',
+          '@type': 'rm:Artifact',
+          title: 'Требование',
+          description: 'Тип ресурса',
+          type: 'object',
+          '@context': {
+            '@type': 'rdf:type',
+            identifier: 'dcterms:identifier',
+            title: 'dcterms:title',
+            description: 'dcterms:description',
+            creator: {
+              '@id': 'dcterms:creator',
+              '@type': 'pporoles:User',
+            },
+            created: 'dcterms:created',
+            modifiedBy: {
+              '@id': 'oslc:modifiedBy',
+              '@type': 'pporoles:User',
+            },
+            modified: 'dcterms:modified',
+            processArea: {
+              '@id': 'nav:processArea',
+              '@type': 'nav:ProjectArea',
+            },
+            assetFolder: {
+              '@id': 'rm:assetFolder',
+              '@type': 'nav:folder',
+            },
+            artifactFormat: {
+              '@id': 'rm:artifactFormat',
+              '@type': 'rmUserTypes:_YwcOsRmREemK5LEaKhoOow',
+            },
+          },
+          properties: {
+            '@id': {
+              title: 'URI',
+              type: 'string',
+              format: 'iri',
+            },
+            '@type': {
+              title: 'Тип',
+              type: 'string',
+              format: 'iri',
+            },
+            identifier: {
+              title: 'Идентификатор',
+              description: 'Числовой идентификатор требования, уникальный только в пределах этой системы',
+              type: 'integer',
+              shapeModifiability: 'system',
+              //valueModifiability: 'system',
+            },
+            title: {
+              title: 'Название',
+              description: 'Краткое название требования',
+              type: 'string',
+              shapeModifiability: 'system',
+              //valueModifiability: 'user',
+            },
+            description: {
+              title: 'Описание',
+              description: 'Информация о требовании',
+              type: 'string',
+              shapeModifiability: 'system',
+              //valueModifiability: 'user',
+            },
+            creator: {
+              title: 'Кем создан',
+              description: 'Пользователь, создавший требование',
+              type: 'string',
+              format: 'iri',
+              shapeModifiability: 'system',
+              //valueModifiability: 'system',
+            },
+            created: {
+              title: 'Когда создан',
+              description: 'Когда требование было создано',
+              type: 'string',
+              format: 'date-time',
+              shapeModifiability: 'system',
+              //valueModifiability: 'system',
+            },
+            modifiedBy: {
+              title: 'Кем изменен',
+              description: 'Пользователь, изменивший требование',
+              type: 'string',
+              format: 'iri',
+              shapeModifiability: 'system',
+              //valueModifiability: 'system',
+            },
+            modified: {
+              title: 'Когда изменен',
+              description: 'Когда требование было изменено',
+              type: 'string',
+              format: 'date-time',
+              shapeModifiability: 'system',
+              //valueModifiability: 'system',
+            },
+            processArea: {
+              title: 'Проект',
+              description: 'Связано с проектной областью',
+              type: 'string',
+              format: 'iri',
+              shapeModifiability: 'system',
+              //valueModifiability: 'system',
+            },
+            assetFolder: {
+              title: 'Папка',
+              description: 'Папка, содержащая требования',
+              type: 'string',
+              format: 'iri',
+              shapeModifiability: 'system',
+              //valueModifiability: 'user',
+            },
+            artifactFormat: {
+              title: 'Формат',
+              description: 'Формат заполнения/отображения',
+              type: 'string',
+              format: 'iri',
+              shapeModifiability: 'system',
+              //valueModifiability: 'user',
+            },
+            hasChild: {
+              title: 'Имеет потомков',
+              description: 'Имеет потомков',
+              type: 'boolean',
+              shapeModifiability: 'system',
+            },
+          },
+          required: ['@id', '@type', 'title', 'hasChild' /*, 'identifier', 'assetFolder', 'artifactFormat'*/],
+        },
+        {
+          hasChild: {
+            bind: {
+              relation: 'exists',
+              triples: [
+                triple(
+                  variable('eIri2'),
+                  sparqlGen.getFullIriNamedNode('rmUserTypes:parentBinding'),
+                  variable('eIri1'),
+                ),
+              ],
+            },
+          },
+        },
+      )
+      /*.addSparqlShape(artifactSchema)
+      .addSparqlShape({
+        '@id': 'rm:UsedInModuleHasChild',
+        properties: {
+          // context-less required property!!!
+          hasChild: {
+            title: 'Имеет потомков',
+            description: 'Имеет потомков',
+            type: 'boolean',
+            shapeModifiability: 'system',
+          },
+        },
+        required: ['hasChild'],
+      },
+      {
         hasChild: {
           bind: {
             relation: 'exists',
@@ -203,7 +352,7 @@ describe('SparqlGen/ArtifactsInModules', () => {
             ],
           },
         },
-      })
+      })*/
       .selectObjectsQuery()
       .orderBy([{ expression: variable('bookOrder0'), descending: false }])
       .limit(10);

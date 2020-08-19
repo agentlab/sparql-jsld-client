@@ -37,48 +37,6 @@ function allProsFromSchemas(
   return [allProperty, allContext];
 }
 
-/*function formatRow(row: JsObject): JsObject {
-  delete row['schema'];
-  return row;
-}*/
-
-/*function getTypeOfProperty(prop: JsObject): JsObject {
-  const result: JsObject = {};
-  const dataType = prop.dataType ? prop.dataType.replace('xsd:', '') : '';
-  let type = '';
-  let format = '';
-  if (dataType === 'string' || dataType === 'integer') {
-    type = dataType;
-  } else {
-    if (dataType === 'positiveInteger') {
-      type = 'integer';
-      format = dataType;
-    } else {
-      type = 'string';
-      if (dataType === 'dateTime') {
-        format = 'date-time';
-      } else {
-        format = dataType || 'iri';
-      }
-    }
-  }
-  if (prop.maxCount && prop.maxCount > 1) {
-    result['type'] = 'array';
-    result['items'] = {
-      type: type,
-    };
-    if (format) {
-      result['items']['format'] = format;
-    }
-  } else {
-    result['type'] = type;
-    if (format) {
-      result['format'] = format;
-    }
-  }
-  return result;
-}*/
-
 const schemaNonPrimitivePropsKeys = ['@context', 'properties', 'required'];
 
 function combineProperties(oldObj: any, newObj: any, schema: JSONSchema6forRdf): any {
@@ -110,20 +68,6 @@ function createObjectWithoutRepetitions(objects: any[], schema: JSONSchema6forRd
   });
   return Array.from(newData, (e) => e[1]);
 }
-
-/*function groupBySchema(response: JsObject[], schema: any): { [key: string]: any[] } {
-  const sparqlGen = new SparqlGen();
-  const schemasProps: { [key: string]: any[] } = {};
-
-  response.forEach((row) => {
-    const schemaUri = sparqlGen.abbreviateIri(row['schema']);
-    schemasProps[schemaUri] = schemasProps[schemaUri] ? [...schemasProps[schemaUri], formatRow(row)] : [formatRow(row)];
-  });
-  Object.keys(schemasProps).forEach((key) => {
-    schemasProps[key] = createObjectWithoutRepetitions(schemasProps[key], schema);
-  });
-  return schemasProps;
-}*/
 
 //TODO: Proper support for Abbreviated IRI and non abbreviated
 function propertyNameShapeToSchema(shapePropsUri: string): string {
@@ -799,10 +743,10 @@ export class ObjectProviderImpl implements ObjectProvider {
         if (schema.properties) {
           if (schema.properties[key].type === 'array') {
             schemaPropsWithArrays[key] = schema.properties[key];
-            if (conditions[key]) conditionsWithArrays[key] = conditions[key];
+            if (conditions[key] !== undefined) conditionsWithArrays[key] = conditions[key];
           } else {
             schemaPropsWithoutArrays[key] = schema.properties[key];
-            if (conditions[key]) conditionsWithoutArrays[key] = conditions[key];
+            if (conditions[key] !== undefined) conditionsWithoutArrays[key] = conditions[key];
           }
         }
       });
@@ -1020,8 +964,28 @@ export class ObjectProviderImpl implements ObjectProvider {
     if (query.limit) sparqlGen.limit(query.limit);
     if (query.offset) sparqlGen.limit(query.offset);
     if (query.orderBy) {
-      if (typeof query.orderBy === 'string')
-        sparqlGen.orderBy([{ expression: variable(query.orderBy), descending: false }]);
+      if (typeof query.orderBy === 'string') {
+        let descending = false;
+        let variable1 = '';
+        if (query.orderBy.startsWith('ASC(')) {
+          variable1 = query.orderBy.substr(4, query.orderBy.length - 5);
+        } else if (query.orderBy.startsWith('DESC(')) {
+          variable1 = query.orderBy.substr(5, query.orderBy.length - 6);
+          descending = true;
+        } else {
+          variable1 = query.orderBy;
+        }
+        // if not ends with a digit, assume 0
+        const c = variable1.charAt(variable1.length - 1);
+        if (c < '0' || c > '9') variable1 += '0';
+
+        sparqlGen.orderBy([
+          {
+            expression: variable(variable1),
+            descending,
+          },
+        ]);
+      }
     }
     const queryStr = sparqlGen.stringify();
     //console.debug('selectObjectsByQuery query=', queryStr);
@@ -1232,10 +1196,10 @@ export class ObjectProviderImpl implements ObjectProvider {
     schema = await this.specializeSchema(schema, merged);
     //const graph = this.graphRouter(schema, merged, 'updateObject');
     Object.keys(conditions).forEach((k) => {
-      if (!conditions[k]) delete conditions[k];
+      if (conditions[k] === undefined || conditions[k] === null) delete conditions[k];
     });
     Object.keys(merged).forEach((k) => {
-      if (!merged[k]) delete merged[k];
+      if (merged[k] === undefined || merged[k] === null) delete merged[k];
     });
     let queryPrefixes = await this.getQueryPrefixes();
     const sparqlGen = new SparqlGen(queryPrefixes);
@@ -1464,52 +1428,4 @@ export class ObjectProviderImpl implements ObjectProvider {
   async deleteSubclass(/*schemaOrString: JSONSchema6forRdf | string, conditions: any*/): Promise<any> {
     return {};
   }
-
-  /**
-   * Select all custom artifact type's system attributes.
-   * @param {string} url the repository URL
-   */
-  //selectArtifactTypeSystemAttributes(url: string, id: number) {}
-  /*    const query = `
-    SELECT ?id ?attribute ?attributeTitle ?attributeDescription
-    WHERE {
-      ?id a rm:ObjectType .
-      ?id rm:defaultFormat <${id}> .
-      ?id rm:hasSystemAttribute ?attribute .
-      ?attribute dcterms:title ?attributeTitle .
-      ?attribute dcterms:description ?attributeDescription .
-    }`;
-    const res = await executeSelect(url, query);
-    const ret = res.results.bindings.map((binding) => ({
-      id: binding.id.value,
-      attribute: binding.attribute.value,
-      attributeTitle: binding.attributeTitle.value,
-      attributeDescription: binding.attributeDescription.value,
-    }));
-    return ret;
-}*/
-
-  /**
-   * Select all custom artifact type's custom attributes.
-   * @param url the repository URL
-   */
-  //selectArtifactTypeCustomAttributes(url: string, id: number) {}
-  /*    const query = `
-    SELECT ?id ?attribute ?attributeTitle ?attributeDescription
-    WHERE {
-      ?id a rm:ObjectType .
-      ?id rm:defaultFormat <${id}> .
-      ?id rm:hasAttribute ?attribute .
-      ?attribute dcterms:title ?attributeTitle .
-      ?attribute dcterms:description ?attributeDescription .
-    }`;
-    const res = await executeSelect(url, query);
-    const ret = res.results.bindings.map((binding) => ({
-      id: binding.id.value,
-      attribute: binding.attribute.value,
-      attributeTitle: binding.attributeTitle.value,
-      attributeDescription: binding.attributeDescription.value,
-    }));
-    return ret;
-  }*/
 }

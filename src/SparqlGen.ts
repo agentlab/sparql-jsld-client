@@ -58,7 +58,7 @@ function propsToSparqlVars(shape: SparqlShapeInternal): Variable[] {
   if (shape.query.variables === undefined) return [];
   const variables = Object.keys(shape.query.variables).map((key) => {
     const val = shape.props2vars[key];
-    if (val) key = val;
+    if (val !== undefined) key = val;
     return variable(key);
   });
   return variables;
@@ -457,7 +457,7 @@ export class SparqlGen {
           break;
       }
       if (
-        filterProperty.value[0] &&
+        filterProperty.value[0] !== undefined &&
         typeof filterProperty.value[0] === 'string' &&
         filterProperty.relation === 'equal'
       ) {
@@ -762,7 +762,7 @@ export class SparqlGen {
           if (schemaProperty) {
             if (propUri) {
               // add FILTER statement
-              if (filterProperty.value && filterProperty.relation) {
+              if (filterProperty.value !== undefined && filterProperty.relation) {
                 filters.push(
                   this.getExtendedFilter(shape, key, schemaProperty, filterProperty, variable(varName), shape.subj),
                 );
@@ -1266,30 +1266,23 @@ export class SparqlGen {
   sparqlBindingsToObjectByShape(bindings: Bindings, shape: SparqlShapeInternal): JsObject {
     const obj: JsObject = {};
     if (shape.schema.properties) {
-      let prop: JSONSchema6forRdfProperty | undefined;
       Object.keys(shape.schema.properties).forEach((propKey) => {
-        if (shape.schema.properties) {
-          prop = shape.schema.properties[propKey];
-        } else prop = undefined;
-        const varKey = shape.props2vars[propKey];
-        obj[propKey] = this.valueRdfsToJson(prop, bindings[varKey]?.value);
+        this.rdfStringValueToObject(obj, propKey, shape, bindings);
       });
     }
     // if variables not set, copy all unique prop values from conditions
-    if (
-      Object.keys(shape.variables).length === 0 ||
-      (Object.keys(shape.variables).length === 1 && shape.variables['@type'])
-    ) {
-      Object.keys(shape.conditions).forEach((condition) => {
-        if (!obj[condition]) {
-          obj[condition] = shape.conditions[condition];
+    const varLength = Object.keys(shape.variables).length;
+    if (varLength === 0 || (varLength === 1 && shape.variables['@type'])) {
+      Object.keys(shape.conditions).forEach((propKey) => {
+        if (obj[propKey] === undefined) {
+          this.conditionsValueToObject(obj, propKey, shape);
         }
       });
     } else {
       // if variables exists, copy only unique prop values which corresponds to variables
-      Object.keys(shape.conditions).forEach((condition) => {
-        if (!obj[condition] && shape.variables[condition]) {
-          obj[condition] = shape.conditions[condition];
+      Object.keys(shape.conditions).forEach((propKey) => {
+        if (obj[propKey] === undefined && shape.variables[propKey] !== undefined) {
+          this.conditionsValueToObject(obj, propKey, shape);
         }
       });
     }
@@ -1297,23 +1290,51 @@ export class SparqlGen {
     return obj;
   }
 
-  valueRdfsToJson(prop: JSONSchema6forRdfProperty | undefined, val: any): any {
-    if (prop) {
+  conditionsValueToObject(obj: JsObject, propKey: string, shape: JsObject): void {
+    const prop = shape.schema.properties ? shape.schema.properties[propKey] : undefined;
+    if (prop !== undefined) {
+      const val = shape.conditions[propKey];
       const type = prop.type;
-      if (type && val) {
-        if (type === 'integer') return parseInt(val, 10);
-        if (type === 'boolean') {
-          if (val === 'true') return true;
-          if (val === 'false') return false;
-        }
-        if (type === 'string') {
-          if (prop?.format === 'iri') return this.abbreviateIri(val);
-        }
-        if (type === 'object') {
-          if (typeof val === 'string') return this.abbreviateIri(val);
+      if (type !== undefined && val !== undefined) {
+        if (type === 'integer') {
+          if (typeof val === 'number') obj[propKey] = val;
+        } else if (type === 'boolean') {
+          if (typeof val === 'boolean') obj[propKey] = val;
+        } else if (type === 'string') {
+          if (typeof val === 'string') {
+            if (prop?.format === 'iri') obj[propKey] = this.abbreviateIri(val);
+            else obj[propKey] = val;
+          }
+        } else if (type === 'object') {
+          if (typeof val === 'string') obj[propKey] = this.abbreviateIri(val);
+          else obj[propKey] = val;
         }
       }
     }
-    return val;
+  }
+
+  rdfStringValueToObject(obj: JsObject, propKey: string, shape: JsObject, bindings: Bindings): void {
+    const varKey = shape.props2vars[propKey];
+    if (varKey !== undefined) {
+      const prop = shape.schema.properties ? shape.schema.properties[propKey] : undefined;
+      if (prop !== undefined) {
+        const type = prop.type;
+        const val = bindings[varKey]?.value;
+        if (type !== undefined && val !== undefined) {
+          if (type === 'integer') {
+            obj[propKey] = parseInt(val, 10);
+          } else if (type === 'boolean') {
+            if (val === 'true') obj[propKey] = true;
+            if (val === 'false') obj[propKey] = false;
+          } else if (type === 'string') {
+            if (prop?.format === 'iri') obj[propKey] = this.abbreviateIri(val);
+            else obj[propKey] = val;
+          } else if (type === 'object') {
+            if (typeof val === 'string') obj[propKey] = this.abbreviateIri(val);
+            else obj[propKey] = val;
+          }
+        }
+      }
+    }
   }
 }

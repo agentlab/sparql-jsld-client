@@ -63,14 +63,14 @@
     "@types/sparqljs": "3.0.1",
     "axios": "^0.19.2",
     "is-url": "^1.2.4",
-    "lodash": "^4.17.19",
+    "lodash": "^4.17.20",
     "moment": "^2.25.3",
     "rdf-literal": "^1.1.1",
     "sparqljs": "^3.1.1",
     "uuid62": "^1.0.1"
   },
   "devDependencies": {
-    "@types/jest": "^26.0.9",
+    "@types/jest": "^26.0.10",
     "custom-env": "^2.0.1",
     "husky": "^4.2.5",
     "jest-extended": "^0.11.5",

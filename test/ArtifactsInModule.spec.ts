@@ -296,7 +296,7 @@ describe('ArtifactsInModules query', () => {
     });
   });
 
-  it('should return Module UsedInModules with associated Artifact sorted by asc bookOrder', async () => {
+  it('should return Module UsedInModules with associated Artifact sorted by ASC bookOrder', async () => {
     // not nessesary to add, it could be retrieved from server by type IRI
     // used here to increase predictability
     //provider.addSchema(artifactSchema);
@@ -330,7 +330,7 @@ describe('ArtifactsInModules query', () => {
     });
   });
 
-  it('should return Module UsedInModules with associated Artifact sorted by desc bookOrder', async () => {
+  it('should return Module UsedInModules with associated Artifact sorted by DESC bookOrder', async () => {
     // not nessesary to add, it could be retrieved from server by type IRI
     // used here to increase predictability
     //provider.addSchema(artifactSchema);
@@ -360,6 +360,30 @@ describe('ArtifactsInModules query', () => {
       processArea: 'projects:gishbbProject',
       assetFolder: 'folders:samples_module',
       artifactFormat: 'rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Text',
+      hasChild: false,
+    });
+  });
+
+  it('should return Module UsedInModules with associated Artifact sorted by ASC bookOrder and DESC depth', async () => {
+    // not nessesary to add, it could be retrieved from server by type IRI
+    // used here to increase predictability
+    //provider.addSchema(artifactSchema);
+    provider.addSchema(usedInSchema);
+    provider.addSchema(usedInModuleSchema);
+
+    const linksAndArtifacts = await provider.selectObjectsByQuery({
+      ...query,
+      orderBy: ['DESC(depth)', 'ASC(bookOrder)'],
+    });
+    expect(linksAndArtifacts.length).toBe(10);
+    expect(linksAndArtifacts[0]).toMatchObject({
+      depth: 6,
+      bookOrder: 6,
+      hasChild: false,
+    });
+    expect(linksAndArtifacts[1]).toMatchObject({
+      depth: 6,
+      bookOrder: 7,
       hasChild: false,
     });
   });

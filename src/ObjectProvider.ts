@@ -25,7 +25,7 @@ export interface Query {
   '@type'?: string;
   // properties could be changed by client-code only (GUI code, etc.), immutable within SPARQL generation
   shapes: QueryShape[];
-  orderBy?: string; // if last digit not specified, we assuming '0' (identifier0)
+  orderBy?: string | string[]; // if last digit not specified, we assuming '0' (identifier0)
   limit?: number;
   offset?: number;
 }

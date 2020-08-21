@@ -156,6 +156,27 @@ function propertyShapeToJsonSchemaProperty(
   return undefined;
 }
 
+function makeOrderBy(orderBy: string): any {
+  let descending = false;
+  let variable1 = '';
+  if (orderBy.startsWith('ASC(')) {
+    variable1 = orderBy.substr(4, orderBy.length - 5);
+  } else if (orderBy.startsWith('DESC(')) {
+    variable1 = orderBy.substr(5, orderBy.length - 6);
+    descending = true;
+  } else {
+    variable1 = orderBy;
+  }
+  // if not ends with a digit, assume 0
+  const c = variable1.charAt(variable1.length - 1);
+  if (c < '0' || c > '9') variable1 += '0';
+
+  return {
+    expression: variable(variable1),
+    descending,
+  };
+}
+
 const uiMapping: JsObject = {
   '@id': {
     'ui:widget': 'UriWithCopyWidget',
@@ -964,28 +985,13 @@ export class ObjectProviderImpl implements ObjectProvider {
     if (query.limit) sparqlGen.limit(query.limit);
     if (query.offset) sparqlGen.limit(query.offset);
     if (query.orderBy) {
+      const orderBy = [];
       if (typeof query.orderBy === 'string') {
-        let descending = false;
-        let variable1 = '';
-        if (query.orderBy.startsWith('ASC(')) {
-          variable1 = query.orderBy.substr(4, query.orderBy.length - 5);
-        } else if (query.orderBy.startsWith('DESC(')) {
-          variable1 = query.orderBy.substr(5, query.orderBy.length - 6);
-          descending = true;
-        } else {
-          variable1 = query.orderBy;
-        }
-        // if not ends with a digit, assume 0
-        const c = variable1.charAt(variable1.length - 1);
-        if (c < '0' || c > '9') variable1 += '0';
-
-        sparqlGen.orderBy([
-          {
-            expression: variable(variable1),
-            descending,
-          },
-        ]);
+        orderBy.push(makeOrderBy(query.orderBy));
+      } else if (Array.isArray(query.orderBy) === true) {
+        query.orderBy.forEach((e) => orderBy.push(makeOrderBy(e)));
       }
+      sparqlGen.orderBy(orderBy);
     }
     const queryStr = sparqlGen.stringify();
     //console.debug('selectObjectsByQuery query=', queryStr);

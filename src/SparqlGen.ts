@@ -1191,7 +1191,7 @@ export class SparqlGen {
             }
             shapeToIndex++;
             if (shapeToIndex >= this.shapes.length) shapeToIndex = 0;
-          } while (shapeToIndex != shapeFromIndex);
+          } while (shapeToIndex !== shapeFromIndex);
         }
       });
     });
@@ -1240,7 +1240,7 @@ export class SparqlGen {
             }
             shapeToIndex++;
             if (shapeToIndex >= this.shapes.length) shapeToIndex = 0;
-          } while (shapeToIndex != shapeFromIndex);
+          } while (shapeToIndex !== shapeFromIndex);
         }
       });
     });

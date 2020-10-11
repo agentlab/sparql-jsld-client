@@ -185,7 +185,7 @@ export interface ObjectProvider {
    * @param {object} schema -- JSON схема с RDF классоми и определениями RDF свойств
    * @param {object} artifact -- объект для валидации
    */
-  validate(schema: JSONSchema6forRdf, artifact: any): void;
+  //validate(schema: JSONSchema6forRdf, artifact: any): void;
 
   selectDataType(schemaOrString: JSONSchema6forRdf | string): Promise<JsObject[]>;
   selectDataType(schemaOrString: JSONSchema6forRdf | string, conditions: any): Promise<JsObject[]>;

@@ -43,7 +43,11 @@ function addOperation(operator: string, args: any[]): any {
  * @param propName
  * @param varName
  */
-export function addprops2vars2props(shape: SparqlShapeInternal, propName: string, varName: string): void {
+export function addprops2vars2props(
+  shape: Pick<SparqlShapeInternal, 'props2vars' | 'vars2props'>,
+  propName: string,
+  varName: string,
+): void {
   shape.props2vars[propName] = varName;
   shape.vars2props[varName] = propName;
 }
@@ -54,7 +58,7 @@ export function addprops2vars2props(shape: SparqlShapeInternal, propName: string
  * '@id' -> 'uri'
  * @param schemaProps -- map of properties
  */
-function propsToSparqlVars(shape: SparqlShapeInternal): Variable[] {
+export function propsToSparqlVars(shape: Pick<SparqlShapeInternal, 'props2vars' | 'query'>): Variable[] {
   if (shape.query.variables === undefined) return [];
   const variables = Object.keys(shape.query.variables).map((key) => {
     const val = shape.props2vars[key];
@@ -847,7 +851,7 @@ export class SparqlGen {
           Object.keys(shape.variables).length === 0 ||
           (Object.keys(shape.variables).length === 1 && shape.variables['@type'])
         ) {
-          // copy as variables: all non-conditional properties, properties with "extended finter functions" or "bindings"
+          // copy as variables: all non-conditional properties, properties with "extended filter functions" or "bindings"
           // did not copy properties with conditions with values or reference ?xxx variables
           const ignoredProperties: JsObject = { '@type': null };
           if (shape.conditions) {

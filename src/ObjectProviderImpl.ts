@@ -1,6 +1,6 @@
 import moment from 'moment';
 import uuid62 from 'uuid62';
-import Ajv from 'ajv';
+//import Ajv from 'ajv';
 import { namedNode, triple, variable } from '@rdfjs/data-model';
 import { JSONSchema6Definition } from 'json-schema';
 import { isEmpty } from 'lodash';
@@ -37,7 +37,7 @@ function allProsFromSchemas(
   return [allProperty, allContext];
 }
 
-const schemaNonPrimitivePropsKeys = ['@context', 'properties', 'required'];
+export const schemaNonPrimitivePropsKeys = ['@context', 'properties', 'required'];
 
 function combineProperties(oldObj: any, newObj: any, schema: JSONSchema6forRdf): any {
   const newData: any = {};
@@ -53,7 +53,7 @@ function combineProperties(oldObj: any, newObj: any, schema: JSONSchema6forRdf):
   return newData;
 }
 
-function createObjectWithoutRepetitions(objects: any[], schema: JSONSchema6forRdf): any[] {
+export function createObjectWithoutRepetitions(objects: any[], schema: JSONSchema6forRdf): any[] {
   const newData = new Map();
   const usedUri: any[] = [];
   objects.forEach((object) => {
@@ -156,7 +156,7 @@ function propertyShapeToJsonSchemaProperty(
   return undefined;
 }
 
-function makeOrderBy(orderBy: string): any {
+export function makeOrderBy(orderBy: string): any {
   let descending = false;
   let variable1 = '';
   if (orderBy.startsWith('ASC(')) {
@@ -177,7 +177,7 @@ function makeOrderBy(orderBy: string): any {
   };
 }
 
-const uiMapping: JsObject = {
+export const uiMapping: JsObject = {
   '@id': {
     'ui:widget': 'UriWithCopyWidget',
   },
@@ -241,7 +241,7 @@ function propertyShapeToUiSchema(
   if (propShape.order) propUiSchema['ui:order'] = propShape.order;
 }
 
-function propertyShapesToSchemaProperties(
+export function propertyShapesToSchemaProperties(
   shapeProps: any[],
 ): [{ [key: string]: JSONSchema6DefinitionForRdfProperty }, JsObject, string[], JsObject] {
   const schemaProps: { [key: string]: JSONSchema6DefinitionForRdfProperty } = {};
@@ -271,7 +271,7 @@ function propertyShapesToSchemaProperties(
  * @param schema
  * @param parentSchema
  */
-function addToSchemaParentSchema(schema: JSONSchema6forRdf, parentSchema: JSONSchema6forRdf): JSONSchema6forRdf {
+export function addToSchemaParentSchema(schema: JSONSchema6forRdf, parentSchema: JSONSchema6forRdf): JSONSchema6forRdf {
   const parentCtx = parentSchema['@context'];
   if (parentCtx && typeof parentCtx !== 'string' && !Array.isArray(parentCtx)) {
     if (!schema['@context']) schema['@context'] = {};
@@ -301,10 +301,10 @@ function addToSchemaParentSchema(schema: JSONSchema6forRdf, parentSchema: JSONSc
 }*/
 
 export class ObjectProviderImpl implements ObjectProvider {
-  graphUri = '';
-  schemaValidators: any = {};
+  //graphUri = '';
+  //schemaValidators: any = {};
   schemas: { [key: string]: JSONSchema6forRdf | Promise<JSONSchema6forRdf> } = {};
-  uiSchemas: JsObject = {};
+  uiSchemas: { [key: string]: JsObject } = {};
   defaultQueryPrefixes: { [s: string]: string } = {
     rdfs: 'http://www.w3.org/2000/01/rdf-schema#',
     rdf: 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
@@ -623,7 +623,7 @@ export class ObjectProviderImpl implements ObjectProvider {
     return allProsFromSchemas(foundSchemas);
   }
 
-  validate(schema: JSONSchema6forRdf, artifact: any): void {
+  /*validate(schema: JSONSchema6forRdf, artifact: any): void {
     const artifactValidator = this.schemaValidators[schema['@id']];
     if (artifactValidator) {
       if (!artifactValidator(artifact)) {
@@ -632,7 +632,7 @@ export class ObjectProviderImpl implements ObjectProvider {
         throw new Ajv.ValidationError(artifactValidator.errors);
       }
     }
-  }
+  }*/
 
   async specializeSchema(schema: JSONSchema6forRdf, data: any): Promise<JSONSchema6forRdf> {
     const tp = data['@type'];
@@ -878,7 +878,6 @@ export class ObjectProviderImpl implements ObjectProvider {
    * Заменяет
    * @param obj
    */
-  // eslint-disable-next-line class-methods-use-this
   async selectObjectsArrayProperties(
     schemaOrString: JSONSchema6forRdf | string,
     schemaPropsWithArrays: { [key: string]: JSONSchema6DefinitionForRdfProperty },

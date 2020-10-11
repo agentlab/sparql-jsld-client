@@ -11,7 +11,7 @@ import {
 import { JsObject } from './ObjectProvider';
 import axios, { AxiosResponse } from 'axios';
 
-function createRepositoryConfig(repParam: JsObject = {}, repType: string = 'native-rdfs'): string {
+export function createRepositoryConfig(repParam: JsObject = {}, repType: string = 'native-rdfs'): string {
   if (repType === 'native-rdfs')
     return `
   #

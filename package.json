@@ -1,6 +1,6 @@
 {
   "name": "@agentlab/sparql-jsld-client",
-  "version": "4.1.4",
+  "version": "5.0.0",
   "description": "SPARQL JSON Schema Linked Data Client",
   "keywords": [
     "sparql",
@@ -14,7 +14,7 @@
     "semantic web",
     "linked data"
   ],
-  "license": "EPL",
+  "license": "EPL-2.0",
   "author": "Alexey Ivanov <amivanoff@gmail.com>",
   "contributors": [
     "Alexey Ivanov <amivanoff@gmail.com>",
@@ -47,35 +47,39 @@
     "lint-fix": "tsdx lint src test --fix",
     "prepare": "tsdx build"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "tsdx lint"
-    }
-  },
   "peerDependencies": {},
   "dependencies": {
-    "@rdfjs/data-model": "^1.1.2",
+    "@rdfjs/data-model": "^1.2.0",
     "@types/is-url": "^1.2.28",
-    "@types/json-schema": "^7.0.5",
+    "@types/json-schema": "^7.0.6",
     "@types/lodash-es": "^4.17.3",
-    "@types/node": "^14.6.0",
-    "@types/rdf-js": "^3.0.3",
-    "@types/sparqljs": "3.0.1",
+    "@types/node": "^14.11.8",
+    "@types/rdf-js": "^4.0.0",
+    "@types/sparqljs": "^3.1.0",
     "axios": "^0.20.0",
     "is-url": "^1.2.4",
     "lodash": "^4.17.20",
-    "moment": "^2.25.3",
-    "rdf-literal": "^1.1.1",
-    "sparqljs": "^3.1.1",
+    "mobx": "^6.0.1",
+    "mobx-react-lite": "3.0.0",
+    "mobx-state-tree": "file:../mobx-state-tree/packages/mobx-state-tree",
+    "moment": "^2.29.1",
+    "rdf-literal": "^1.2.0",
+    "sparqljs": "^3.1.2",
+    "utility-types": "^3.10.0",
     "uuid62": "^1.0.1"
   },
   "devDependencies": {
-    "@types/jest": "^26.0.10",
+    "@types/jest": "^26.0.14",
     "custom-env": "^2.0.1",
-    "husky": "^4.2.5",
+    "@typescript-eslint/eslint-plugin": "^4.4.0",
+    "@typescript-eslint/parser": "^4.4.0",
     "jest-extended": "^0.11.5",
-    "tsdx": "^0.13.2",
-    "tslib": "^2.0.1",
-    "typescript": "^3.9.7"
+    "tsdx": "^0.14.0",
+    "tslib": "^2.0.3",
+    "typescript": "^4.0.3"
+  },
+  "resolutions": {
+    "**/@typescript-eslint/eslint-plugin": "^4.4.0",
+    "**/@typescript-eslint/parser": "^4.4.0"
   }
 }

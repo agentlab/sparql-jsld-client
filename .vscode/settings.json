@@ -1,5 +1,12 @@
 {
-    "jest.autoEnable": false,
-    "jest.pathToJest": "npm test --",
-    "files.autoSave": "afterDelay"
+  "editor.formatOnPaste": false,
+  "editor.formatOnSave": true,
+  "files.eol": "\n",
+  "editor.tabSize": 2,
+  "files.autoSave": "afterDelay",
+  "jest.autoEnable": false,
+  "jest.pathToJest": "npm test --",
+  "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
+  "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+  "prettier.endOfLine": "lf"
 }

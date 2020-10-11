@@ -8,3 +8,5 @@ export * from './SparqlGen';
 export * from './schema/ArtifactShapeSchema';
 export * from './schema/Formatters';
 export * from './schema/RdfsSchema';
+
+export * from './models/Model';

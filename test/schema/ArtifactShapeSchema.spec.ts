@@ -1,6 +1,6 @@
 import { ObjectProviderImpl } from '../../src/ObjectProviderImpl';
 import { ArtifactShapeSchema, PropertyShapeSchema } from '../../src/schema/ArtifactShapeSchema';
-import { artifactSchema, classifierSchema, artifactShape } from './TestSchemas';
+import { artifactSchema, classifierSchema, artifactShapeNoProperty, artifactShapeProperty } from './TestSchemas';
 import { rdfServerUrl, rmRepositoryParam, rmRepositoryType } from '../config';
 import { vocabsFiles, shapesFiles, rootFolder } from '../configTests';
 import { idComparator } from '../../src/ObjectProvider';
@@ -13,7 +13,6 @@ let rmRepositoryID: string;
 const provider = new ObjectProviderImpl();
 const client = provider.getClient();
 client.setServerUrl(rdfServerUrl);
-const { property: artifactShapeProperty, ...artifactShapeNoProperty } = artifactShape;
 
 beforeAll(async () => {
   rmRepositoryID = 'test_ArtifactSchemaSchema_' + Date.now();

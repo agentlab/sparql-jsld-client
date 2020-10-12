@@ -1,7 +1,7 @@
 import { getParentOfType, getSnapshot, Instance, types } from 'mobx-state-tree';
 import { NamedNode, Quad, Quad_Subject, Term, Variable } from 'rdf-js';
 import { literal, namedNode, triple, variable } from '@rdfjs/data-model';
-import { Generator, SelectQuery, VariableTerm } from 'sparqljs';
+import { Generator, SelectQuery, Update, VariableTerm } from 'sparqljs';
 
 import {
   copyObjectPropsWithRenameOrFilter,
@@ -11,7 +11,7 @@ import {
 } from '../ObjectProvider';
 import { Repository } from './Repository';
 import { IJSONSchema7forRdf, JSONSchema7forRdf } from './Schemas';
-import { addprops2vars2props, addToResult, getSchemaPropUri, propsToSparqlVars } from '../SparqlGen';
+import { addprops2vars2props, addTo, addToBgp, addToResult, getSchemaPropUri, propsToSparqlVars } from '../SparqlGen';
 
 export const JsObject2 = types.map(types.frozen<any>());
 //export interface IJsObject2 extends Instance<typeof JsObject2> {}
@@ -44,6 +44,20 @@ export interface IQueryShape2 extends Instance<typeof QueryShape2> {
   schema: IJSONSchema7forRdf;
 }
 
+/**
+ * Renumerates variables from shape schema to avoid collisions in SPARQL query,
+ * but preserve variables not from schema
+ */
+function renumerateShapeVariables(shape: any, schema: any, index: number) {
+  Object.keys(shape.query.variables).forEach((key) => {
+    if (!shape.props2vars[key]) {
+      if (schema.properties && schema.properties[key])
+        addprops2vars2props(shape, key, key + index);
+      else addprops2vars2props(shape, key, key);
+    }
+  });
+}
+
 const gen = new Generator();
 const xsd = 'http://www.w3.org/2001/XMLSchema#';
 
@@ -62,9 +76,10 @@ export const Query2 = types
     // properties could be changed by client-code only (GUI code, etc.), immutable within SPARQL generation
     shapes: types.array(QueryShape2),
     // if last digit not specified, we assuming '0' (identifier0)
-    orderBy: types.union(types.string, types.array(types.string), types.undefined),
+    orderBy: types.union(types.array(types.frozen<any>()), types.undefined),
     limit: types.union(types.number, types.undefined),
     offset: types.union(types.number, types.undefined),
+    distinct: types.union(types.boolean, types.undefined),
   })
 
   /**
@@ -100,7 +115,7 @@ export const Query2 = types
         return varName;
       },
 
-      getWhereVar(shape: SparqlShapeInternal2, schema: any): { bgps: Quad[]; options: Quad[] } {
+      getWhereVar(shape: SparqlShapeInternal2, schema: any, requireOptional = false): { bgps: Quad[]; options: Quad[] } {
         const bgps: Quad[] = [];
         const options: Quad[] = [];
         Object.keys(shape.query.variables).forEach((key) => {
@@ -110,7 +125,7 @@ export const Query2 = types
             const varName = shape.props2vars[key];
             if (propUri && varName) {
               const option = triple(shape.subj, queryPrefixes.getFullIriNamedNode(propUri), variable(varName));
-              if (schema.required && schema.required.includes(key)) {
+              if ((schema.required && schema.required.includes(key)) || requireOptional) {
                 bgps.push(option);
               } else {
                 options.push(option);
@@ -121,6 +136,28 @@ export const Query2 = types
         return { bgps, options };
       },
 
+      getWhereVarFromDataWithoutOptinals(shape: SparqlShapeInternal2, schema: any, data: any): any[] {
+        const resultWhereVars = [];
+        const bgp: Quad[] = [];
+        Object.keys(data).forEach((propertyKey) => {
+          if (!propertyKey.startsWith('@')) {
+            // filter @id, @type,...
+            const propUri = getSchemaPropUri(schema, propertyKey);
+            if (propUri) {
+              const option = triple(shape.subj, queryPrefixes.getFullIriNamedNode(propUri), variable(shape.props2vars[propertyKey]));
+              bgp.push(option);
+            }
+          }
+        });
+        if (bgp.length > 0) {
+          resultWhereVars.push({
+            type: 'bgp',
+            triples: bgp,
+          });
+        }
+        return resultWhereVars;
+      },
+
       addToWhere(whereStatements: any[], query: any) {
         if (query) {
           if (query.where) query.where.push(...whereStatements);
@@ -128,14 +165,27 @@ export const Query2 = types
         }
       },
 
+      getTypeCondition(subj: NamedNode | Variable, schema: any): any[] {
+        if (schema) {
+          return [
+            triple(
+              subj,
+              namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+              queryPrefixes.getFullIriNamedNode(schema['@id']),
+            ),
+          ];
+        }
+        return [];
+      },
+
       /**
-       *
+       * Former addToWhereSuperTypesFilter
        * @param schema
        * @param subj
        */
-      addToWhereSuperTypesFilter(schema: any, subj: Term, query: any) {
+      createToWhereSuperTypesFilter(schema: any, subj: Term) {
         if (schema && schema.properties) {
-          const typeFilter = [
+          const typeFilter: any[] = [
             triple(subj as Variable, queryPrefixes.getFullIriNamedNode('rdf:type'), variable('type0')),
             {
               type: 'filter',
@@ -206,7 +256,7 @@ export const Query2 = types
                         expression: {
                           type: 'operation',
                           operator: '=',
-                          args: [variable('supertype0'), queryPrefixes.getFullIriNamedNode(schema['@id'])],
+                          args: [variable('supertype0'), queryPrefixes.getFullIriNamedNode(schema['@type'])],
                         },
                       },
                     ],
@@ -215,8 +265,9 @@ export const Query2 = types
               },
             },
           ];
-          this.addToWhere(typeFilter, query);
+          return typeFilter;
         }
+        return [];
       },
 
       addToBgpTypeCondition(shape: SparqlShapeInternal2, schema: any) {
@@ -224,7 +275,7 @@ export const Query2 = types
           const t = triple(
             shape.subj,
             namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
-            queryPrefixes.getFullIriNamedNode(schema['@id']),
+            queryPrefixes.getFullIriNamedNode(schema['@type']),
           );
           if (!shape.query.bgps) shape.query.bgps = [t];
           else shape.query.bgps = [t, ...shape.query.bgps];
@@ -337,6 +388,55 @@ export const Query2 = types
           ];
         }
         return filter;
+      },
+
+      /**
+       *
+       * @param shape
+       */
+      getDataTriples(subj: NamedNode | Variable, schema: any, data: any): any[] {
+        if (subj.termType && subj.termType === 'NamedNode') subj = queryPrefixes.getFullIriNamedNode(subj);
+        const triples: Quad[] = [];
+        /*triples.push(
+          triple(
+            subj,
+            namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+            this.getFullIriNamedNode(shape.schema['@id']),
+          ),
+        );*/
+        Object.keys(data).forEach((propertyKey) => {
+          if (schema.properties && data) {
+            const property = schema.properties[propertyKey];
+            const value = data[propertyKey];
+            if (!propertyKey.startsWith('@')) {
+              const propUri = getSchemaPropUri(schema, propertyKey);
+              if (property !== undefined && propUri) {
+                let triple: Quad = this.getConditionalTriple(property, subj, value, propUri);
+                if (triple) {
+                  triples.push(triple);
+                } else if (property.type === 'array') {
+                  const prop = {
+                    ...property,
+                    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+                    ...(<any>property.items),
+                  };
+                  if (Array.isArray(value)) {
+                    value.forEach((v) => {
+                      triple = this.getConditionalTriple(prop, subj, v, propUri);
+                      if (triple) triples.push(triple);
+                    });
+                  } else {
+                    triple = this.getConditionalTriple(prop, subj, value, propUri);
+                    if (triple) triples.push(triple);
+                  }
+                } else {
+                  console.warn('getDataTriples: Unknown property');
+                }
+              }
+            }
+          }
+        });
+        return triples;
       },
 
       //TODO: упростить сигнатуру функции!
@@ -602,7 +702,7 @@ export const Query2 = types
         return { bgps, options, filters, binds };
       },
 
-      get internalShapes(): SparqlShapeInternal2[] {
+      get internalShapes() {
         return self.shapes.map<SparqlShapeInternal2>((shapeVal, shapeIndex, shapeArray) => {
           const uriVar = this.genUniqueVarName('eIri', shapeIndex);
           const uri =
@@ -617,6 +717,10 @@ export const Query2 = types
           return internalShape;
         });
       },
+
+      /**
+       * SELECT
+       */
 
       get selectInternalShapes() {
         const internalShapes = this.internalShapes;
@@ -651,14 +755,7 @@ export const Query2 = types
               );
             }
           }
-          //renumerate variables from shape schema to avoid collisions in SPARQL query, but preserve variables not from schema
-          Object.keys(internalShape.query.variables).forEach((key) => {
-            if (!internalShape.props2vars[key]) {
-              if (shape.schema.properties && shape.schema.properties.get(key))
-                addprops2vars2props(internalShape, key, key + index);
-              else addprops2vars2props(internalShape, key, key);
-            }
-          });
+          renumerateShapeVariables(internalShape, shape.schemaJs, index);
         });
         self.shapes.forEach((shape, index) => {
           const internalShape = internalShapes[index];
@@ -732,6 +829,11 @@ export const Query2 = types
           this.addToWhere(results, query);
         });
 
+        if (self.orderBy) query.order = self.orderBy;
+        if (self.limit) query.limit = self.limit;
+        if (self.offset) query.offset = self.offset;
+        if (self.distinct) query.distinct = self.distinct;
+
         return query;
       },
 
@@ -748,14 +850,152 @@ export const Query2 = types
       get selectObjectsWithTypeInfoQueryStr() {
         const internalShapes = this.selectInternalShapes;
         const query = this.selectQueryFromShapes(internalShapes);
-        //this.createSelect().distinct(true);
         self.shapes.forEach((shape, index) => {
           const internalShape = internalShapes[index];
-          this.addToWhereSuperTypesFilter(shape.schemaJs, internalShape.subj, query);
+          query.where = [
+            ...this.createToWhereSuperTypesFilter(shape.schemaJs, internalShape.subj),
+            ...(query.where || []),
+          ];
           //this.addToBgpTypeCondition(shape);
         });
 
-        return gen.stringify(query as SelectQuery);
+        return gen.stringify(query);
+      },
+
+      /**
+       * DELETE
+       */
+
+      deleteObjectQuery() {
+        const query: Update = {
+          type: 'update',
+          prefixes: queryPrefixes.currentJs,
+          updates: [
+            {
+              updateType: 'insertdelete',
+              delete: [],
+              insert: [],
+            },
+          ],
+        };
+        self.shapes.forEach((shape, index) => {
+          const internalShape = this.internalShapes[index];
+          internalShape.query.variables = {
+            ...shape.conditionsJs,
+          };
+          //renumerate variables to avoid collisions in SPARQL query
+          Object.keys(internalShape.query.variables).forEach((key) => {
+            if (!internalShape.props2vars[key]) addprops2vars2props(internalShape, key, key + index);
+          });
+          const pVarName = this.genUniqueVarName('p', index);
+          const oVarName = this.genUniqueVarName('o', index);
+          addTo(query.updates[0], 'delete', addToBgp([triple(internalShape.subj, variable(pVarName), variable(oVarName))]));
+
+          let { bgps, options } = this.getWhereVar(internalShape, shape.schemaJs, true);
+          let filters: any[] = [];
+          let binds: any[] = [];
+          bgps = [...this.getTypeCondition(internalShape.subj, shape.schemaJs), triple(internalShape.subj, variable(pVarName), variable(oVarName)), ...bgps];
+          // if element has URI -- its enough otherwise we need to add other conditions
+          if (!shape.conditionsJs['@id']) {
+            const whereConditions = this.processConditions(internalShape, shape.schemaJs, shape.conditionsJs);
+            bgps = [...whereConditions.bgps, ...bgps];
+            options = [...whereConditions.options, ...options];
+            filters = whereConditions.filters;
+            binds = whereConditions.binds;
+          }
+          // TODO: create result query from partial queries
+          //shape.query.bgps = bgps;
+          //shape.query.options = options;
+          //shape.query.filters = filters;
+          const results: any[] = [];
+          addToResult(results, bgps, options, filters, binds);
+          addTo(query.updates[0], 'where', results);
+        });
+        return query;
+      },
+
+      get deleteObjectQueryStr() {
+        const query = this.deleteObjectQuery();
+        return gen.stringify(query);
+      },
+
+      /**
+       * INSERT
+       */
+
+      insertObjectQuery() {
+        const query: Update = {
+          type: 'update',
+          prefixes: queryPrefixes.currentJs,
+          updates: [
+            {
+              updateType: 'insert',
+              insert: [],
+            },
+          ],
+        };
+        self.shapes.forEach((shape, index) => {
+          const internalShape = this.internalShapes[index];
+          const triples = this.getTypeCondition(internalShape.subj, shape.schemaJs)
+            .concat(this.getDataTriples(internalShape.subj, shape.schemaJs, shape.dataJs));
+          addTo(query.updates[0], 'insert', addToBgp(triples));
+        });
+        return query;
+      },
+
+      get insertObjectQueryStr() {
+        const query = this.insertObjectQuery();
+        return gen.stringify(query);
+      },
+
+     /**
+       * UPDATE
+       */
+      updateObjectQuery() {
+        const query: Update = {
+          type: 'update',
+          prefixes: queryPrefixes.currentJs,
+          updates: [
+            {
+              updateType: 'insertdelete',
+              delete: [],
+              insert: [],
+            },
+          ],
+        };
+        self.shapes.forEach((shape, index) => {
+          const internalShape = this.internalShapes[index];
+          addTo(query.updates[0], 'insert', addToBgp(this.getDataTriples(internalShape.subj, shape.schemaJs, shape.dataJs)));
+          internalShape.query.variables = {
+            ...shape.conditionsJs,
+            ...shape.dataJs,
+          };
+          renumerateShapeVariables(internalShape, shape.schemaJs, index);
+          addTo(query.updates[0], 'delete', this.getWhereVarFromDataWithoutOptinals(internalShape, shape.schemaJs, shape.dataJs));
+
+          let { bgps, options } = this.getWhereVar(internalShape, shape.schemaJs);
+          let filters: any[] = [];
+          let binds: any[] = [];
+          bgps = [...this.getTypeCondition(internalShape.subj, shape.schemaJs), ...bgps];
+          // if element has URI -- its enough otherwise we need to add other conditions
+          if (!shape.conditionsJs['@id']) {
+            const whereConditions = this.processConditions(internalShape, shape.schemaJs, shape.conditionsJs);
+            bgps = [...whereConditions.bgps, ...bgps];
+            options = [...whereConditions.options, ...options];
+            filters = whereConditions.filters;
+            binds = whereConditions.binds;
+          }
+          const results: any[] = [];
+          addToResult(results, bgps, options, filters, binds);
+          addTo(query.updates[0], 'where', results);
+        });
+        return query;
+      },
+
+      get updateObjectQueryStr() {
+        //const internalShapes = this.selectObjectsInternalShapes;
+        const query = this.updateObjectQuery();
+        return gen.stringify(query);
       },
     };
   })

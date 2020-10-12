@@ -60,8 +60,9 @@ const SchemaWithoutArrayProperties: JSONSchema6forRdf = {
   required: ['@id', 'path'],
 };
 
-describe('SparqlGen/SchemaWithoutArrayProperties', () => {
-  it('select should generate without conditions', async () => {
+
+describe('Mobx/SchemaWithoutArrayProperties', () => {
+  it('Mobx select should generate without conditions', async () => {
     expect(repository.queryPrefixes.current.size).toBeGreaterThan(3);
 
     repository.schemas.addSchema(SchemaWithoutArrayProperties);
@@ -70,9 +71,8 @@ describe('SparqlGen/SchemaWithoutArrayProperties', () => {
     //console.log(s);
     //const s2 = getSnapshot(query);
     //console.log(s2);
-
     const genQueryStr = query.selectObjectsQueryStr;
-    console.log(genQueryStr);
+    //console.log(genQueryStr);
     const correctParsedQuery = parser.parse(`
       PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
       PREFIX sh:  <http://www.w3.org/ns/shacl#>
@@ -84,9 +84,9 @@ describe('SparqlGen/SchemaWithoutArrayProperties', () => {
       }`);
     expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery);
   });
-  it('select should generate with conditions', async () => {
-    expect(repository.queryPrefixes.current.size).toBeGreaterThan(3);
 
+  it('Mobx select should generate with conditions', async () => {
+    expect(repository.queryPrefixes.current.size).toBeGreaterThan(3);
     repository.schemas.addSchema(SchemaWithoutArrayProperties);
     const query = repository.addQuery({
       schema: SchemaWithoutArrayProperties['@id'],
@@ -140,8 +140,9 @@ const SchemaWithArrayProperty: JSONSchema6forRdf = {
   required: ['@id', 'path'],
 };
 
-describe('SparqlGen/SchemaWithArrayProperty', () => {
-  it(`select one schema should generate correctly`, async () => {
+
+describe('Mobx/SchemaWithArrayProperty', () => {
+  it(`Mobx select one schema should generate correctly`, async () => {
     repository.schemas.addSchema(SchemaWithArrayProperty);
     const query = repository.addQuery({ schema: SchemaWithArrayProperty['@id'] });
     const genQueryStr = query.selectObjectsQueryStr;
@@ -155,8 +156,9 @@ describe('SparqlGen/SchemaWithArrayProperty', () => {
       }`);
     expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery);
   });
+
   // In case of API modification check ObjectProviderImpl.selectObjectsArrayProperties
-  it('select two schemas should generate correctly', async () => {
+  it('Mobx select two schemas should generate correctly', async () => {
     repository.schemas.addSchema(SchemaWithArrayProperty);
     repository.schemas.addSchema(SchemaWithoutArrayProperties);
     const query = repository.addQuery([
@@ -170,7 +172,6 @@ describe('SparqlGen/SchemaWithArrayProperty', () => {
         schema: SchemaWithoutArrayProperties['@id'],
       },
     ]);
-
     const genQueryStr = query.selectObjectsQueryStr;
     //console.log('Two Schemas WithArrayProperty', genQueryStr);
     const correctParsedQuery = parser.parse(`
@@ -188,18 +189,22 @@ describe('SparqlGen/SchemaWithArrayProperty', () => {
   });
 });
 
-/*describe('SparqlGen/ArtifactsInModules', () => {
-  it(`select module arifacts should generate correctly`, async () => {
-    sparqlGen
-      .addSparqlShape(usedInModuleSchema, {
-        object: 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml',
-        subject: '?eIri1',
-      })
-      .addSparqlShape(
-        {
-          $schema: 'http://json-schema.org/draft-07/schema#',
+
+describe('Mobx/ArtifactsInModules', () => {
+  it(`Mobx select module arifacts should generate correctly`, async () => {
+    repository.schemas.addSchema(usedInModuleSchema);
+    const query = repository.addQuery({
+      shapes: [{
+        schema: usedInModuleSchema['@id'],
+        conditions: {
+          object: 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml',
+          subject: '?eIri1',
+        },
+      },{
+        schema: {
+          //$schema: 'http://json-schema.org/draft-07/schema#',
           //$id: 'rm:Artifact',
-          '@id': 'rm:Artifact',
+          '@id': 'rm:ArtifactWithChild',
           '@type': 'rm:Artifact',
           title: 'Требование',
           description: 'Тип ресурса',
@@ -329,7 +334,7 @@ describe('SparqlGen/SchemaWithArrayProperty', () => {
           },
           required: ['@id', '@type', 'title', 'hasChild'],
         },
-        {
+        conditions: {
           hasChild: {
             bind: {
               relation: 'exists',
@@ -343,7 +348,10 @@ describe('SparqlGen/SchemaWithArrayProperty', () => {
             },
           },
         },
-      )
+      }],
+      orderBy: [{ expression: variable('bookOrder0'), descending: false }],
+      limit: 10,
+    });
       //.addSparqlShape(artifactSchema)
       //.addSparqlShape({
       //  '@id': 'rm:UsedInModuleHasChild',
@@ -368,10 +376,7 @@ describe('SparqlGen/SchemaWithArrayProperty', () => {
       //    },
       //  },
       //})
-      .selectObjectsQuery()
-      .orderBy([{ expression: variable('bookOrder0'), descending: false }])
-      .limit(10);
-    const genQueryStr = sparqlGen.stringify();
+    const genQueryStr = query.selectObjectsQueryStr;
     //console.log('selectModuleContentQuery', genQueryStr);
     const correctParsedQuery = parser.parse(`
     PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -402,13 +407,13 @@ describe('SparqlGen/SchemaWithArrayProperty', () => {
     } ORDER BY (?bookOrder0) LIMIT 10`);
     expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery);
   });
-});*/
+});
 
-/*describe('SparqlGen/ArtifactSchema', () => {
-  it(`select selectMaxObjectId should generate correctly`, async () => {
+
+describe('Mobx/ArtifactSchema', () => {
+  it(`Mobx select selectMaxObjectId should generate correctly`, async () => {
     repository.schemas.addSchema(artifactSchema);
     if (artifactSchema.properties === undefined) fail();
-    const order = [{ expression: variable('identifier0'), descending: true }];
     const variables = {
       identifier: artifactSchema.properties.identifier,
     };
@@ -416,9 +421,13 @@ describe('SparqlGen/SchemaWithArrayProperty', () => {
       shapes: [{
         schema: artifactSchema['@id'],
         variables,
-        limit: 1,
-        orderBy: order,
-      }]
+      }],
+      limit: 1,
+      orderBy: [{
+        expression: variable('identifier0'),
+        descending: true,
+      }],
+      distinct: true,
     });
     const genQueryStr = query.selectObjectsWithTypeInfoQueryStr;
     //console.log('deleteObjectQuery', genQueryStr);
@@ -435,7 +444,7 @@ describe('SparqlGen/SchemaWithArrayProperty', () => {
           FILTER(?subtype0 != ?type0)
         })
         FILTER(EXISTS {
-          ?type0 rdfs:subClassOf* ?supertype0.
+          ?type0 (rdfs:subClassOf*) ?supertype0.
           FILTER(?supertype0 = rm:Artifact)
         })
         OPTIONAL { ?eIri0 dcterms:identifier ?identifier0. }
@@ -444,15 +453,19 @@ describe('SparqlGen/SchemaWithArrayProperty', () => {
       LIMIT 1`);
     expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery);
   });
-});*/
+});
 
-/*describe('SparqlGen/deleteObjectQuery', () => {
-  it(`delete one schema with iri should generate correctly`, async () => {
+
+describe('Mobx/deleteObjectQuery', () => {
+  it(`Mobx delete one schema with iri should generate correctly`, async () => {
     repository.schemas.addSchema(artifactSchema);
-    sparqlGen
-      .addSparqlShape(artifactSchema, { '@id': 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml' })
-      .deleteObjectQuery();
-    const genQueryStr = sparqlGen.stringify();
+    const query = repository.addQuery({
+      schema: artifactSchema['@id'],
+      conditions: {
+        '@id': 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml'
+      },
+    });
+    const genQueryStr = query.deleteObjectQueryStr;
     //console.log('deleteObjectQuery', genQueryStr);
     const correctParsedQuery = parser.parse(`
       PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -464,10 +477,16 @@ describe('SparqlGen/SchemaWithArrayProperty', () => {
       }`);
     expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery);
   });
-  it(`delete one schema with property should generate correctly`, async () => {
+
+  it(`Mobx delete one schema with property should generate correctly`, async () => {
     repository.schemas.addSchema(artifactSchema);
-    sparqlGen.addSparqlShape(artifactSchema, { identifier: 3 }).deleteObjectQuery();
-    const genQueryStr = sparqlGen.stringify();
+    const query = repository.addQuery({
+      schema: artifactSchema['@id'],
+      conditions: {
+        identifier: 3,
+      },
+    });
+    const genQueryStr = query.deleteObjectQueryStr;
     //console.log('deleteObjectQuery', genQueryStr);
     const correctParsedQuery = parser.parse(`
       PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -476,30 +495,27 @@ describe('SparqlGen/SchemaWithArrayProperty', () => {
       DELETE { ?eIri0 ?p0 ?o0 }
       WHERE {
         ?eIri0 rdf:type rm:Artifact;
-          ?p0 ?o0.
-        OPTIONAL { ?eIri0 dcterms:identifier ?identifier0. }
+          ?p0 ?o0;
+          dcterms:identifier ?identifier0.
         FILTER(?identifier0 = 3 )
       }`);
     expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery);
   });
 });
 
-describe('SparqlGen/insertObjectQuery', () => {
-  it(`delete one schema with data should generate correctly`, async () => {
+
+describe('Mobx/insertObjectQuery', () => {
+  it(`Mobx delete one schema with data should generate correctly`, async () => {
     repository.schemas.addSchema(artifactSchema);
-    sparqlGen
-      .addSparqlShape(
-        artifactSchema,
-        {},
-        {},
-        {
-          '@id': 'file:///urn-45952.xml',
+    const query = repository.addQuery({
+      schema: artifactSchema['@id'],
+      data: {
+        '@id': 'file:///urn-45952.xml',
           creator: 'users:amivanoff',
           created: '1970-01-01T00:00:00-02:00',
-        },
-      )
-      .insertObjectQuery();
-    const genQueryStr = sparqlGen.stringify();
+      },
+    });
+    const genQueryStr = query.insertObjectQueryStr;
     //console.log(genQueryStr);
     const correctParsedQuery = parser.parse(`
       PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -516,16 +532,21 @@ describe('SparqlGen/insertObjectQuery', () => {
   });
 });
 
-describe('SparqlGen/updateObjectQuery', () => {
-  it(`update one schema with property and no uri should generate correctly`, async () => {
+
+describe('Mobx/updateObjectQuery', () => {
+  it(`Mobx update one schema with property and no uri should generate correctly`, async () => {
     repository.schemas.addSchema(artifactSchema);
-    const data = {
-      title: 'title',
-      modified: '2019-08-07T05:21:43.581Z',
-      modifiedBy: 'users:amivanoff',
-    };
-    sparqlGen.addSparqlShape(artifactSchema, { identifier: 1 }, {}, data).updateObjectQuery();
-    const genQueryStr = sparqlGen.stringify();
+    const query = repository.addQuery({
+      schema: artifactSchema['@id'],
+      conditions: { identifier: 1 },
+      data: {
+        title: 'title',
+        modified: '2019-08-07T05:21:43.581Z',
+        modifiedBy: 'users:amivanoff',
+      },
+    });
+    const genQueryStr = query.updateObjectQueryStr;
+    console.log(genQueryStr);
     const correctParsedQuery = parser.parse(`
       PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
       PREFIX xsd:     <http://www.w3.org/2001/XMLSchema#>
@@ -553,16 +574,24 @@ describe('SparqlGen/updateObjectQuery', () => {
       }`);
     expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery);
   });
-  it(`update one schema with property and uri should generate correctly`, async () => {
+  
+  it(`Mobx update one schema with property and uri should generate correctly`, async () => {
     repository.schemas.addSchema(artifactSchema);
-    const data = {
-      title: 'title',
-      modified: '2019-08-07T05:21:43.581Z',
-      modifiedBy: 'users:amivanoff',
-    };
     const id = 'rm:myid';
-    sparqlGen.addSparqlShape(artifactSchema, { '@id': id, identifier: 1 }, {}, data).updateObjectQuery();
-    const genQueryStr = sparqlGen.stringify();
+    const query = repository.addQuery({
+      schema: artifactSchema['@id'],
+      conditions: {
+        '@id': id,
+        identifier: 1,
+      },
+      data: {
+        title: 'title',
+        modified: '2019-08-07T05:21:43.581Z',
+        modifiedBy: 'users:amivanoff',
+      },
+    });
+    const genQueryStr = query.updateObjectQueryStr;
+    console.log(genQueryStr);
     const correctParsedQuery = parser.parse(`
       PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
       PREFIX xsd:     <http://www.w3.org/2001/XMLSchema#>
@@ -590,4 +619,3 @@ describe('SparqlGen/updateObjectQuery', () => {
     expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery);
   });
 });
-*/

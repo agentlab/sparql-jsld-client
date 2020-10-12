@@ -317,7 +317,7 @@ export class SparqlGen {
     return namedNode(this.deAbbreviateIri(uri));
   }
 
-  getWhereVar(shape: SparqlShapeInternal): { bgps: Quad[]; options: Quad[] } {
+  getWhereVar(shape: SparqlShapeInternal, requireOptional = false): { bgps: Quad[]; options: Quad[] } {
     const bgps: Quad[] = [];
     const options: Quad[] = [];
     Object.keys(shape.query.variables).forEach((key) => {
@@ -327,7 +327,7 @@ export class SparqlGen {
         const varName = shape.props2vars[key];
         if (propUri && varName) {
           const option = triple(shape.subj, this.getFullIriNamedNode(propUri), variable(varName));
-          if (shape.schema.required && shape.schema.required.includes(key)) {
+          if ((shape.schema.required && shape.schema.required.includes(key)) || requireOptional) {
             bgps.push(option);
           } else {
             options.push(option);
@@ -338,7 +338,7 @@ export class SparqlGen {
     return { bgps, options };
   }
 
-  getWhereVarWithoutOptinals(shape: SparqlShapeInternal): any[] {
+  getWhereVarFromDataWithoutOptinals(shape: SparqlShapeInternal): any[] {
     const resultWhereVars = [];
     const bgp: Quad[] = [];
     Object.keys(shape.data).forEach((propertyKey) => {
@@ -1052,7 +1052,7 @@ export class SparqlGen {
       Object.keys(shape.query.variables).forEach((key) => {
         if (!shape.props2vars[key]) addprops2vars2props(shape, key, key + index);
       });
-      addTo(this.query.updates[0], 'delete', this.getWhereVarWithoutOptinals(shape));
+      addTo(this.query.updates[0], 'delete', this.getWhereVarFromDataWithoutOptinals(shape));
 
       let { bgps, options } = this.getWhereVar(shape);
       let filters: any[] = [];
@@ -1095,7 +1095,7 @@ export class SparqlGen {
       const oVarName = this.genUniqueVarName('o', index);
       addTo(this.query.updates[0], 'delete', addToBgp([triple(shape.subj, variable(pVarName), variable(oVarName))]));
 
-      let { bgps, options } = this.getWhereVar(shape);
+      let { bgps, options } = this.getWhereVar(shape, true);
       let filters: any[] = [];
       let binds: any[] = [];
       bgps = [...this.getTypeCondition(shape), triple(shape.subj, variable(pVarName), variable(oVarName)), ...bgps];

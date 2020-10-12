@@ -17,7 +17,7 @@ beforeEach(() => {
 });
 
 describe('ObjectProvider/addSchema', () => {
-  it(`provider should return schema by uri`, async () => {
+  it(`SparqlGen provider should return schema by uri`, async () => {
     provider.addSchema(ArtifactShapeSchema);
     provider.addSchema(PropertyShapeSchema);
 
@@ -64,7 +64,7 @@ const SchemaWithoutArrayProperties: JSONSchema6forRdf = {
 };
 
 describe('SparqlGen/SchemaWithoutArrayProperties', () => {
-  it('select should generate without conditions', async () => {
+  it('SparqlGen select should generate without conditions', async () => {
     provider.addSchema(SchemaWithoutArrayProperties);
     sparqlGen.addSparqlShape(SchemaWithoutArrayProperties).selectObjectsQuery();
     const genQueryStr = sparqlGen.stringify();
@@ -80,7 +80,7 @@ describe('SparqlGen/SchemaWithoutArrayProperties', () => {
       }`);
     expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery);
   });
-  it('select should generate with conditions', async () => {
+  it('SparqlGen select should generate with conditions', async () => {
     provider.addSchema(SchemaWithoutArrayProperties);
     sparqlGen
       .addSparqlShape(SchemaWithoutArrayProperties, {
@@ -134,7 +134,7 @@ const SchemaWithArrayProperty: JSONSchema6forRdf = {
 };
 
 describe('SparqlGen/SchemaWithArrayProperty', () => {
-  it(`select one schema should generate correctly`, async () => {
+  it(`SparqlGen select one schema should generate correctly`, async () => {
     provider.addSchema(SchemaWithArrayProperty);
     sparqlGen.addSparqlShape(SchemaWithArrayProperty).selectObjectsQuery();
     const genQueryStr = sparqlGen.stringify();
@@ -149,7 +149,7 @@ describe('SparqlGen/SchemaWithArrayProperty', () => {
     expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery);
   });
   // In case of API modification check ObjectProviderImpl.selectObjectsArrayProperties
-  it('select two schemas should generate correctly', async () => {
+  it('SparqlGen select two schemas should generate correctly', async () => {
     provider.addSchema(SchemaWithArrayProperty);
     provider.addSchema(SchemaWithoutArrayProperties);
     sparqlGen
@@ -174,7 +174,7 @@ describe('SparqlGen/SchemaWithArrayProperty', () => {
 });
 
 describe('SparqlGen/ArtifactsInModules', () => {
-  it(`select module arifacts should generate correctly`, async () => {
+  it(`SparqlGen select module arifacts should generate correctly`, async () => {
     sparqlGen
       .addSparqlShape(usedInModuleSchema, {
         object: 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml',
@@ -390,7 +390,7 @@ describe('SparqlGen/ArtifactsInModules', () => {
 });
 
 describe('SparqlGen/ArtifactSchema', () => {
-  it(`select selectMaxObjectId should generate correctly`, async () => {
+  it(`SparqlGen select selectMaxObjectId should generate correctly`, async () => {
     provider.addSchema(artifactSchema);
     if (artifactSchema.properties === undefined) fail();
     const order = [{ expression: variable('identifier0'), descending: true }];
@@ -403,7 +403,7 @@ describe('SparqlGen/ArtifactSchema', () => {
       .limit(1)
       .orderBy(order);
     const genQueryStr = sparqlGen.stringify();
-    //console.log('deleteObjectQuery', genQueryStr);
+    console.log('deleteObjectQuery', genQueryStr);
     const correctParsedQuery = parser.parse(`
       PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
       PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -417,7 +417,7 @@ describe('SparqlGen/ArtifactSchema', () => {
           FILTER(?subtype0 != ?type0)
         })
         FILTER(EXISTS {
-          ?type0 rdfs:subClassOf* ?supertype0.
+          ?type0 (rdfs:subClassOf*) ?supertype0.
           FILTER(?supertype0 = rm:Artifact)
         })
         OPTIONAL { ?eIri0 dcterms:identifier ?identifier0. }
@@ -429,7 +429,7 @@ describe('SparqlGen/ArtifactSchema', () => {
 });
 
 describe('SparqlGen/deleteObjectQuery', () => {
-  it(`delete one schema with iri should generate correctly`, async () => {
+  it(`SparqlGen delete one schema with iri should generate correctly`, async () => {
     provider.addSchema(artifactSchema);
     sparqlGen
       .addSparqlShape(artifactSchema, { '@id': 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml' })
@@ -446,7 +446,7 @@ describe('SparqlGen/deleteObjectQuery', () => {
       }`);
     expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery);
   });
-  it(`delete one schema with property should generate correctly`, async () => {
+  it(`SparqlGen delete one schema with property should generate correctly`, async () => {
     provider.addSchema(artifactSchema);
     sparqlGen.addSparqlShape(artifactSchema, { identifier: 3 }).deleteObjectQuery();
     const genQueryStr = sparqlGen.stringify();
@@ -458,8 +458,8 @@ describe('SparqlGen/deleteObjectQuery', () => {
       DELETE { ?eIri0 ?p0 ?o0 }
       WHERE {
         ?eIri0 rdf:type rm:Artifact;
-          ?p0 ?o0.
-        OPTIONAL { ?eIri0 dcterms:identifier ?identifier0. }
+          ?p0 ?o0;
+          dcterms:identifier ?identifier0.
         FILTER(?identifier0 = 3 )
       }`);
     expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery);
@@ -467,7 +467,7 @@ describe('SparqlGen/deleteObjectQuery', () => {
 });
 
 describe('SparqlGen/insertObjectQuery', () => {
-  it(`delete one schema with data should generate correctly`, async () => {
+  it(`SparqlGen delete one schema with data should generate correctly`, async () => {
     provider.addSchema(artifactSchema);
     sparqlGen
       .addSparqlShape(
@@ -499,7 +499,7 @@ describe('SparqlGen/insertObjectQuery', () => {
 });
 
 describe('SparqlGen/updateObjectQuery', () => {
-  it(`update one schema with property and no uri should generate correctly`, async () => {
+  it(`SparqlGen update one schema with property and no uri should generate correctly`, async () => {
     provider.addSchema(artifactSchema);
     const data = {
       title: 'title',
@@ -535,7 +535,7 @@ describe('SparqlGen/updateObjectQuery', () => {
       }`);
     expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery);
   });
-  it(`update one schema with property and uri should generate correctly`, async () => {
+  it(`SparqlGen update one schema with property and uri should generate correctly`, async () => {
     provider.addSchema(artifactSchema);
     const data = {
       title: 'title',

@@ -322,25 +322,30 @@ export const Repository = types
       addQuery(
         data: any /*Optional<IQueryShape2, '@id'> | Optional<IQueryShape2, '@id'>[] | Optional<IQuery2, '@id'>*/,
       ) {
+        const schemasToAdd: any[] = [];
         let query: any; // IQuery2
         if (!data.shapes) {
           if (isArray(data)) {
             query = { shapes: [...data] }; // as IQueryShape2[]
-            query.shapes.forEach((s: any) => {
-              if (!s['@id']) s['@id'] = '_' + uuid62.v4();
-            });
           } else {
             query = { shapes: [data as any] }; // as IQueryShape2
-            if (!data['@id']) query.shapes[0]['@id'] = '_' + uuid62.v4();
           }
         } else {
           query = data as any; // as IQuery2
         }
+
+        // add all full-specified schemas to schema repository and replace it in shape with reference
+        query.shapes.forEach((d: any) => {
+          if (d.schema && typeof d.schema === 'object') {
+            self.schemas.addSchema(d.schema);
+            d.schema = d.schema['@id'];
+          }
+        });
+
+        addMissingId(query);
+        query.shapes.forEach((s: any) => addMissingId(s));
+
         let qid = query['@id'];
-        if (!qid) {
-          qid = '_' + uuid62.v4();
-          query['@id'] = qid;
-        }
         self.queries.set(qid, query as any);
 
         const queryObj = self.queries.get(qid);
@@ -350,4 +355,7 @@ export const Repository = types
     };
   });
 
+function addMissingId(data: any) {
+  if (!data['@id']) data['@id'] = '_' + uuid62.v4();
+}
 //export interface IRepository extends Instance<typeof Repository> {}

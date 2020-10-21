@@ -2,6 +2,9 @@ import { types } from 'mobx-state-tree';
 
 import { Repository } from './Repository';
 
+import { ResourceSchema, ClassSchema } from '../schema/RdfsSchema';
+import { ArtifactShapeSchema, PropertyShapeSchema } from '../schema/ArtifactShapeSchema';
+
 export const Server2 = types
   .model('Server2', {
     url: types.string,
@@ -40,7 +43,15 @@ let initialState = RootModel.create({
           xsd: 'http://www.w3.org/2001/XMLSchema#',
         },
       },
-      schemas: {},
+      schemas: {
+        json: {
+          [ResourceSchema['@id']]: ResourceSchema,
+          [ClassSchema['@id']]: ClassSchema,
+          //[DataTypeSchema['@id']]: DataTypeSchema,
+          [ArtifactShapeSchema['@id']]: ArtifactShapeSchema,
+          [PropertyShapeSchema['@id']]: PropertyShapeSchema,
+        }
+      },
     },
   },
   user: {

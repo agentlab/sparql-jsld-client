@@ -1,13 +1,10 @@
 import { Parser } from 'sparqljs';
 import { triple, variable } from '@rdfjs/data-model';
-import { SparqlGen } from '../../src/SparqlGen';
 import { JSONSchema6forRdf } from '../../src/ObjectProvider';
-import { ObjectProviderImpl } from '../../src/ObjectProviderImpl';
-import { ArtifactShapeSchema, PropertyShapeSchema } from '../../src/schema/ArtifactShapeSchema';
 import { artifactSchema, usedInModuleSchema } from '../schema/TestSchemas';
 import { queryPrefixes } from '../configTests';
 import { rootStore } from '../../src/models/model';
-import { applySnapshot, getSnapshot } from 'mobx-state-tree';
+import { applySnapshot } from 'mobx-state-tree';
 
 const repository = rootStore.server.repository;
 applySnapshot(repository.queryPrefixes.current, queryPrefixes);
@@ -29,9 +26,9 @@ const parser = new Parser();
 });*/
 
 const SchemaWithoutArrayProperties: JSONSchema6forRdf = {
-  //$schema: 'http://json-schema.org/draft-07/schema#',
+  $schema: 'http://json-schema.org/draft-07/schema#',
   //$id: 'http://example.com/product.schema.json',
-  '@id': 'sh:PropertyShape',
+  '@id': 'sh:PropertyShapeWithoutArrayProperties',
   '@type': 'sh:PropertyShape',
   type: 'object',
   '@context': {
@@ -62,16 +59,17 @@ const SchemaWithoutArrayProperties: JSONSchema6forRdf = {
 
 
 describe('Mobx/SchemaWithoutArrayProperties', () => {
-  it('Mobx select should generate without conditions', async () => {
+  it('Mobx select by type without conditions should generate correctly', async () => {
     expect(repository.queryPrefixes.current.size).toBeGreaterThan(3);
-
-    repository.schemas.addSchema(SchemaWithoutArrayProperties);
-    const query = repository.addQuery({ schema: SchemaWithoutArrayProperties['@id'] });
+    // Query with custom query-private schema (it did not add schema to SchemaRegistry)
+    const query = repository.addQuery({ schema: SchemaWithoutArrayProperties });
+    expect(repository.schemas.json.has(SchemaWithoutArrayProperties['@id'])).toBeFalsy();
     //const s = getSnapshot(repository.queries);
     //console.log(s);
     //const s2 = getSnapshot(query);
     //console.log(s2);
-    const genQueryStr = query.selectObjectsQueryStr;
+    const genQueryStr = query.selectObjectsQueryStr();
+    repository.removeQuery(query);
     //console.log(genQueryStr);
     const correctParsedQuery = parser.parse(`
       PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -85,8 +83,9 @@ describe('Mobx/SchemaWithoutArrayProperties', () => {
     expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery);
   });
 
-  it('Mobx select should generate with conditions', async () => {
+  it('Mobx select by type and conditions should generate correctly', async () => {
     expect(repository.queryPrefixes.current.size).toBeGreaterThan(3);
+    // add custom schema to SchemaRegistry and reference it in Query by @id
     repository.schemas.addSchema(SchemaWithoutArrayProperties);
     const query = repository.addQuery({
       schema: SchemaWithoutArrayProperties['@id'],
@@ -96,8 +95,8 @@ describe('Mobx/SchemaWithoutArrayProperties', () => {
         minCount: 1,
       },
     });
-    //console.log(sparqlGen.query);
-    const genQueryStr = query.selectObjectsQueryStr;
+    const genQueryStr = query.selectObjectsQueryStr();
+    repository.removeQuery(query);
     //console.log(genQueryStr);
     const correctParsedQuery = parser.parse(`
       PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -111,12 +110,61 @@ describe('Mobx/SchemaWithoutArrayProperties', () => {
       }`);
     expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery);
   });
+
+  it(`Mobx select by iri all schema props should generate correctly`, async () => {
+    repository.schemas.addSchema(SchemaWithoutArrayProperties);
+    const query = repository.addQuery({
+      schema: SchemaWithoutArrayProperties['@id'],
+      conditions: {
+        '@_id': 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml'
+      },
+    });
+    const genQueryStr = query.selectObjectsQueryStr();
+    repository.removeQuery(query);
+    //console.log('selectObjectsQueryStr', genQueryStr);
+    const correctParsedQuery = parser.parse(`
+    PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+    PREFIX sh:   <http://www.w3.org/ns/shacl#>
+    SELECT ?path0 ?name0 ?minCount0 WHERE {
+        <file:///urn-s2-iisvvt-infosystems-classifier-45950.xml> rdf:type sh:PropertyShape;
+          sh:path ?path0.
+        OPTIONAL { <file:///urn-s2-iisvvt-infosystems-classifier-45950.xml> sh:name ?name0. }
+        OPTIONAL { <file:///urn-s2-iisvvt-infosystems-classifier-45950.xml> sh:minCount ?minCount0. }
+      }`);
+    expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery);
+  });
+
+  it(`Mobx select by iri only titles should generate correctly`, async () => {
+    repository.schemas.addSchema(SchemaWithoutArrayProperties);
+    const query = repository.addQuery({
+      schema: SchemaWithoutArrayProperties['@id'],
+      conditions: {
+        '@_id': 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml'
+      },
+      variables: {
+        path: null,
+        name: null,
+      },
+    });
+    const genQueryStr = query.selectObjectsQueryStr();
+    repository.removeQuery(query);
+    //console.log('selectObjectsQueryStr', genQueryStr);
+    const correctParsedQuery = parser.parse(`
+    PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+    PREFIX sh:   <http://www.w3.org/ns/shacl#>
+    SELECT ?path0 ?name0 WHERE {
+        <file:///urn-s2-iisvvt-infosystems-classifier-45950.xml> rdf:type sh:PropertyShape;
+          sh:path ?path0.
+        OPTIONAL { <file:///urn-s2-iisvvt-infosystems-classifier-45950.xml> sh:name ?name0. }
+      }`);
+    expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery);
+  });
 });
 
 const SchemaWithArrayProperty: JSONSchema6forRdf = {
-  //$schema: 'http://json-schema.org/draft-07/schema#',
+  $schema: 'http://json-schema.org/draft-07/schema#',
   //$id: 'http://example.com/product.schema.json',
-  '@id': 'sh:NodeShape',
+  '@id': 'sh:SchemaWithArrayProperty',
   '@type': 'sh:NodeShape',
   '@context': {
     property: {
@@ -145,7 +193,8 @@ describe('Mobx/SchemaWithArrayProperty', () => {
   it(`Mobx select one schema should generate correctly`, async () => {
     repository.schemas.addSchema(SchemaWithArrayProperty);
     const query = repository.addQuery({ schema: SchemaWithArrayProperty['@id'] });
-    const genQueryStr = query.selectObjectsQueryStr;
+    const genQueryStr = query.selectObjectsQueryStr();
+    repository.removeQuery(query);
     //console.log('SchemaWithArrayProperty', genQueryStr);
     const correctParsedQuery = parser.parse(`
       PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -158,7 +207,7 @@ describe('Mobx/SchemaWithArrayProperty', () => {
   });
 
   // In case of API modification check ObjectProviderImpl.selectObjectsArrayProperties
-  it('Mobx select two schemas should generate correctly', async () => {
+  /*it('Mobx select two schemas should generate correctly', async () => {
     repository.schemas.addSchema(SchemaWithArrayProperty);
     repository.schemas.addSchema(SchemaWithoutArrayProperties);
     const query = repository.addQuery([
@@ -172,8 +221,9 @@ describe('Mobx/SchemaWithArrayProperty', () => {
         schema: SchemaWithoutArrayProperties['@id'],
       },
     ]);
-    const genQueryStr = query.selectObjectsQueryStr;
-    //console.log('Two Schemas WithArrayProperty', genQueryStr);
+    const genQueryStr = query.selectObjectsQueryStr();
+    repository.removeQuery(query);
+    console.log('Two Schemas WithArrayProperty', genQueryStr);
     const correctParsedQuery = parser.parse(`
       PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
       PREFIX sh:  <http://www.w3.org/ns/shacl#>
@@ -186,7 +236,7 @@ describe('Mobx/SchemaWithArrayProperty', () => {
         OPTIONAL { ?eIri1 sh:minCount ?minCount1. }
       }`);
     expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery);
-  });
+  });*/
 });
 
 
@@ -202,7 +252,7 @@ describe('Mobx/ArtifactsInModules', () => {
         },
       },{
         schema: {
-          //$schema: 'http://json-schema.org/draft-07/schema#',
+          $schema: 'http://json-schema.org/draft-07/schema#',
           //$id: 'rm:Artifact',
           '@id': 'rm:ArtifactWithChild',
           '@type': 'rm:Artifact',
@@ -376,7 +426,8 @@ describe('Mobx/ArtifactsInModules', () => {
       //    },
       //  },
       //})
-    const genQueryStr = query.selectObjectsQueryStr;
+    const genQueryStr = query.selectObjectsQueryStr();
+    repository.removeQuery(query);
     //console.log('selectModuleContentQuery', genQueryStr);
     const correctParsedQuery = parser.parse(`
     PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -429,7 +480,8 @@ describe('Mobx/ArtifactSchema', () => {
       }],
       distinct: true,
     });
-    const genQueryStr = query.selectObjectsWithTypeInfoQueryStr;
+    const genQueryStr = query.selectObjectsWithTypeInfoQueryStr();
+    repository.removeQuery(query);
     //console.log('deleteObjectQuery', genQueryStr);
     const correctParsedQuery = parser.parse(`
       PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
@@ -462,10 +514,11 @@ describe('Mobx/deleteObjectQuery', () => {
     const query = repository.addQuery({
       schema: artifactSchema['@id'],
       conditions: {
-        '@id': 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml'
+        '@_id': 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml'
       },
     });
-    const genQueryStr = query.deleteObjectQueryStr;
+    const genQueryStr = query.deleteObjectQueryStr();
+    repository.removeQuery(query);
     //console.log('deleteObjectQuery', genQueryStr);
     const correctParsedQuery = parser.parse(`
       PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -486,7 +539,8 @@ describe('Mobx/deleteObjectQuery', () => {
         identifier: 3,
       },
     });
-    const genQueryStr = query.deleteObjectQueryStr;
+    const genQueryStr = query.deleteObjectQueryStr();
+    repository.removeQuery(query);
     //console.log('deleteObjectQuery', genQueryStr);
     const correctParsedQuery = parser.parse(`
       PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -510,12 +564,14 @@ describe('Mobx/insertObjectQuery', () => {
     const query = repository.addQuery({
       schema: artifactSchema['@id'],
       data: {
-        '@id': 'file:///urn-45952.xml',
+        // screened with '_' to distinguish from Condition object @id
+        '@_id': 'file:///urn-45952.xml',
           creator: 'users:amivanoff',
           created: '1970-01-01T00:00:00-02:00',
       },
     });
-    const genQueryStr = query.insertObjectQueryStr;
+    const genQueryStr = query.insertObjectQueryStr();
+    repository.removeQuery(query);
     //console.log(genQueryStr);
     const correctParsedQuery = parser.parse(`
       PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -545,8 +601,9 @@ describe('Mobx/updateObjectQuery', () => {
         modifiedBy: 'users:amivanoff',
       },
     });
-    const genQueryStr = query.updateObjectQueryStr;
-    console.log(genQueryStr);
+    const genQueryStr = query.updateObjectQueryStr();
+    repository.removeQuery(query);
+    //console.log(genQueryStr);
     const correctParsedQuery = parser.parse(`
       PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
       PREFIX xsd:     <http://www.w3.org/2001/XMLSchema#>
@@ -581,7 +638,7 @@ describe('Mobx/updateObjectQuery', () => {
     const query = repository.addQuery({
       schema: artifactSchema['@id'],
       conditions: {
-        '@id': id,
+        '@_id': id,
         identifier: 1,
       },
       data: {
@@ -590,8 +647,9 @@ describe('Mobx/updateObjectQuery', () => {
         modifiedBy: 'users:amivanoff',
       },
     });
-    const genQueryStr = query.updateObjectQueryStr;
-    console.log(genQueryStr);
+    const genQueryStr = query.updateObjectQueryStr();
+    repository.removeQuery(query);
+    //console.log(genQueryStr);
     const correctParsedQuery = parser.parse(`
       PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
       PREFIX xsd:     <http://www.w3.org/2001/XMLSchema#>

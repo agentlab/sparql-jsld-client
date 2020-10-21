@@ -1,20 +1,16 @@
-import { types, flow, getParentOfType, Instance, applySnapshot } from 'mobx-state-tree';
+import { types, flow, getParentOfType } from 'mobx-state-tree';
 import axios from 'axios';
 import fs from 'fs';
 import uuid62 from 'uuid62';
 
-import { JsObject, JSONSchema6DefinitionForRdfProperty, JSONSchema6forRdf, Query } from '../ObjectProvider';
-import { Bindings, FileUploadConfig, Results, sendPostQuery, sendPostStatements } from '../SparqlClient';
+import { JsObject } from '../ObjectProvider';
+import { executeUpdate, FileUploadConfig, Results, sendPostQuery, sendPostStatements } from '../SparqlClient';
 import { createRepositoryConfig } from '../SparqlClientImpl';
-import { createObjectWithoutRepetitions } from '../ObjectProviderImpl';
-
-import { getSchemaPropType, SparqlGen } from '../SparqlGen';
 
 import { Query2 } from './Query';
 import { Prefixes } from './Prefixes';
 import { Schemas } from './Schemas';
 import { Server2 } from './Model';
-import { Optional } from 'utility-types';
 import { isArray } from 'lodash';
 
 export const Repository = types
@@ -29,102 +25,6 @@ export const Repository = types
    * Views
    */
   .views((self) => {
-    const sparqlSelect = flow(function* sparqlSelect(query: string, queryParams: JsObject = {}) {
-      //console.debug(() => `sparqlSelect url=${this.repositoryUrl} query=${query} queryParams=${json2str(queryParams)}`);
-      const response = yield sendPostQuery('self.repositoryUrl', query, queryParams);
-      // console.debug(() => `sparqlSelect response=${json2str(response)}`);
-      let results: Results = { bindings: [] };
-      if (response.data && response.data.results) {
-        results = response.data.results;
-      }
-      return results;
-    });
-
-    const selectObjectsInternal = flow(function* selectObjectsInternal(
-      schema: JSONSchema6forRdf,
-      //conditions: any,
-      queryConstructor: () => string,
-      objectConstructor: (bindings: Bindings) => JsObject,
-    ) {
-      const query = queryConstructor();
-      const results = yield sparqlSelect(query);
-      //console.debug(() => `selectObjectsInternal results=${json2str(results)}`);
-      // Map bindings
-      let objects = results.bindings.map(objectConstructor);
-      //console.debug(() => `selectObjectsInternal objects=${json2str(objects)}`);
-      //objects.forEach((artifact) => this.convertToInternal(schema, artifact));
-      //console.debug(() => `selectObjectsInternal objectsInternal=${json2str(objects)}`);
-      //make arrays from objects with the same uri
-      objects = createObjectWithoutRepetitions(objects, schema);
-      //console.debug(() => `selectObjectsInternal objects_with_arrays=${json2str(objects)}`);
-      return objects;
-    });
-
-    /**
-     * Заменяет
-     * @param obj
-     */
-    const selectObjectsArrayProperties = flow(function* selectObjectsArrayProperties(
-      schemaOrString: JSONSchema6forRdf | string,
-      schemaPropsWithArrays: { [key: string]: JSONSchema6DefinitionForRdfProperty },
-      objects: JsObject[],
-    ) {
-      if (Object.keys(schemaPropsWithArrays).length > 0) {
-        const schema: JSONSchema6forRdf =
-          typeof schemaOrString === 'string' ? yield self.schemas.getSchemaByUri(schemaOrString) : schemaOrString;
-        const anyContext = schema['@context'];
-        const context = anyContext !== undefined && typeof anyContext !== 'string' ? anyContext : {};
-        for (const object of objects) {
-          for (const key of Object.keys(schemaPropsWithArrays)) {
-            const schemaWithArrayProperty: JSONSchema6forRdf = {
-              ...schema,
-            };
-            schemaWithArrayProperty.properties = {};
-            const prop = schemaPropsWithArrays[key];
-            schemaWithArrayProperty.properties[key] = prop;
-            schemaWithArrayProperty.required = ['@id', key];
-            const propType = getSchemaPropType(schemaWithArrayProperty.properties, context, key);
-
-            if (prop && prop.type && propType) {
-              let schemaUri: string | undefined = undefined;
-              if (prop.type === 'array' && prop.items) {
-                schemaUri = propType;
-              } else if (prop.type === 'object') {
-                schemaUri = propType;
-              } else if (prop.type === 'string' && prop.format === 'iri') {
-                schemaUri = propType;
-              }
-              if (schemaUri) {
-                const schema2 = yield self.schemas.getSchemaByUri(schemaUri);
-                let queryPrefixes = self.queryPrefixes.current;
-                const sparqlGen = new SparqlGen(self.queryPrefixes.currentJs);
-                sparqlGen
-                  .addSparqlShape(schemaWithArrayProperty, { '@id': object['@id'], property: '?eIri1' })
-                  .addSparqlShape(schema2);
-
-                const query = sparqlGen.selectObjectsQuery().stringify();
-                //console.debug(() => `selectObjectsArrayProperties query=${query}`);
-                const selectResults: Results = yield sparqlSelect(query);
-                //console.debug(() => `selectObjectsArrayProperties results=${json2str(selectResults)}`);
-
-                const objects = selectResults.bindings.map((bindings) => {
-                  if (schemaUri) return sparqlGen.sparqlBindingsToObjectBySchemaIri(bindings, schemaUri);
-                  else return {};
-                });
-                //console.debug(() => `selectObjectsInternal objects=${json2str(objects)}`);
-                //objects.forEach((artifact) => this.convertToInternal(schema2, artifact));
-                //console.debug(() => `selectObjectsInternal objectsInternal=${json2str(objects)}`);
-                //make arrays from objects with the same uri
-                //objects = createObjectWithoutRepetitions(objects, schema);
-                object[key] = objects;
-              }
-            }
-          }
-        }
-      }
-      return objects;
-    });
-
     return {
       createRepositoryUrl(repId: string): string {
         const server = getParentOfType(self, Server2) as any;
@@ -143,53 +43,6 @@ export const Repository = types
       get statementsUrl() {
         return this.createStatementsUrl(self.repId);
       },
-
-      selectObjects: flow(function* selectObjects(schemaOrString: JSONSchema6forRdf | string, conditions: any = {}) {
-        const schema: JSONSchema6forRdf =
-          typeof schemaOrString === 'string' ? yield self.schemas.getSchemaByUri(schemaOrString) : schemaOrString;
-        const schemaPropsWithoutArrays: { [key: string]: JSONSchema6DefinitionForRdfProperty } = {};
-        const schemaPropsWithArrays: { [key: string]: JSONSchema6DefinitionForRdfProperty } = {};
-        const conditionsWithoutArrays: any = {};
-        const conditionsWithArrays: any = {};
-        if (schema.properties) {
-          Object.keys(schema.properties).forEach((key) => {
-            if (schema.properties) {
-              if (schema.properties[key].type === 'array') {
-                schemaPropsWithArrays[key] = schema.properties[key];
-                if (conditions[key] !== undefined) conditionsWithArrays[key] = conditions[key];
-              } else {
-                schemaPropsWithoutArrays[key] = schema.properties[key];
-                if (conditions[key] !== undefined) conditionsWithoutArrays[key] = conditions[key];
-              }
-            }
-          });
-        }
-        //console.debug(() => `selectObjects conditionsWithArrays=${json2str(conditionsWithArrays)}`);
-        //console.debug(() => `selectObjects schemaPropsWithArrays=${json2str(schemaPropsWithArrays)}`);
-        //console.debug(() => `selectObjects conditionsWithoutArrays=${json2str(conditionsWithoutArrays)}`);
-        //console.debug(() => `selectObjects schemaPropsWithoutArrays=${json2str(schemaPropsWithoutArrays)}`);
-        const schemaWithoutArrays = {
-          ...schema,
-          properties: schemaPropsWithoutArrays,
-        };
-        const sparqlGen = new SparqlGen(self.queryPrefixes.currentJs);
-        const objects: JsObject[] = yield selectObjectsInternal(
-          schemaWithoutArrays,
-          () => {
-            sparqlGen.addSparqlShape(schemaWithoutArrays, conditionsWithoutArrays);
-            //sparqlGen.shapes[0].variables['@type'] = schemaWithoutArrays['@type'];
-            //addprops2vars2props(sparqlGen.shapes[0], '@type', 'type0');
-            sparqlGen.selectObjectsQuery();
-            //console.debug(() => `selectObjects query=${json2str(sparqlGen.query)}`);
-            return sparqlGen.stringify();
-          },
-          (bindings) => sparqlGen.sparqlBindingsToObjectProp(bindings),
-        );
-        //process array properties
-        yield selectObjectsArrayProperties(schema, schemaPropsWithArrays, objects);
-        //console.debug(() => `selectObjects objects_with_arrays=${json2str(objects)}`);
-        return objects;
-      }),
     };
   })
 
@@ -197,6 +50,7 @@ export const Repository = types
    * Actions
    */
   .actions((self) => {
+
     return {
       afterAttach() {
         //const t = self.selectObjects('asd');
@@ -205,6 +59,10 @@ export const Repository = types
       setId(repId: string) {
         self.repId = repId;
       },
+
+      /**
+       * Repo operations
+       */
 
       createRepository: flow(function* createRepository(repParam: JsObject = {}, repType: string = 'native-rdfs') {
         if (repType === 'virtuoso') {
@@ -229,6 +87,24 @@ export const Repository = types
         //console.debug(() => `createRepository url=${url}`);
       }),
 
+      deleteRepository: flow(function* deleteRepository(repId: string) {
+        const url = self.createRepositoryUrl(repId);
+        const response = yield axios.request({
+          method: 'delete',
+          url,
+          headers: {
+            'Content-Type': 'text/turtle',
+          },
+          data: '',
+        });
+        if (response.status < 200 && response.status > 204) throw Error(`deleteRepository fault, url=${url}`);
+        //console.debug(() => `deleteRepository url=${url}`);
+      }),
+
+      /**
+       * Repo data opeations
+       */
+
       uploadStatements: flow(function* uploadStatements(statements: string, baseURI?: string /*, graph?: string*/) {
         //console.debug(() => `uploadStatements url=${self.statementsUrl}`);
         statements = statements.replace(/^#.*$/gm, '');
@@ -241,109 +117,89 @@ export const Repository = types
 
       uploadFiles: flow(function* uploadFiles(files: FileUploadConfig[], rootFolder = '') {
         //console.log('uploadFiles ', files);
-        const promises = files.map((f) => {
+        const promises = yield* files.map((f) => {
           const statements = fs.readFileSync(rootFolder + f.file, 'utf8');
           //console.log('file=', f.file);
           //console.log('statements=', statements);
-
           //@ts-ignore
           return self.uploadStatements(statements, f.baseURI);
         });
-        return Promise.all(promises);
+        return promises;
       }),
 
-      selectObjectsByQuery: flow(function* selectObjectsByQuery(query: Query) {
-        console.log(query);
-        //@ts-ignore
-        /*const sparqlGen = new SparqlGen(self.queryPrefixes);
-        // copy query object, filter and rename screened @id and @type in conditions
-        query = {
-          ...query,
-          shapes: query.shapes.map(
-            (shape: QueryShape): QueryShape => {
-              let filteredShape: any;
-              if (shape.conditions) {
-                const filteredConditions: any = {};
-                copyUniqueObjectPropsWithRenameOrFilter(filteredConditions, shape.conditions, {
-                  '@id': null,
-                  '@type': null,
-                  '@_id': '@id',
-                  '@_type': '@type',
-                });
-                filteredShape = {
-                  ...shape,
-                  conditions: filteredConditions,
-                };
-              } else {
-                filteredShape = { ...shape };
-              }
-              return filteredShape;
-            },
-          ),
-        };
-        yield Promise.all(
-          query.shapes.map(async (s: QueryShape) => {
-            if (s.schema) {
-              if (typeof s.schema === 'string') {
-                //@ts-ignore
-                s.schema = await self.getSchemaByUri(s.schema);
-                //console.debug('selectObjectsByQuery s.schema=', json2str(s.schema));
-              }
+      sparqlSelect: flow(function* sparqlSelect(query: string, queryParams: JsObject = {}) {
+        //console.debug(() => `sparqlSelect url=${this.repositoryUrl} query=${query} queryParams=${json2str(queryParams)}`);
+        const response = yield sendPostQuery(self.repositoryUrl, query, queryParams);
+        // console.debug(() => `sparqlSelect response=${json2str(response)}`);
+        let results: Results = { bindings: [] };
+        if (response.data && response.data.results) {
+          results = response.data.results;
             }
+        return results;
+      }),
           }),
-        );
-        query.shapes.forEach((s: QueryShape) => {
-          if (typeof s.schema !== 'string') sparqlGen.addSparqlShape(s.schema, s.conditions);
-        });
-        sparqlGen.selectObjectsQuery();
-        if (query.limit) sparqlGen.limit(query.limit);
-        if (query.offset) sparqlGen.limit(query.offset);
-        if (query.orderBy) {
-          const orderBy = [];
-          if (typeof query.orderBy === 'string') {
-            orderBy.push(makeOrderBy(query.orderBy));
-          } else if (Array.isArray(query.orderBy) === true) {
-            query.orderBy.forEach((e) => orderBy.push(makeOrderBy(e)));
-          }
-          sparqlGen.orderBy(orderBy);
-        }
-        const queryStr = sparqlGen.stringify();
-        //console.debug('selectObjectsByQuery query=', queryStr);
-        const selectResults = yield self.client.sparqlSelect(queryStr);
-        //console.debug('selectObjectsByQuery results=', json2str(selectResults));
-        // if no variables
-        const objects = selectResults.bindings.map((bindings) => {
-          return sparqlGen.sparqlBindingsToObjectProp(bindings);
-        });
-        return objects;*/
-        return Array(10);
+    
+      /**
+       * Удаляет все триплы в графе с заданным graph
+       * @param graph
+       */
+      clearGraph: flow(function* clearGraph(graph = 'null') {
+        const query = `CLEAR GRAPH <${graph}>`;
+        //console.debug(() => `clearGraph url=${this.repositoryUrl} query=${query}`);
+        //return sendPostQuery(this.repositoryUrl, query);
+        return yield executeUpdate(self.statementsUrl, query);
       }),
 
       addQuery(
         data: any /*Optional<IQueryShape2, '@id'> | Optional<IQueryShape2, '@id'>[] | Optional<IQuery2, '@id'>*/,
       ) {
-        const schemasToAdd: any[] = [];
         let query: any; // IQuery2
         if (!data.shapes) {
-          if (isArray(data)) {
+          if (typeof data === 'string') {
+            query = {
+              shapes: [{
+                schema: data,
+              }]
+            };
+          }
+          else if (isArray(data)) {
             query = { shapes: [...data] }; // as IQueryShape2[]
           } else {
+            if (data.$schema === undefined) {
             query = { shapes: [data as any] }; // as IQueryShape2
+            } else {
+              query = {
+                shapes: [{
+                  schema: data,
+                }]
+              };
+            }
           }
         } else {
           query = data as any; // as IQuery2
         }
 
-        // add all full-specified schemas to schema repository and replace it in shape with reference
         query.shapes.forEach((d: any) => {
           if (d.schema && typeof d.schema === 'object') {
-            self.schemas.addSchema(d.schema);
-            d.schema = d.schema['@id'];
+            // add all full-specified schemas to schema repository and replace it in shape with reference
+            //self.schemas.addSchema(d.schema);
+            //d.schema = d.schema['@id'];
+
+            // reset id (regenerate random) for private schema if it exists in repo
+            if (self.schemas.json.has(d.schema['@id'])) {
+              d.schema['@id'] = undefined;
+              addMissingId(d.schema);
+            }
           }
         });
 
         addMissingId(query);
-        query.shapes.forEach((s: any) => addMissingId(s));
+        query.shapes.forEach((shape: any) => {
+          addMissingId(shape);
+          addMissingId(shape.conditions);
+          addMissingId(shape.variables);
+          addMissingId(shape.data);
+        });
 
         let qid = query['@id'];
         self.queries.set(qid, query as any);
@@ -352,10 +208,25 @@ export const Repository = types
         if (!queryObj) throw new Error('Cannot create query object in model');
         return queryObj;
       },
+
+      removeQuery(query: string | any) {
+        const id = (typeof query === 'string') ? query : query['@id'];
+        if (id) self.queries.delete(id);
+      },
+
+      selectObjects: flow(function* selectObjects(data: any) {
+        //@ts-ignore
+        const query = self.addQuery(data);
+        const objects = yield query.selectObjects();
+        //@ts-ignore
+        self.removeQuery(query);
+        return objects;
+      }),
+
     };
   });
 
-function addMissingId(data: any) {
-  if (!data['@id']) data['@id'] = '_' + uuid62.v4();
+function addMissingId(data: any | undefined) {
+  if (data && typeof data === 'object' && !data['@id']) data['@id'] = '_' + uuid62.v4();
 }
 //export interface IRepository extends Instance<typeof Repository> {}

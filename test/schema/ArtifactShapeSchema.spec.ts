@@ -43,9 +43,9 @@ afterAll(async () => {
   }
 });
 
-describe('api/classshape-scenario', () => {
-  describe('retrieve schema', () => {
-    it('should retrieve shape from server', async () => {
+describe('Provider api/classshape-scenario', () => {
+  describe('Provider retrieve schema', () => {
+    it('Provider should retrieve shape from server', async () => {
       // Class Shape search by property
       const artifactShapeSchema1 = await provider.selectObjects(ArtifactShapeSchema, {
         targetClass: 'rm:Artifact',
@@ -77,7 +77,7 @@ describe('api/classshape-scenario', () => {
       expect(modifiedByShapeSchema).toHaveLength(1);
     });
 
-    it('should retrieve schema from server', async () => {
+    it('Provider should retrieve schema from server', async () => {
       //const propertySchema = await provider.getSchemaByUri('rm:identifierShape');
       //expect(propertySchema).toEqual(expect.anything());
       const artifactSchema1 = await provider.getSchemaByUriInternal(artifactSchema['@id']);
@@ -88,13 +88,13 @@ describe('api/classshape-scenario', () => {
       expect(artifactSchema2).toMatchObject(artifactSchema);
     });
 
-    it('get all shape properties from 1 parent shape', async () => {
+    it('Provider get all shape properties from 1 parent shape', async () => {
       const classifierSchema2 = await provider.getSchemaByUri(classifierSchema['@id']);
       expect(classifierSchema2).toEqual(expect.anything());
       expect(classifierSchema2).toMatchObject(classifierSchema);
     });
 
-    it('should retrieve all non-empty schemas from server', async () => {
+    it('Provider should retrieve all non-empty schemas from server', async () => {
       const artifactSchema2 = await provider.getSchemaByUri(artifactSchema['@id']);
       const artifactSubclasses = await provider.selectSubclasses(artifactSchema2);
       const allArtifactSubClassesSchemas = await Promise.all(

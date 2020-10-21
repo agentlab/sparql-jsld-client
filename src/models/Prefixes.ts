@@ -6,6 +6,12 @@ import { literal, namedNode, triple, variable } from '@rdfjs/data-model';
 import { Results, sendGet } from '../SparqlClient';
 import { Repository } from './Repository';
 
+/**
+ * See getFullIriNamedNode
+ */
+export type GetFullIriNamedNodeType = (uri: string | NamedNode) => NamedNode;
+export type StrConvertorType = (data: string) => string;
+
 export const Prefixes = types
   .model('Prefixes', {
     //default: types.map(types.string),
@@ -32,8 +38,10 @@ export const Prefixes = types
     abbreviateIri(fullIri: string): string {
       let nsEntries: { prefix: string; ns: string }[] = [];
       if (fullIri) {
-        Object.keys(self.current).forEach((prefix) => {
-          let ns = self.current.get(prefix);
+        //@ts-ignore  
+        const currentJs = self.currentJs;
+        Object.keys(currentJs).forEach((prefix) => {
+          let ns = currentJs[prefix];
           if (ns && fullIri.startsWith(ns)) nsEntries.push({ prefix, ns });
         });
         if (nsEntries.length > 1) {
@@ -46,7 +54,7 @@ export const Prefixes = types
           const [, value] = fullIri.match(/[#]([\d\w-_а-яА-ЯёЁ]+)$/i) || ['', ''];
           if (value) {
             const shortUri = fullIri.substring(0, fullIri.lastIndexOf(value));
-            const prefix = Object.keys(self.current).find((key) => self.current.get(key) === shortUri);
+            const prefix = Object.keys(currentJs).find((key) => currentJs[key] === shortUri);
 
             if (prefix) {
               return `${prefix}:${value}`;
@@ -72,14 +80,15 @@ export const Prefixes = types
     },
 
     /**
-     *
+     * See getFullIriNamedNodeType
      * @param uri
      */
     getFullIriNamedNode(uri: string | NamedNode): NamedNode {
       if (typeof uri === 'object') {
         uri = uri.value;
       }
-      return namedNode(this.deAbbreviateIri(uri));
+      //@ts-ignore
+      return namedNode(self.deAbbreviateIri(uri));
     },
   }))
 

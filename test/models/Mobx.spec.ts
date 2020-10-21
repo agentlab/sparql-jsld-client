@@ -274,35 +274,12 @@ describe('mobx create repository', () => {
 
     const repository = rootStore.server.repository;
 
-    //console.log('Create ObjectProviderImpl');
-    //this.client = client;
-    repository.schemas.addSchema(ResourceSchema);
-    repository.schemas.addSchema(ClassSchema);
-    //repository.schemas.addSchema(DataTypeSchema);
-    repository.schemas.addSchema(ArtifactShapeSchema);
-    repository.schemas.addSchema(PropertyShapeSchema);
-
     expect(repository.queryPrefixes.current.size).toBe(3);
     await repository.queryPrefixes.reloadQueryPrefixes();
     //console.log(getSnapshot(repository.queryPrefixes.current));
     expect(repository.queryPrefixes.current.size).toBeGreaterThan(3);
 
-    const artifactShapeSchema1 = await repository.selectObjects(ArtifactShapeSchema, {
-      targetClass: 'rm:Artifact',
-    });
-    const artifactShapeSchema11 = await repository.selectObjects(ArtifactShapeSchema, {
-      targetClass: 'rm:Artifact',
-    });
-    expect(artifactShapeSchema1).toHaveLength(1);
-    expect(artifactShapeSchema1[0]).toEqual(expect.objectContaining(artifactShapeNoProperty));
-    expect(artifactShapeSchema1[0].property.sort(idComparator)).toEqual(
-      expect.arrayContaining(artifactShapeProperty.sort(idComparator)),
-    );
-    expect(artifactShapeSchema11).toHaveLength(1);
-    expect(artifactShapeSchema11[0]).toEqual(expect.objectContaining(artifactShapeNoProperty));
-    expect(artifactShapeSchema11[0].property).toEqual(expect.arrayContaining(artifactShapeProperty));
-
-    const linksAndArtifacts = await repository.selectObjectsByQuery(query);
+    const linksAndArtifacts = await repository.selectObjects(query);
     expect(linksAndArtifacts.length).toBe(10);
     /*expect(linksAndArtifacts[0]).toMatchObject({
       '@id': 'reqs:_M1HusThYEem2Z_XixsC3pQ',

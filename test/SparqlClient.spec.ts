@@ -37,11 +37,11 @@ afterAll(async () => {
 });
 
 describe('SparqlClient', () => {
-  it(`should select namespaces`, async () => {
+  it(`SparqlClient should select namespaces`, async () => {
     const namespaces = await provider.client.getNamespaces();
     expect(namespaces.rdf).toBe('http://www.w3.org/1999/02/22-rdf-syntax-ns#');
   });
-  it(`should select direct parent classes`, async () => {
+  it(`SparqlClient should select direct parent classes`, async () => {
     const query = `PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
     PREFIX cpgu: <http://cpgu.kbpm.ru/ns/rm/cpgu#>
     SELECT ?superClass WHERE { cpgu:Classifier rdfs:subClassOf ?superClass. }`;

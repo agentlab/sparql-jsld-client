@@ -21,6 +21,10 @@ export const ResourceSchema: JSONSchema6forRdf = {
   title: 'Resource Schema',
   description: 'Schema of RDF Resource',
   type: 'object',
+  '@context': {
+    '@type': 'rdf:type',
+    'label': 'rdfs:label',
+  },
   properties: {
     '@id': {
       type: 'string',
@@ -28,13 +32,11 @@ export const ResourceSchema: JSONSchema6forRdf = {
       title: 'URI',
     },
     '@type': {
-      '@id': 'rdf:type',
       title: 'Тип',
       type: 'string',
       format: 'iri',
     },
     label: {
-      '@id': 'rdfs:label',
       title: 'Метка',
       type: 'string',
     },
@@ -47,8 +49,11 @@ export const ClassSchema: JSONSchema6forRdf = {
   '@id': 'rdfs:Class', // json-ld
   '@type': 'rdfs:Class', // json-ld
   title: 'Class Schema',
-  description: 'Schema of RDF Resource',
+  description: 'Schema of RDFS Class',
   type: 'object',
+  '@context': {
+    '@type': 'rdf:type',
+  },
   properties: {
     '@id': {
       type: 'string',
@@ -56,7 +61,6 @@ export const ClassSchema: JSONSchema6forRdf = {
       title: 'URI',
     },
     '@type': {
-      '@id': 'rdf:type',
       title: 'Тип',
       type: 'string',
       format: 'iri',
@@ -86,22 +90,24 @@ export const ClassSchema: JSONSchema6forRdf = {
   title: 'Типы данных',
   description: 'Типы данных',
   type: 'object',
+  '@context': {
+    '@type': 'rdf:type',
+    'label': 'rdfs:label',
+  },
   properties: {
     '@id': {
+      title: 'URI',
       type: 'string',
       format: 'iri',
-      title: 'URI',
     },
     '@type': {
-      '@id': 'rdf:type',
       title: 'Тип',
       type: 'string',
       format: 'iri',
     },
     label: {
-      '@id': 'rdfs:label',
-      type: 'string',
       title: 'Метка',
+      type: 'string',
     },
     // isDefinedBy: {
     //   type: 'string',

@@ -5,7 +5,7 @@ export const collectionFormatUri = 'rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Collecti
 export const moduleFormatUri = 'rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Module';
 
 export const artifactSchema: JSONSchema6forRdf = {
-  //$schema: 'http://json-schema.org/draft-07/schema#',
+  $schema: 'http://json-schema.org/draft-07/schema#',
   //$id: 'rm:Artifact',
   '@id': 'rm:Artifact',
   '@type': 'rm:Artifact',
@@ -195,6 +195,7 @@ export const classifierSchema: JSONSchema6forRdf = {
 };
 
 export const artifactShape: JsObject = {
+  $schema: 'http://json-schema.org/draft-07/schema#',
   '@id': 'rm:ArtifactShape',
   '@type': 'sh:NodeShape',
   //defaultFormat: undefined,

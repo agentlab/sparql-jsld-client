@@ -9,21 +9,43 @@ import {
   getSnapshot,
 } from 'mobx-state-tree';
 
-import { JSONSchema6forRdf, copyUniqueObjectPropsWithRenameOrFilter } from '../ObjectProvider';
+import { JSONSchema6forRdf, copyUniqueObjectPropsWithRenameOrFilter, copyObjectProps, copyUniqueArrayElements } from '../ObjectProvider';
 import {
   propertyShapesToSchemaProperties,
-  addToSchemaParentSchema,
   uiMapping,
   schemaNonPrimitivePropsKeys,
+  addToSchemaParentSchema,
 } from '../ObjectProviderImpl';
 
 import { ResourceSchema, ClassSchema } from '../schema/RdfsSchema';
 import { ArtifactShapeSchema } from '../schema/ArtifactShapeSchema';
 
-import { JsObject2 } from './Query';
 import { JSONSchema6Definition } from 'json-schema';
 import { Repository } from './Repository';
 import { IKeyValueMap } from 'mobx';
+
+export function createSchemaWithSubClassOf(schema: any, iri: string, classIri?: string) {
+  return {
+    ...schema,
+    '@id': iri,
+    '@type': classIri,
+    title: 'Class With Parent Schema',
+    description: 'Schema of RDF Class With Parent Schema',
+    '@context': {
+      ...schema['@context'],
+      subClassOf: 'rdfs:subClassOf',
+    },
+    properties: {
+      ...schema.properties,
+      subClassOf: {
+        title: 'Подкласс класса',
+        type: 'string',
+        format: 'iri',
+      }
+    },
+    required: [...schema.required, 'subClassOf'],
+  };
+}
 
 const JSONSchema7TypeName = types.enumeration(['string', 'number', 'boolean', 'object', 'integer', 'array', 'null']);
 const JSONSchema7Type = types.union(
@@ -62,7 +84,9 @@ export const JSONSchema7forRdf = types
     /**
      * Original JSON Schema
      */
-    //$schema: types.union(types.string, types.undefined),
+
+    $schema: types.union(types.string, types.undefined),
+    $id: types.union(types.string, types.undefined),
 
     title: types.maybe(types.string),
     description: types.maybe(types.string),
@@ -74,7 +98,11 @@ export const JSONSchema7forRdf = types
   /**
    * Views
    */
+
   .views((self) => ({
+    get js(): IKeyValueMap<any> {
+      return getSnapshot(self);
+    },
     get propertiesJs(): IKeyValueMap<any> {
       return getSnapshot(self.properties);
     },
@@ -83,7 +111,7 @@ export const JSONSchema7forRdf = types
     },
   }));
 
-export interface IJSONSchema7forRdf extends Instance<typeof JSONSchema7forRdf> {}
+//export interface IJSONSchema7forRdf extends Instance<typeof JSONSchema7forRdf> {}
 
 export const JSONSchema7PropertyForRdf = types.model('JSONSchema7PropertyForRdf', {
   title: types.maybe(types.string),
@@ -92,6 +120,7 @@ export const JSONSchema7PropertyForRdf = types.model('JSONSchema7PropertyForRdf'
   type: JSONSchema7TypeName,
   enum: types.maybe(JSONSchema7Array),
   default: types.maybe(JSONSchema7Type),
+  items: types.maybe(types.late((): IAnyModelType => JSONSchema7PropertyForRdf)),
 
   format: types.maybe(types.string),
   contentMediaType: types.maybe(types.string),
@@ -104,7 +133,7 @@ export const JSONSchema7PropertyForRdf = types.model('JSONSchema7PropertyForRdf'
   //shapeModifiability: types.maybe(types.string), // user or non -- system
 });
 
-export interface IJSONSchema7PropertyForRdf extends Instance<typeof JSONSchema7PropertyForRdf> {}
+//export interface IJSONSchema7PropertyForRdf extends Instance<typeof JSONSchema7PropertyForRdf> {}
 
 export const Schemas = types
   .model('Schemas', {
@@ -135,8 +164,11 @@ export const Schemas = types
      */
     const resolveSchemaFromServer = flow(function* resolveSchemaFromServer(uri: string) {
       //console.log('resolveSchemaFromServer', { uri });
-      const shapes = yield repository.selectObjects(ArtifactShapeSchema, {
-        targetClass: uri,
+      const shapes = yield repository.selectObjects({
+        schema: ArtifactShapeSchema['@id'],
+        conditions: {
+          targetClass: uri,
+        }
       });
       if (!shapes || shapes.length === 0) return { schema: undefined, uiSchema: undefined };
       const shape = shapes[0];
@@ -169,22 +201,28 @@ export const Schemas = types
         targetClass: null,
       });
       // properties from shapes hierarchy
-      const classSchema = {
-        ...ClassSchema,
-        '@id': uri,
-        '@type': uri,
-      };
-      const superClassesUris = yield repository.selectDirectSuperClasses(classSchema, { '@id': uri });
+      const superClassesUris = yield repository.selectObjects({
+        shapes: [{
+          schema: createSchemaWithSubClassOf(ClassSchema, uri),
+          conditions: {
+            '@_id': uri,
+          },
+        }],
+        // RDF4J REST API options
+        options: {
+          infer: 'false',
+        },
+      });
       //console.debug(() => `resolveSchemaFromServer superClasses=${superClassesUris}`);
-      const superClassesSchemas = yield Promise.all(
-        superClassesUris.filter((c: string) => c !== 'rdfs:Resource' && c !== uri),
+      const superClassesSchemas = /*yield Promise.all(*/
+        superClassesUris.filter((c: string) => c !== 'rdfs:Resource' && c !== uri)/*,*/
         /*.map(async (superClassUri) => this.getSchemaByUri(superClassUri))*/
-      );
+      /*)*/;
       if (superClassesSchemas.length > 0) {
         schema.allOf = [];
         superClassesSchemas.forEach((superClassesSchema: any) =>
           schema.allOf?.push({
-            $ref: superClassesSchema /*['@id']*/,
+            $ref: superClassesSchema.subClassOf,
           }),
         );
       }
@@ -237,12 +275,13 @@ export const Schemas = types
     const getSchemaByUriInternal = flow(function* getSchemaByUriInternal(uri: string) {
       //console.log('getSchemaByUriInternal', uri);
       uri = repository.queryPrefixes.abbreviateIri(uri);
-      let schema = self.json.get(uri);
+      let schema: any = self.json.get(uri);
       if (schema === undefined) {
         //console.log('getSchemaByUriInternal NOT found', { uri, schema, schemas: this.schemas });
         schema = yield getSchemaByUriInternalTmpPromise(uri);
         //self.json.set(uri, schema); // if Promise, add Promise
       } else {
+        schema = getSnapshot(schema);
         //console.log('getSchemaByUriInternal found', { uri, schema, schemas: this.schemas });
       }
       return schema;
@@ -294,13 +333,15 @@ export const Schemas = types
       getSchemaByUri: flow(function* getSchemaByUri(uri: string) {
         const schema = { '@id': uri, '@type': uri };
         const schemaQueue = yield findAllSuperSchemas(uri);
-        let schemaOrUndefined: JSONSchema6forRdf | undefined;
+        let schemaOrUndefined: any | undefined;
         //const tmp = schemaQueue.shift();
         //schema = tmp ? { ...tmp } : { ...ResourceSchema, '@id': uri, '@type': uri };
         //schemaQueue.forEach((parentSchema) => addToSchemaParentSchema(schema, parentSchema));
         //alternative realization of above
         while (schemaQueue.length > 0) {
           schemaOrUndefined = schemaQueue.pop();
+          if (schemaOrUndefined.js !== undefined)
+            schemaOrUndefined = schemaOrUndefined.js();
           if (schemaOrUndefined) {
             addToSchemaParentSchema(schema, schemaOrUndefined);
           }
@@ -318,4 +359,4 @@ export const Schemas = types
     };
   });
 
-export interface ISchemas extends Instance<typeof Schemas> {}
+//export interface ISchemas extends Instance<typeof Schemas> {}

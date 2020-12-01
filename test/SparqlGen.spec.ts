@@ -1,41 +1,40 @@
 import { Parser } from 'sparqljs';
 import { triple, variable } from '@rdfjs/data-model';
-import { SparqlGen } from '../src/SparqlGen';
 import { JSONSchema6forRdf } from '../src/ObjectProvider';
-import { ObjectProviderImpl } from '../src/ObjectProviderImpl';
-import { ArtifactShapeSchema, PropertyShapeSchema } from '../src/schema/ArtifactShapeSchema';
-import { artifactSchema, usedInModuleSchema } from './schema/TestSchemas';
+import { artifactSchema, usedInModuleSchema, usedInSchema } from './schema/TestSchemas';
 import { queryPrefixes } from './configTests';
+import { rootStore } from '../src/models/model';
+import { applySnapshot } from 'mobx-state-tree';
 
-let provider: ObjectProviderImpl;
-let sparqlGen: SparqlGen;
+// See https://stackoverflow.com/questions/49603939/async-callback-was-not-invoked-within-the-5000ms-timeout-specified-by-jest-setti
+jest.setTimeout(500000);
+
+
+const repository = rootStore.server.repository;
+applySnapshot(repository.queryPrefixes.current, queryPrefixes);
 const parser = new Parser();
 
-beforeEach(() => {
-  provider = new ObjectProviderImpl();
-  sparqlGen = new SparqlGen(queryPrefixes);
-});
+/*describe('ObjectProvider/addSchema', () => {
+  it(`provider should return schema by uri`, async () => {
+    repository.schemas.addSchema(ArtifactShapeSchema);
+    repository.schemas.addSchema(PropertyShapeSchema);
 
-describe('ObjectProvider/addSchema', () => {
-  it(`SparqlGen provider should return schema by uri`, async () => {
-    provider.addSchema(ArtifactShapeSchema);
-    provider.addSchema(PropertyShapeSchema);
-
-    const getArtifactShapeSchema = await provider.getSchemaByUri(ArtifactShapeSchema['@id']);
+    const getArtifactShapeSchema = await repository.schemas.getSchemaByUri(ArtifactShapeSchema['@id']);
     //console.log('getArtifactShapeSchema', getArtifactShapeSchema);
     expect(getArtifactShapeSchema).toMatchObject(ArtifactShapeSchema);
 
-    const getPropertyShapeSchema = await provider.getSchemaByUri(PropertyShapeSchema['@id']);
+    const getPropertyShapeSchema = await repository.schemas.getSchemaByUri(PropertyShapeSchema['@id']);
     //console.log('getPropertyShapeSchema', getPropertyShapeSchema);
     expect(getPropertyShapeSchema).toMatchObject(PropertyShapeSchema);
   });
-});
+});*/
 
 const SchemaWithoutArrayProperties: JSONSchema6forRdf = {
   $schema: 'http://json-schema.org/draft-07/schema#',
-  //$id: 'http://example.com/product.schema.json',
-  '@id': 'sh:PropertyShape',
-  '@type': 'sh:PropertyShape',
+  //$id: 'http://cpgu.kbpm.ru/ns/rm/rdf#PropertyShapeWithoutArrayProperties',
+  '@id': 'rm:PropertyShapeWithoutArrayProperties',
+  '@type': 'sh:NodeShape',
+  targetClass: 'sh:PropertyShape',
   type: 'object',
   '@context': {
     path: 'sh:path', // object with unknown type should resolve in Resource URI
@@ -63,11 +62,19 @@ const SchemaWithoutArrayProperties: JSONSchema6forRdf = {
   required: ['@id', 'path'],
 };
 
-describe('SparqlGen/SchemaWithoutArrayProperties', () => {
-  it('SparqlGen select should generate without conditions', async () => {
-    provider.addSchema(SchemaWithoutArrayProperties);
-    sparqlGen.addSparqlShape(SchemaWithoutArrayProperties).selectObjectsQuery();
-    const genQueryStr = sparqlGen.stringify();
+
+describe('SchemaWithoutArrayProperties', () => {
+  it('select by type without conditions should generate correctly', async () => {
+    expect(repository.queryPrefixes.current.size).toBeGreaterThan(4);
+    // Query with custom query-private schema (it did not add schema to SchemaRegistry)
+    const query = await repository.addQuery({ schema: SchemaWithoutArrayProperties });
+    expect(repository.schemas.json.has(SchemaWithoutArrayProperties['@id'])).toBeFalsy();
+    //const s = getSnapshot(repository.queries);
+    //console.log(s);
+    //const s2 = getSnapshot(query);
+    //console.log(s2);
+    const genQueryStr = await query.selectObjectsQueryStr();
+    repository.removeQuery(query);
     //console.log(genQueryStr);
     const correctParsedQuery = parser.parse(`
       PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -80,17 +87,21 @@ describe('SparqlGen/SchemaWithoutArrayProperties', () => {
       }`);
     expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery);
   });
-  it('SparqlGen select should generate with conditions', async () => {
-    provider.addSchema(SchemaWithoutArrayProperties);
-    sparqlGen
-      .addSparqlShape(SchemaWithoutArrayProperties, {
+
+  it('select by type and conditions should generate correctly', async () => {
+    expect(repository.queryPrefixes.current.size).toBeGreaterThan(4);
+    // add custom schema to SchemaRegistry and reference it in Query by @id
+    repository.schemas.addSchema(SchemaWithoutArrayProperties);
+    const query = await repository.addQuery({
+      schema: SchemaWithoutArrayProperties['@id'],
+      conditions: {
         path: 'cpgu:fileName',
         name: 'Название',
         minCount: 1,
-      })
-      .selectObjectsQuery();
-    //console.log(sparqlGen.query);
-    const genQueryStr = sparqlGen.stringify();
+      },
+    });
+    const genQueryStr = await query.selectObjectsQueryStr();
+    repository.removeQuery(query);
     //console.log(genQueryStr);
     const correctParsedQuery = parser.parse(`
       PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -104,13 +115,91 @@ describe('SparqlGen/SchemaWithoutArrayProperties', () => {
       }`);
     expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery);
   });
+
+  it('select by iri all schema props should generate correctly', async () => {
+    repository.schemas.addSchema(SchemaWithoutArrayProperties);
+    const query = await repository.addQuery({
+      schema: SchemaWithoutArrayProperties['@id'],
+      conditions: {
+        '@_id': 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml'
+      },
+    });
+    const genQueryStr = await query.selectObjectsQueryStr();
+    repository.removeQuery(query);
+    //console.log('selectObjectsQueryStr', genQueryStr);
+    const correctParsedQuery = parser.parse(`
+    PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+    PREFIX sh:   <http://www.w3.org/ns/shacl#>
+    SELECT ?path0 ?name0 ?minCount0 WHERE {
+      <file:///urn-s2-iisvvt-infosystems-classifier-45950.xml> rdf:type sh:PropertyShape;
+        sh:path ?path0.
+      OPTIONAL { <file:///urn-s2-iisvvt-infosystems-classifier-45950.xml> sh:name ?name0. }
+      OPTIONAL { <file:///urn-s2-iisvvt-infosystems-classifier-45950.xml> sh:minCount ?minCount0. }
+    }`);
+    expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery);
+  });
+
+  it('select by iri only titles should generate correctly', async () => {
+    repository.schemas.addSchema(SchemaWithoutArrayProperties);
+    const query = await repository.addQuery({
+      schema: SchemaWithoutArrayProperties['@id'],
+      conditions: {
+        '@_id': 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml'
+      },
+      variables: {
+        path: null,
+        name: null,
+      },
+    });
+    const genQueryStr = await query.selectObjectsQueryStr();
+    repository.removeQuery(query);
+    //console.log('selectObjectsQueryStr', genQueryStr);
+    const correctParsedQuery = parser.parse(`
+    PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+    PREFIX sh:   <http://www.w3.org/ns/shacl#>
+    SELECT ?path0 ?name0 WHERE {
+      <file:///urn-s2-iisvvt-infosystems-classifier-45950.xml> rdf:type sh:PropertyShape;
+        sh:path ?path0.
+       <file:///urn-s2-iisvvt-infosystems-classifier-45950.xml> sh:name ?name0.
+    }`);
+    expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery);
+  });
+
+  it('select max identifier should generate correctly', async () => {
+    repository.schemas.addSchema(artifactSchema);
+    const query = await repository.addQuery({
+      shapes: [{
+        schema: artifactSchema['@id'],
+        variables: {
+          identifier: artifactSchema?.properties?.identifier,
+        },
+      }],
+      orderBy: [{ expression: variable('identifier0'), descending: true }],
+      limit: 1,
+    });
+    const genQueryStr = await query.selectObjectsQueryStr();
+    repository.removeQuery(query);
+    //console.log('selectObjectsQueryStr', genQueryStr);
+    const correctParsedQuery = parser.parse(`
+    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+    PREFIX dcterms: <http://purl.org/dc/terms/>
+    PREFIX rm: <http://cpgu.kbpm.ru/ns/rm/rdf#>
+    SELECT ?identifier0 WHERE {
+      ?eIri0 rdf:type rm:Artifact.
+      ?eIri0 dcterms:identifier ?identifier0.
+    }
+    ORDER BY DESC (?identifier0)
+    LIMIT 1`);
+    expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery);
+  });
 });
 
 const SchemaWithArrayProperty: JSONSchema6forRdf = {
   $schema: 'http://json-schema.org/draft-07/schema#',
-  //$id: 'http://example.com/product.schema.json',
-  '@id': 'sh:NodeShape',
+  //$id: 'http://www.w3.org/ns/shacl#SchemaWithArrayProperty',
+  '@id': 'sh:SchemaWithArrayProperty',
   '@type': 'sh:NodeShape',
+  targetClass: 'sh:NodeShape',
   '@context': {
     property: {
       '@id': 'sh:property',
@@ -133,11 +222,13 @@ const SchemaWithArrayProperty: JSONSchema6forRdf = {
   required: ['@id', 'path'],
 };
 
-describe('SparqlGen/SchemaWithArrayProperty', () => {
-  it(`SparqlGen select one schema should generate correctly`, async () => {
-    provider.addSchema(SchemaWithArrayProperty);
-    sparqlGen.addSparqlShape(SchemaWithArrayProperty).selectObjectsQuery();
-    const genQueryStr = sparqlGen.stringify();
+
+describe('SchemaWithArrayProperty', () => {
+  it('select one schema should generate correctly', async () => {
+    repository.schemas.addSchema(SchemaWithArrayProperty);
+    const query = await repository.addQuery({ schema: SchemaWithArrayProperty['@id'] });
+    const genQueryStr = await query.selectObjectsQueryStr();
+    repository.removeQuery(query);
     //console.log('SchemaWithArrayProperty', genQueryStr);
     const correctParsedQuery = parser.parse(`
       PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -148,16 +239,25 @@ describe('SparqlGen/SchemaWithArrayProperty', () => {
       }`);
     expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery);
   });
+
   // In case of API modification check ObjectProviderImpl.selectObjectsArrayProperties
-  it('SparqlGen select two schemas should generate correctly', async () => {
-    provider.addSchema(SchemaWithArrayProperty);
-    provider.addSchema(SchemaWithoutArrayProperties);
-    sparqlGen
-      .addSparqlShape(SchemaWithArrayProperty, { property: '?eIri1' })
-      .addSparqlShape(SchemaWithoutArrayProperties)
-      .selectObjectsQuery();
-    const genQueryStr = sparqlGen.stringify();
-    //console.log('Two Schemas WithArrayProperty', genQueryStr);
+  /*it('select two schemas should generate correctly', async () => {
+    repository.schemas.addSchema(SchemaWithArrayProperty);
+    repository.schemas.addSchema(SchemaWithoutArrayProperties);
+    const query = await repository.addQuery([
+      {
+        schema: SchemaWithArrayProperty['@id'],
+        conditions: {
+          property: '?eIri1',
+        },
+      },
+      {
+        schema: SchemaWithoutArrayProperties['@id'],
+      },
+    ]);
+    const genQueryStr = query.selectObjectsQueryStr();
+    repository.removeQuery(query);
+    console.log('Two Schemas WithArrayProperty', genQueryStr);
     const correctParsedQuery = parser.parse(`
       PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
       PREFIX sh:  <http://www.w3.org/ns/shacl#>
@@ -170,24 +270,30 @@ describe('SparqlGen/SchemaWithArrayProperty', () => {
         OPTIONAL { ?eIri1 sh:minCount ?minCount1. }
       }`);
     expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery);
-  });
+  });*/
 });
 
-describe('SparqlGen/ArtifactsInModules', () => {
-  it(`SparqlGen select module arifacts should generate correctly`, async () => {
-    sparqlGen
-      .addSparqlShape(usedInModuleSchema, {
-        object: 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml',
-        subject: '?eIri1',
-      })
-      .addSparqlShape(
-        {
+
+describe('ArtifactsInModules', () => {
+  it('select module arifacts should generate correctly', async () => {
+    repository.schemas.addSchema(usedInSchema);
+    repository.schemas.addSchema(usedInModuleSchema);
+    const query = await repository.addQuery({
+      shapes: [{
+        schema: usedInModuleSchema['@id'],
+        conditions: {
+          object: 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml',
+          subject: '?eIri1',
+        },
+      },{
+        schema: {
           $schema: 'http://json-schema.org/draft-07/schema#',
-          //$id: 'rm:Artifact',
-          '@id': 'rm:Artifact',
-          '@type': 'rm:Artifact',
+          //$id: 'http://cpgu.kbpm.ru/ns/rm/rdf#ArtifactWithChild',
+          '@id': 'rm:ArtifactWithChild',
+          '@type': 'sh:NodeShape',
           title: 'Требование',
           description: 'Тип ресурса',
+          targetClass: 'rm:Artifact',
           type: 'object',
           '@context': {
             '@type': 'rdf:type',
@@ -312,51 +418,52 @@ describe('SparqlGen/ArtifactsInModules', () => {
               shapeModifiability: 'system',
             },
           },
-          required: ['@id', '@type', 'title', 'hasChild' /*, 'identifier', 'assetFolder', 'artifactFormat'*/],
+          required: ['@id', '@type', 'title', 'hasChild'],
         },
-        {
+        conditions: {
           hasChild: {
             bind: {
               relation: 'exists',
               triples: [
                 triple(
                   variable('eIri2'),
-                  sparqlGen.getFullIriNamedNode('rmUserTypes:parentBinding'),
+                  repository.queryPrefixes.getFullIriNamedNode('rmUserTypes:parentBinding'),
                   variable('eIri1'),
                 ),
               ],
             },
           },
         },
-      )
-      /*.addSparqlShape(artifactSchema)
-      .addSparqlShape({
-        '@id': 'rm:UsedInModuleHasChild',
-        properties: {
-          // context-less required property!!!
-          hasChild: {
-            title: 'Имеет потомков',
-            description: 'Имеет потомков',
-            type: 'boolean',
-            shapeModifiability: 'system',
-          },
-        },
-        required: ['hasChild'],
-      },
-      {
-        hasChild: {
-          bind: {
-            relation: 'exists',
-            triples: [
-              triple(variable('eIri2'), sparqlGen.getFullIriNamedNode('rmUserTypes:parentBinding'), variable('eIri1')),
-            ],
-          },
-        },
-      })*/
-      .selectObjectsQuery()
-      .orderBy([{ expression: variable('bookOrder0'), descending: false }])
-      .limit(10);
-    const genQueryStr = sparqlGen.stringify();
+      }],
+      orderBy: [{ expression: variable('bookOrder0'), descending: false }],
+      limit: 10,
+    });
+      //.addSparqlShape(artifactSchema)
+      //.addSparqlShape({
+      //  '@id': 'rm:UsedInModuleHasChild',
+      //  properties: {
+      //    // context-less required property!!!
+      //    hasChild: {
+      //      title: 'Имеет потомков',
+      //      description: 'Имеет потомков',
+      //      type: 'boolean',
+      //      shapeModifiability: 'system',
+      //    },
+      //  },
+      //  required: ['hasChild'],
+      //},
+      //{
+      //  hasChild: {
+      //    bind: {
+      //      relation: 'exists',
+      //      triples: [
+      //        triple(variable('eIri2'), sparqlGen.getFullIriNamedNode('rmUserTypes:parentBinding'), variable('eIri1')),
+      //      ],
+      //    },
+      //  },
+      //})
+    const genQueryStr = await query.selectObjectsQueryStr();
+    repository.removeQuery(query);
     //console.log('selectModuleContentQuery', genQueryStr);
     const correctParsedQuery = parser.parse(`
     PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -389,21 +496,72 @@ describe('SparqlGen/ArtifactsInModules', () => {
   });
 });
 
-describe('SparqlGen/ArtifactSchema', () => {
-  it(`SparqlGen select selectMaxObjectId should generate correctly`, async () => {
-    provider.addSchema(artifactSchema);
+
+describe('ArtifactSchema', () => {
+  it('select Artifact with type info should generate correctly', async () => {
+    repository.schemas.addSchema(artifactSchema);
     if (artifactSchema.properties === undefined) fail();
-    const order = [{ expression: variable('identifier0'), descending: true }];
-    const variables = {
-      identifier: artifactSchema.properties.identifier,
-    };
-    sparqlGen
-      .addSparqlShape(artifactSchema, {}, variables)
-      .selectObjectsWithTypeInfoQuery()
-      .limit(1)
-      .orderBy(order);
-    const genQueryStr = sparqlGen.stringify();
-    console.log('deleteObjectQuery', genQueryStr);
+    const query = await repository.addQuery({
+      shapes: [{
+        schema: artifactSchema['@id'],
+      }],
+      distinct: true,
+    });
+    const genQueryStr = await query.selectObjectsWithTypeInfoQueryStr();
+    repository.removeQuery(query);
+    //console.log('genQueryStr', genQueryStr);
+    const correctParsedQuery = parser.parse(`
+    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+    PREFIX dcterms: <http://purl.org/dc/terms/>
+    PREFIX oslc: <http://open-services.net/ns/core#>
+    PREFIX nav: <http://cpgu.kbpm.ru/ns/rm/navigation#>
+    PREFIX rm: <http://cpgu.kbpm.ru/ns/rm/rdf#>
+    SELECT DISTINCT ?eIri0 ?identifier0 ?title0 ?description0 ?creator0 ?created0 ?modifiedBy0 ?modified0 ?processArea0 ?assetFolder0 ?artifactFormat0 ?type0 WHERE {
+      ?eIri0 rdf:type ?type0.
+      FILTER(NOT EXISTS {
+        ?subtype0 ^rdf:type ?eIri0;
+          rdfs:subClassOf ?type0.
+        FILTER(?subtype0 != ?type0)
+      })
+      FILTER(EXISTS {
+        ?type0 (rdfs:subClassOf*) ?supertype0.
+        FILTER(?supertype0 = rm:Artifact)
+      })
+      ?eIri0 dcterms:title ?title0.
+      OPTIONAL { ?eIri0 dcterms:identifier ?identifier0. }
+      OPTIONAL { ?eIri0 dcterms:description ?description0. }
+      OPTIONAL { ?eIri0 dcterms:creator ?creator0. }
+      OPTIONAL { ?eIri0 dcterms:created ?created0. }
+      OPTIONAL { ?eIri0 oslc:modifiedBy ?modifiedBy0. }
+      OPTIONAL { ?eIri0 dcterms:modified ?modified0. }
+      OPTIONAL { ?eIri0 nav:processArea ?processArea0. }
+      OPTIONAL { ?eIri0 rm:assetFolder ?assetFolder0. }
+      OPTIONAL { ?eIri0 rm:artifactFormat ?artifactFormat0. }
+    }`);
+    expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery);
+  });
+
+  it('select selectMaxObjectId should generate correctly', async () => {
+    repository.schemas.addSchema(artifactSchema);
+    if (artifactSchema.properties === undefined) fail();
+    const query = await repository.addQuery({
+      shapes: [{
+        schema: artifactSchema['@id'],
+        variables: {
+          identifier: artifactSchema.properties.identifier,
+        },
+      }],
+      limit: 1,
+      orderBy: [{
+        expression: variable('identifier0'),
+        descending: true,
+      }],
+      distinct: true,
+    });
+    const genQueryStr = await query.selectObjectsWithTypeInfoQueryStr();
+    repository.removeQuery(query);
+    //console.log('genQueryStr', genQueryStr);
     const correctParsedQuery = parser.parse(`
       PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
       PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -420,7 +578,7 @@ describe('SparqlGen/ArtifactSchema', () => {
           ?type0 (rdfs:subClassOf*) ?supertype0.
           FILTER(?supertype0 = rm:Artifact)
         })
-        OPTIONAL { ?eIri0 dcterms:identifier ?identifier0. }
+        ?eIri0 dcterms:identifier ?identifier0.
       }
       ORDER BY DESC (?identifier0)
       LIMIT 1`);
@@ -428,13 +586,18 @@ describe('SparqlGen/ArtifactSchema', () => {
   });
 });
 
-describe('SparqlGen/deleteObjectQuery', () => {
-  it(`SparqlGen delete one schema with iri should generate correctly`, async () => {
-    provider.addSchema(artifactSchema);
-    sparqlGen
-      .addSparqlShape(artifactSchema, { '@id': 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml' })
-      .deleteObjectQuery();
-    const genQueryStr = sparqlGen.stringify();
+
+describe('deleteObjectQuery', () => {
+  it('delete one schema with iri should generate correctly', async () => {
+    repository.schemas.addSchema(artifactSchema);
+    const query = await repository.addQuery({
+      schema: artifactSchema['@id'],
+      conditions: {
+        '@_id': 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml'
+      },
+    });
+    const genQueryStr = await query.deleteObjectQueryStr();
+    repository.removeQuery(query);
     //console.log('deleteObjectQuery', genQueryStr);
     const correctParsedQuery = parser.parse(`
       PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -446,10 +609,17 @@ describe('SparqlGen/deleteObjectQuery', () => {
       }`);
     expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery);
   });
-  it(`SparqlGen delete one schema with property should generate correctly`, async () => {
-    provider.addSchema(artifactSchema);
-    sparqlGen.addSparqlShape(artifactSchema, { identifier: 3 }).deleteObjectQuery();
-    const genQueryStr = sparqlGen.stringify();
+
+  it('delete one schema with property should generate correctly', async () => {
+    repository.schemas.addSchema(artifactSchema);
+    const query = await repository.addQuery({
+      schema: artifactSchema['@id'],
+      conditions: {
+        identifier: 3,
+      },
+    });
+    const genQueryStr = await query.deleteObjectQueryStr();
+    repository.removeQuery(query);
     //console.log('deleteObjectQuery', genQueryStr);
     const correctParsedQuery = parser.parse(`
       PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -464,24 +634,42 @@ describe('SparqlGen/deleteObjectQuery', () => {
       }`);
     expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery);
   });
+
+  it('delete all schemas by type should generate correctly', async () => {
+    repository.schemas.addSchema(artifactSchema);
+    const query = await repository.addQuery({
+      schema: artifactSchema['@id'],
+    });
+    const genQueryStr = await query.deleteObjectQueryStr();
+    repository.removeQuery(query);
+    //console.log('deleteObjectQuery', genQueryStr);
+    const correctParsedQuery = parser.parse(`
+      PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+      PREFIX rm:      <http://cpgu.kbpm.ru/ns/rm/rdf#>
+      DELETE { ?eIri0 ?p0 ?o0 }
+      WHERE {
+        ?eIri0 rdf:type rm:Artifact;
+          ?p0 ?o0.
+      }`);
+    expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery);
+  });
 });
 
-describe('SparqlGen/insertObjectQuery', () => {
-  it(`SparqlGen delete one schema with data should generate correctly`, async () => {
-    provider.addSchema(artifactSchema);
-    sparqlGen
-      .addSparqlShape(
-        artifactSchema,
-        {},
-        {},
-        {
-          '@id': 'file:///urn-45952.xml',
+
+describe('insertObjectQuery', () => {
+  it('delete one schema with data should generate correctly', async () => {
+    repository.schemas.addSchema(artifactSchema);
+    const query = await repository.addQuery({
+      schema: artifactSchema['@id'],
+      data: {
+        // screened with '_' to distinguish from Condition object @id
+        '@_id': 'file:///urn-45952.xml',
           creator: 'users:amivanoff',
           created: '1970-01-01T00:00:00-02:00',
-        },
-      )
-      .insertObjectQuery();
-    const genQueryStr = sparqlGen.stringify();
+      },
+    });
+    const genQueryStr = await query.insertObjectQueryStr();
+    repository.removeQuery(query);
     //console.log(genQueryStr);
     const correctParsedQuery = parser.parse(`
       PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -498,16 +686,22 @@ describe('SparqlGen/insertObjectQuery', () => {
   });
 });
 
-describe('SparqlGen/updateObjectQuery', () => {
-  it(`SparqlGen update one schema with property and no uri should generate correctly`, async () => {
-    provider.addSchema(artifactSchema);
-    const data = {
-      title: 'title',
-      modified: '2019-08-07T05:21:43.581Z',
-      modifiedBy: 'users:amivanoff',
-    };
-    sparqlGen.addSparqlShape(artifactSchema, { identifier: 1 }, {}, data).updateObjectQuery();
-    const genQueryStr = sparqlGen.stringify();
+
+describe('updateObjectQuery', () => {
+  it('update one schema with property and no uri should generate correctly', async () => {
+    repository.schemas.addSchema(artifactSchema);
+    const query = await repository.addQuery({
+      schema: artifactSchema['@id'],
+      conditions: { identifier: 1 },
+      data: {
+        title: 'title',
+        modified: '2019-08-07T05:21:43.581Z',
+        modifiedBy: 'users:amivanoff',
+      },
+    });
+    const genQueryStr = await query.updateObjectQueryStr();
+    repository.removeQuery(query);
+    //console.log(genQueryStr);
     const correctParsedQuery = parser.parse(`
       PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
       PREFIX xsd:     <http://www.w3.org/2001/XMLSchema#>
@@ -535,16 +729,25 @@ describe('SparqlGen/updateObjectQuery', () => {
       }`);
     expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery);
   });
-  it(`SparqlGen update one schema with property and uri should generate correctly`, async () => {
-    provider.addSchema(artifactSchema);
-    const data = {
-      title: 'title',
-      modified: '2019-08-07T05:21:43.581Z',
-      modifiedBy: 'users:amivanoff',
-    };
+  
+  it('update one schema with property and uri should generate correctly', async () => {
+    repository.schemas.addSchema(artifactSchema);
     const id = 'rm:myid';
-    sparqlGen.addSparqlShape(artifactSchema, { '@id': id, identifier: 1 }, {}, data).updateObjectQuery();
-    const genQueryStr = sparqlGen.stringify();
+    const query = await repository.addQuery({
+      schema: artifactSchema['@id'],
+      conditions: {
+        '@_id': id,
+        identifier: 1,
+      },
+      data: {
+        title: 'title',
+        modified: '2019-08-07T05:21:43.581Z',
+        modifiedBy: 'users:amivanoff',
+      },
+    });
+    const genQueryStr = await query.updateObjectQueryStr();
+    repository.removeQuery(query);
+    //console.log(genQueryStr);
     const correctParsedQuery = parser.parse(`
       PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
       PREFIX xsd:     <http://www.w3.org/2001/XMLSchema#>

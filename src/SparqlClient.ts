@@ -18,6 +18,7 @@ export interface Results {
 export interface FileUploadConfig {
   file: string;
   baseURI: string;
+  graph?: string;
 }
 
 /**
@@ -96,7 +97,7 @@ export async function sendPostQuery(
       url,
       headers: {
         Accept: 'application/sparql-results+json',
-        'Content-Type': 'application/sparql-query',
+        'Content-Type': 'application/sparql-query;charset=UTF-8',
       },
       data: query,
       //transformResponse: (r) => r.data

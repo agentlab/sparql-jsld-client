@@ -1,9 +1,11 @@
 import { JSONSchema6forRdf } from '../ObjectProvider';
 
-export const NopSchema: JSONSchema6forRdf = {
+export const NopSchema: any/*JSONSchema6forRdf*/ = {
   $schema: 'http://json-schema.org/draft-07/schema#',
-  '@id': 'rdfs:Nop', // json-ld
-  '@type': 'rdfs:Nop', // json-ld
+  //$id: 'http://cpgu.kbpm.ru/ns/rm/rdf#NopSchema',
+  '@id': 'rm:NopSchema', // json-ld
+  '@type': 'sh:NodeShape', // json-ld
+  targetClass: 'rdfs:Nop',
   properties: {
     '@id': {
       type: 'string',
@@ -14,12 +16,14 @@ export const NopSchema: JSONSchema6forRdf = {
   required: ['@id'],
 };
 
-export const ResourceSchema: JSONSchema6forRdf = {
+export const ResourceSchema: any/*JSONSchema6forRdf*/ = {
   $schema: 'http://json-schema.org/draft-07/schema#',
-  '@id': 'rdfs:Resource', // json-ld
-  '@type': 'rdfs:Resource', // json-ld
+  //$id: 'http://cpgu.kbpm.ru/ns/rm/rdf#ResourceSchema',
+  '@id': 'rm:ResourceSchema', // json-ld
+  '@type': 'sh:NodeShape', // json-ld
   title: 'Resource Schema',
   description: 'Schema of RDF Resource',
+  targetClass: 'rdfs:Resource',
   type: 'object',
   '@context': {
     '@type': 'rdf:type',
@@ -44,12 +48,14 @@ export const ResourceSchema: JSONSchema6forRdf = {
   required: ['@id'],
 };
 
-export const ClassSchema: JSONSchema6forRdf = {
+export const ClassSchema: any/*JSONSchema6forRdf*/ = {
   $schema: 'http://json-schema.org/draft-07/schema#',
-  '@id': 'rdfs:Class', // json-ld
-  '@type': 'rdfs:Class', // json-ld
+  //$id: 'http://cpgu.kbpm.ru/ns/rm/rdf#Class',
+  '@id': 'rm:Class', // json-ld
+  '@type': 'sh:NodeShape', // json-ld
   title: 'Class Schema',
   description: 'Schema of RDFS Class',
+  targetClass: 'rdfs:Class',
   type: 'object',
   '@context': {
     '@type': 'rdf:type',

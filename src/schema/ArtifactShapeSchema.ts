@@ -1,11 +1,12 @@
 import { JSONSchema6forRdf } from '../ObjectProvider';
 
-export const ArtifactShapeSchema: JSONSchema6forRdf = {
+export const ArtifactShapeSchema: any/*JSONSchema6forRdf*/ = {
   $schema: 'http://json-schema.org/draft-07/schema#',
-  '@id': 'sh:NodeShape',
+  '@id': 'sh:NodeShapeShape',
   '@type': 'sh:NodeShape',
   title: 'Artifact Shape Schema',
   description: 'Schema of Artifact Shape (Meta-schema)',
+  targetClass: 'sh:NodeShape',
   type: 'object',
   '@context': {
     '@type': 'rdf:type',
@@ -64,13 +65,14 @@ export const ArtifactShapeSchema: JSONSchema6forRdf = {
   required: ['@id', 'targetClass', 'property'], // arrays should be required
 };
 
-export const PropertyShapeSchema: JSONSchema6forRdf = {
+export const PropertyShapeSchema: any/*JSONSchema6forRdf*/ = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   //$id: 'http://example.com/product.schema.json',
-  '@id': 'sh:PropertyShape',
-  '@type': 'sh:PropertyShape',
+  '@id': 'sh:PropertyShapeShape',
+  '@type': 'sh:NodeShape',
   title: 'Property Shape Schema',
   description: 'Schema of Property Shape (Meta-schema)',
+  targetClass: 'sh:PropertyShape',
   type: 'object',
   '@context': {
     '@type': 'rdf:type',

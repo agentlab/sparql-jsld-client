@@ -31,13 +31,83 @@ export function createRepositoryConfig(repParam: JsObject = {}, repType: string 
     rep:repositoryImpl [
       rep:repositoryType "openrdf:SailRepository" ;
       sr:sailImpl [
-        sail:sailType "rdf4j:SchemaCachingRDFSInferencer" ;
+          sail:sailType "rdf4j:SchemaCachingRDFSInferencer" ;
+          sail:delegate [
+            sail:sailType "openrdf:NativeStore" ;
+            sail:iterationCacheSyncThreshold "${repParam['Query Iteration Cache size'] || 10000}";
+            ns:tripleIndexes "${repParam['Triple indexes'] || 'spoc,posc'}";
+            sb:evaluationStrategyFactory "${repParam['EvaluationStrategyFactory'] ||
+              'org.eclipse.rdf4j.query.algebra.evaluation.impl.StrictEvaluationStrategyFactory'}"
+          ]
+        ]
+    ].
+  `;
+  if (repType === 'native-rdfs-dt')
+    return `
+  #
+  # Sesame configuration template for a native RDF repository with
+  # RDF Schema and direct type hierarchy inferencing
+  #
+  @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+  @prefix rep: <http://www.openrdf.org/config/repository#>.
+  @prefix sr: <http://www.openrdf.org/config/repository/sail#>.
+  @prefix sail: <http://www.openrdf.org/config/sail#>.
+  @prefix ns: <http://www.openrdf.org/config/sail/native#>.
+  @prefix sb: <http://www.openrdf.org/config/sail/base#>.
+        
+  [] a rep:Repository ;
+    rep:repositoryID "${repParam['Repository ID']}" ;
+    rdfs:label "${repParam['Repository title'] || 'Native store with RDF Schema and direct type inferencing'}" ;
+    rep:repositoryImpl [
+      rep:repositoryType "openrdf:SailRepository" ;
+      sr:sailImpl [
+        sail:sailType "openrdf:DirectTypeHierarchyInferencer" ;
         sail:delegate [
-          sail:sailType "openrdf:NativeStore" ;
-          sail:iterationCacheSyncThreshold "${repParam['Query Iteration Cache size'] || 10000}";
-          ns:tripleIndexes "${repParam['Triple indexes'] || 'spoc,posc'}";
-          sb:evaluationStrategyFactory "${repParam['EvaluationStrategyFactory'] ||
-            'org.eclipse.rdf4j.query.algebra.evaluation.impl.StrictEvaluationStrategyFactory'}"
+          sail:sailType "rdf4j:SchemaCachingRDFSInferencer" ;
+          sail:delegate [
+            sail:sailType "openrdf:NativeStore" ;
+            sail:iterationCacheSyncThreshold "${repParam['Query Iteration Cache size'] || 10000}";
+            ns:tripleIndexes "${repParam['Triple indexes'] || 'spoc,posc'}";
+            sb:evaluationStrategyFactory "${repParam['EvaluationStrategyFactory'] ||
+              'org.eclipse.rdf4j.query.algebra.evaluation.impl.StrictEvaluationStrategyFactory'}"
+          ]
+        ]
+      ]
+    ].
+  `;
+  if (repType === 'native-rdfs-dt-shacl')
+    return `
+  #
+  # Sesame configuration template for a native RDF repository with
+  # RDF Schema inferencing
+  #
+  @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+  @prefix rep: <http://www.openrdf.org/config/repository#>.
+  @prefix sail: <http://www.openrdf.org/config/sail#>.
+  @prefix sail-shacl: <http://rdf4j.org/config/sail/shacl#> .
+  @prefix ns: <http://www.openrdf.org/config/sail/native#>.
+  @prefix sb: <http://www.openrdf.org/config/sail/base#>.
+  @prefix sr: <http://www.openrdf.org/config/repository/sail#>.
+  @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+        
+  [] a rep:Repository ;
+    rep:repositoryID "${repParam['Repository ID']}" ;
+    rdfs:label "${repParam['Repository title'] || 'Native store with RDF Schema inferencing'}" ;
+    rep:repositoryImpl [
+      rep:repositoryType "openrdf:SailRepository" ;
+      sr:sailImpl [
+        sail:sailType "rdf4j:SparqledShaclSail" ;
+        sail:delegate [
+          sail:sailType "openrdf:DirectTypeHierarchyInferencer" ;
+          sail:delegate [
+            sail:sailType "rdf4j:SchemaCachingRDFSInferencer" ;
+            sail:delegate [
+              sail:sailType "openrdf:NativeStore" ;
+              sail:iterationCacheSyncThreshold "${repParam['Query Iteration Cache size'] || 10000}";
+              ns:tripleIndexes "${repParam['Triple indexes'] || 'spoc,posc'}";
+              sb:evaluationStrategyFactory "${repParam['EvaluationStrategyFactory'] || 'org.eclipse.rdf4j.query.algebra.evaluation.impl.StrictEvaluationStrategyFactory'}"
+            ]
+          ]
         ]
       ]
     ].
@@ -111,7 +181,7 @@ export class SparqlClientImpl implements SparqlClient {
     let response = await sendGet(url);
     if (response.status < 200 && response.status > 204) return Promise.reject('Cannot get namespaces');
     let queryPrefixes: { [s: string]: string } = {};
-    //console.log('response.data', response.data);
+    //console.debug('response.data', response.data);
     if (response.data && response.data.results) {
       let results: Results = { bindings: [] };
       results = response.data.results;
@@ -126,21 +196,23 @@ export class SparqlClientImpl implements SparqlClient {
     return queryPrefixes;
   }
 
-  async uploadStatements(statements: string, baseURI?: string /*, graph?: string*/): Promise<void> {
+  async uploadStatements(statements: string, baseURI?: string, graph?: string): Promise<void> {
     //console.debug(() => `uploadStatements url=${this.statementsUrl} graph=${graph}`);
     statements = statements.replace(/^#.*$/gm, '');
     //console.debug(() => `uploadStatements statements=${statements}`);
-    const response = await sendPostStatements(this.statementsUrl, statements, { baseURI });
+    const params: JsObject = { baseURI };
+    if (graph) params['context'] = graph;
+    const response = await sendPostStatements(this.statementsUrl, statements, params);
     if (response.status < 200 && response.status > 204) return Promise.reject('Cannot upload statements');
   }
 
   async uploadFiles(files: FileUploadConfig[], rootFolder = ''): Promise<void[]> {
-    //console.log('uploadFiles ', files);
+    //console.debug('uploadFiles ', files);
     const promises = files.map((f) => {
       const statements = fs.readFileSync(rootFolder + f.file, 'utf8');
-      //console.log('file=', f.file);
-      //console.log('statements=', statements);
-      return this.uploadStatements(statements, f.baseURI);
+      //console.debug('file=', f.file);
+      //console.debug('statements=', statements);
+      return this.uploadStatements(statements, f.baseURI, f.graph);
     });
     return Promise.all(promises);
   }
@@ -207,13 +279,14 @@ export class SparqlClientImpl implements SparqlClient {
       };
     }
     const url = this.createRepositoryUrl(repParam['Repository ID']);
+    const data = createRepositoryConfig(repParam, repType);
     const response = await axios.request({
       method: 'put',
       url,
       headers: {
         'Content-Type': 'text/turtle',
       },
-      data: createRepositoryConfig(repParam, repType),
+      data,
     });
     if (response.status < 200 && response.status > 204) throw Error(`createRepository fault, url=${url}`);
     //console.debug(() => `createRepository url=${url}`);

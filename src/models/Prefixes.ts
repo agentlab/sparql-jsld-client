@@ -115,6 +115,7 @@ export const Prefixes = types
           });
         }
       }
+      queryPrefixes['sesame'] = 'http://www.openrdf.org/schema/sesame#';
       return queryPrefixes;
     });
     return {

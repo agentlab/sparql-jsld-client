@@ -6,11 +6,12 @@ export const moduleFormatUri = 'rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Module';
 
 export const artifactSchema: JSONSchema6forRdf = {
   $schema: 'http://json-schema.org/draft-07/schema#',
-  //$id: 'rm:Artifact',
-  '@id': 'rm:Artifact',
-  '@type': 'rm:Artifact',
+  //$id: 'http://cpgu.kbpm.ru/ns/rm/rdf#ArtifactShape',
+  '@id': 'rm:ArtifactShape',
+  '@type': 'sh:NodeShape',
   title: 'Требование',
   description: 'Тип ресурса',
+  targetClass: 'rm:Artifact',
   type: 'object',
   '@context': {
     '@type': 'rdf:type',
@@ -134,9 +135,11 @@ export const artifactSchema: JSONSchema6forRdf = {
 
 export const genericArtifactSchema: JSONSchema6forRdf = {
   $schema: 'http://json-schema.org/draft-07/schema#',
-  allOf: [{ $ref: 'rm:Artifact' }],
-  '@id': 'cpgu:GenericArtifact',
-  '@type': 'cpgu:GenericArtifact',
+  //$id: 'http://cpgu.kbpm.ru/ns/rm/cpgu#GenericArtifactShape',
+  allOf: [{ $ref: 'rm:ArtifactShape' }],
+  '@id': 'cpgu:GenericArtifactShape',
+  '@type': 'sh:NodeShape',
+  targetClass: 'cpgu:GenericArtifact',
   type: 'object',
   '@context': {
     alternative: 'dcterms:alternative',
@@ -182,20 +185,39 @@ export const genericArtifactSchema: JSONSchema6forRdf = {
 
 export const classifierSchema: JSONSchema6forRdf = {
   $schema: 'http://json-schema.org/draft-07/schema#',
-  allOf: [{ $ref: 'cpgu:GenericArtifact' }],
-  '@id': 'cpgu:Classifier',
-  '@type': 'cpgu:Classifier',
-  type: 'object',
+  //$id: 'http://cpgu.kbpm.ru/ns/rm/cpgu#ClassifierShape',
+  allOf: [{ $ref: 'cpgu:GenericArtifactShape' }],
+  '@id': 'cpgu:ClassifierShape',
+  '@type': 'sh:NodeShape',
   title: 'Классификатор',
   description: 'Классификатор или справочник. Описывает структуру классификатора (не данные из него)',
-  inCreationMenu: true,
-  defaultIndividNs: 'cpgu:',
-  defaultFormat: 'rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Module',
-  iconReference: 'http://cpgu.kbpm.ru/ns/rm/images/use-case',
+  targetClass: 'cpgu:Classifier',
+  type: 'object',
+  //inCreationMenu: true,
+  //defaultIndividNs: 'cpgu:',
+  //defaultFormat: 'rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Module',
+  //iconReference: 'http://cpgu.kbpm.ru/ns/rm/images/use-case',
+};
+
+export const classifierCompleteSchema: JSONSchema6forRdf ={
+  ...classifierSchema,
+  '@context': {
+    ...artifactSchema['@context'],
+    ...genericArtifactSchema['@context'],
+  },
+  properties: {
+    ...artifactSchema.properties,
+    ...genericArtifactSchema.properties,
+  },
+  required: [
+    ...artifactSchema.required || [],
+    ...genericArtifactSchema.required || [],
+  ],
 };
 
 export const artifactShape: JsObject = {
   $schema: 'http://json-schema.org/draft-07/schema#',
+  //$id: 'http://cpgu.kbpm.ru/ns/rm/rdf#ArtifactShape',
   '@id': 'rm:ArtifactShape',
   '@type': 'sh:NodeShape',
   //defaultFormat: undefined,
@@ -376,11 +398,13 @@ export const artifactShape: JsObject = {
 
 export const usedInSchema: JSONSchema6forRdf = {
   $schema: 'http://json-schema.org/draft-07/schema#',
-  '@id': 'rmUserTypes:UsedIn',
-  '@type': 'rmUserTypes:UsedIn',
+  //$id: 'http://cpgu.kbpm.ru/ns/rm/user-types#UsedInShape',
+  '@id': 'rmUserTypes:UsedInShape',
+  '@type': 'sh:NodeShape',
   type: 'object',
   title: 'Использование',
   description: 'Собирает информацию о связях между требованиями.',
+  targetClass: 'rmUserTypes:UsedIn',
   '@context': {
     '@type': 'rdf:type',
     /*creator: {
@@ -472,12 +496,14 @@ export const usedInSchema: JSONSchema6forRdf = {
 
 export const usedInModuleSchema: JSONSchema6forRdf = {
   $schema: 'http://json-schema.org/draft-07/schema#',
-  allOf: [{ $ref: 'rmUserTypes:UsedIn' }],
-  '@id': 'rmUserTypes:UsedInModule',
-  '@type': 'rmUserTypes:UsedInModule',
-  type: 'object',
+  //$id: 'http://cpgu.kbpm.ru/ns/rm/user-types#UsedInModuleShape',
+  allOf: [{ $ref: 'rmUserTypes:UsedInShape' }],
+  '@id': 'rmUserTypes:UsedInModuleShape',
+  '@type': 'sh:NodeShape',
   title: 'Использование в модуле',
   description: 'Собирает информацию о связях между требованиями в модуле.',
+  targetClass: 'rmUserTypes:UsedInModule',
+  type: 'object',
   '@context': {
     '@type': 'rdf:type', //from parent
     object: {

@@ -1,8 +1,9 @@
-import moment from 'moment';
+import uuid62 from 'uuid62';
 import { types, flow, getParentOfType, getSnapshot } from 'mobx-state-tree';
 import { NamedNode, Quad, Variable } from 'rdf-js';
 import { literal, namedNode, triple, variable } from '@rdfjs/data-model';
 import { Generator, SelectQuery, Update } from 'sparqljs';
+import { cloneDeep } from 'lodash';
 
 import {
   copyObjectPropsWithRenameOrFilter,
@@ -97,27 +98,27 @@ function renumerateShapeVariables(shape: SparqlShapeInternal2, index: number) {
   });
 }
 
-      /**
-       *
-       * @param uri
-       * @param varName
-       */
+/**
+ *
+ * @param uri
+ * @param varName
+ */
 function genShapeSparqlSubject(uri: string | undefined, varName: string, getFullIriNamedNode: GetFullIriNamedNodeType): NamedNode | Variable {
-        if (uri === undefined) {
-          return variable(varName);
-        }
+  if (uri === undefined) {
+    return variable(varName);
+  }
   return getFullIriNamedNode(uri);
 }
 
-      /**
-       * generate unique variable name for element iri & check for uniquiness
-       * @param varPref '
-       * @param no
-       */
+/**
+ * generate unique variable name for element iri & check for uniquiness
+ * @param varPref '
+ * @param no
+ */
 function genUniqueVarName2(varPref: string, no: number, shapes: any[]): string {
-        let varName = varPref + no;
+  let varName = varPref + no;
   shapes.forEach((shape) => {
-          while (shape.schema.properties && shape.schema.properties.get(varName)) {
+    while (shape.schema.properties && shape.schema.properties.get(varName)) {
       varName += shapes.length;
     }
   });
@@ -134,70 +135,70 @@ function genUniqueVarName(varPref: string, no: number, shapes: SparqlShapeIntern
   shapes.forEach((shape) => {
     while (shape.schema.properties && shape.schema.properties[varName]) {
       varName += shapes.length;
-          }
-        });
-        return varName;
+    }
+  });
+  return varName;
 }
 
 function getWhereVar(shape: SparqlShapeInternal2, getFullIriNamedNode: GetFullIriNamedNodeType, requireOptional = false): { bgps: Quad[]; options: Quad[] } {
-        const bgps: Quad[] = [];
-        const options: Quad[] = [];
-        Object.keys(shape.query.variables).forEach((key) => {
-          // filter @id, @type,...
-          if (!key.startsWith('@')) {
+  const bgps: Quad[] = [];
+  const options: Quad[] = [];
+  Object.keys(shape.query.variables).forEach((key) => {
+    // filter @id, @type,...
+    if (!key.startsWith('@')) {
       const propUri = getSchemaPropUri(shape.schema, key);
-            const varName = shape.props2vars[key];
-            if (propUri && varName) {
+      const varName = shape.props2vars[key];
+      if (propUri && varName) {
         const option = triple(shape.subj, getFullIriNamedNode(propUri), variable(varName));
         if ((shape.schema.required && shape.schema.required.includes(key)) || requireOptional) {
-                bgps.push(option);
-              } else {
-                options.push(option);
-              }
-            }
-          }
-        });
-        return { bgps, options };
+          bgps.push(option);
+        } else {
+          options.push(option);
+        }
+      }
+    }
+  });
+  return { bgps, options };
 }
 
 function getWhereVarFromDataWithoutOptinals(shape: SparqlShapeInternal2, getFullIriNamedNode: GetFullIriNamedNodeType): any[] {
   const resultWhereVars: any[] = [];
-        const bgp: Quad[] = [];
+  const bgp: Quad[] = [];
   Object.keys(shape.data).forEach((propertyKey) => {
-          if (!propertyKey.startsWith('@')) {
-            // filter @id, @type,...
+    if (!propertyKey.startsWith('@')) {
+      // filter @id, @type,...
       const propUri = getSchemaPropUri(shape.schema, propertyKey);
-            if (propUri) {
+      if (propUri) {
         const option = triple(shape.subj, getFullIriNamedNode(propUri), variable(shape.props2vars[propertyKey]));
-              bgp.push(option);
-            }
-          }
-        });
-        if (bgp.length > 0) {
-          resultWhereVars.push({
-            type: 'bgp',
-            triples: bgp,
-          });
-        }
-        return resultWhereVars;
+        bgp.push(option);
+      }
+    }
+  });
+  if (bgp.length > 0) {
+    resultWhereVars.push({
+      type: 'bgp',
+      triples: bgp,
+    });
+  }
+  return resultWhereVars;
 }
 
 function addToWhere(whereStatements: any[], query: any) {
-        if (query) {
-          if (query.where) query.where.push(...whereStatements);
-          else query.where = whereStatements;
-        }
+  if (query) {
+    if (query.where) query.where.push(...whereStatements);
+    else query.where = whereStatements;
+  }
 }
 
 function getTypeCondition(shape: SparqlShapeInternal2, getFullIriNamedNode: GetFullIriNamedNodeType): any[] {
-          return [
-            triple(
+  return [
+    triple(
       shape.subj,
-              namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
-      getFullIriNamedNode(shape.schema['@id']),
-            ),
-          ];
-        }
+      namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+      getFullIriNamedNode(shape.schema.targetClass),
+    ),
+  ];
+}
 
 function conditionsValueToObject(obj: JsObject, propKey: string, shape: SparqlShapeInternal2, abbreviateIri: StrConvertorType): void {
   const prop = shape.schema.properties ? shape.schema.properties[propKey] : undefined;
@@ -288,7 +289,7 @@ function sparqlBindingsToObjectByShape(bindings: Bindings, shape: SparqlShapeInt
         }
       });
     }
-    if (!obj['@type'] && shape.schema) obj['@type'] = shape.schema['@type'];
+    if (!obj['@type'] && shape.schema) obj['@type'] = shape.schema.targetClass;
   }
   return obj;
 }
@@ -351,516 +352,516 @@ function sparqlBindingsToObjectProp(bindings: Bindings, shapes: SparqlShapeInter
   return {};
 }
 
-      /**
-       * Former addToWhereSuperTypesFilter
-       * @param schema
-       * @param subj
-       */
+/**
+ * Former addToWhereSuperTypesFilter
+ * @param schema
+ * @param subj
+ */
 function createToWhereSuperTypesFilter(shape: SparqlShapeInternal2, getFullIriNamedNode: GetFullIriNamedNodeType) {
   if (shape.schema.properties) {
-          const typeFilter: any[] = [
+    const typeFilter: any[] = [
       triple(shape.subj as Variable, getFullIriNamedNode('rdf:type'), variable('type0')),
+      {
+        type: 'filter',
+        expression: {
+          type: 'operation',
+          operator: 'notexists',
+          args: [
             {
-              type: 'filter',
-              expression: {
-                type: 'operation',
-                operator: 'notexists',
-                args: [
-                  {
-                    type: 'group',
-                    patterns: [
-                      {
-                        type: 'bgp',
-                        triples: [
-                          {
-                            subject: variable('subtype0'),
-                            predicate: {
-                              type: 'path',
-                              pathType: '^',
-                              items: [namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type')],
-                            },
+              type: 'group',
+              patterns: [
+                {
+                  type: 'bgp',
+                  triples: [
+                    {
+                      subject: variable('subtype0'),
+                      predicate: {
+                        type: 'path',
+                        pathType: '^',
+                        items: [namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type')],
+                      },
                       object: shape.subj,
-                          },
-                          triple(
-                            variable('subtype0'),
-                            namedNode('http://www.w3.org/2000/01/rdf-schema#subClassOf'),
-                            variable('type0'),
-                          ),
-                        ],
-                      },
-                      {
-                        type: 'filter',
-                        expression: {
-                          type: 'operation',
-                          operator: '!=',
-                          args: [variable('subtype0'), variable('type0')],
-                        },
-                      },
-                    ],
+                    },
+                    triple(
+                      variable('subtype0'),
+                      namedNode('http://www.w3.org/2000/01/rdf-schema#subClassOf'),
+                      variable('type0'),
+                    ),
+                  ],
+                },
+                {
+                  type: 'filter',
+                  expression: {
+                    type: 'operation',
+                    operator: '!=',
+                    args: [variable('subtype0'), variable('type0')],
                   },
-                ],
-              },
+                },
+              ],
             },
+          ],
+        },
+      },
+      {
+        type: 'filter',
+        expression: {
+          type: 'operation',
+          operator: 'exists',
+          args: [
             {
-              type: 'filter',
-              expression: {
-                type: 'operation',
-                operator: 'exists',
-                args: [
-                  {
-                    type: 'group',
-                    patterns: [
-                      {
-                        type: 'bgp',
-                        triples: [
-                          {
-                            subject: variable('type0'),
-                            predicate: {
-                              type: 'path',
-                              pathType: '*',
-                              items: [namedNode('http://www.w3.org/2000/01/rdf-schema#subClassOf')],
-                            },
-                            object: variable('supertype0'),
-                          },
-                        ],
+              type: 'group',
+              patterns: [
+                {
+                  type: 'bgp',
+                  triples: [
+                    {
+                      subject: variable('type0'),
+                      predicate: {
+                        type: 'path',
+                        pathType: '*',
+                        items: [namedNode('http://www.w3.org/2000/01/rdf-schema#subClassOf')],
                       },
-                      {
-                        type: 'filter',
-                        expression: {
-                          type: 'operation',
-                          operator: '=',
-                    args: [variable('supertype0'), getFullIriNamedNode(shape.schema['@type'])],
-                        },
-                      },
-                    ],
+                      object: variable('supertype0'),
+                    },
+                  ],
+                },
+                {
+                  type: 'filter',
+                  expression: {
+                    type: 'operation',
+                    operator: '=',
+                    args: [variable('supertype0'), getFullIriNamedNode(shape.schema.targetClass)],
                   },
-                ],
-              },
+                },
+              ],
             },
-          ];
-          return typeFilter;
-        }
-        return [];
+          ],
+        },
+      },
+    ];
+    return typeFilter;
+  }
+  return [];
 }
 
 function addToBgpTypeCondition(shape: SparqlShapeInternal2, getFullIriNamedNode: GetFullIriNamedNodeType) {
-  if (shape.schema['@type']) {
-          const t = triple(
-            shape.subj,
-            namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
-      getFullIriNamedNode(shape.schema['@type']),
-          );
-          if (!shape.query.bgps) shape.query.bgps = [t];
-          else shape.query.bgps = [t, ...shape.query.bgps];
-        }
+  if (shape.schema.targetClass) {
+    const t = triple(
+      shape.subj,
+      namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+      getFullIriNamedNode(shape.schema.targetClass),
+    );
+    if (!shape.query.bgps) shape.query.bgps = [t];
+    else shape.query.bgps = [t, ...shape.query.bgps];
+  }
 }
 
 function getConditionalTriple(property: any, subj: any, value: any, propUri: string, getFullIriNamedNode: GetFullIriNamedNodeType): Quad {
-        if (property.type === 'string') {
-          if (property.format === undefined) {
+  if (property.type === 'string') {
+    if (property.format === undefined) {
       value = literal(`${value}`, getFullIriNamedNode('xsd:string'));
-          } else if (property.format === 'iri') {
+    } else if (property.format === 'iri') {
       value = getFullIriNamedNode(value);
-          } else if (property.format === 'date-time') {
-            if (typeof value === 'object') {
+    } else if (property.format === 'date-time') {
+      if (typeof value === 'object') {
         value = literal(value.toISOString(), getFullIriNamedNode('xsd:dateTime'));
-            } else {
+      } else {
         value = literal(`${value}`, getFullIriNamedNode('xsd:dateTime'));
-            }
-          }
-        } else if (property.type === 'integer') {
+      }
+    }
+  } else if (property.type === 'integer') {
     value = literal(`${value}`, getFullIriNamedNode('xsd:integer'));
-        } else if (property.type === 'object') {
-          if (property.format === 'date-time') {
-            if (typeof value === 'object') {
-              //value = `"1970-01-01T00:00:00-02:00"^^http://www.w3.org/2001/XMLSchema#dateTime`;
+  } else if (property.type === 'object') {
+    if (property.format === 'date-time') {
+      if (typeof value === 'object') {
+        //value = `"1970-01-01T00:00:00-02:00"^^http://www.w3.org/2001/XMLSchema#dateTime`;
         value = literal(value.toISOString(), getFullIriNamedNode('xsd:dateTime'));
-            } else {
+      } else {
         value = literal(`${value}`, getFullIriNamedNode('xsd:dateTime'));
-            }
-          } else {
-            // IRI
-            if (typeof value === 'string') {
+      }
+    } else {
+      // IRI
+      if (typeof value === 'string') {
         value = getFullIriNamedNode(value);
-            }
-          }
-        }
+      }
+    }
+  }
   return triple(subj, getFullIriNamedNode(propUri), value);
 }
 
 function getSimpleFilter(schemaProperty: any, filterProperty: any, variable: Variable, getFullIriNamedNode: GetFullIriNamedNodeType): any {
-        const filter: any = {
-          operator: '=',
-          type: 'operation',
-        };
-        if (schemaProperty.type === 'string') {
-          if (schemaProperty.format === undefined) {
-            filter.args = [variable, literal(`${filterProperty}`)];
-          } else if (schemaProperty.format === 'iri') {
+  const filter: any = {
+    operator: '=',
+    type: 'operation',
+  };
+  if (schemaProperty.type === 'string') {
+    if (schemaProperty.format === undefined) {
+      filter.args = [variable, literal(`${filterProperty}`)];
+    } else if (schemaProperty.format === 'iri') {
       filter.args = [variable, getFullIriNamedNode(filterProperty)];
-          } else if (schemaProperty.format === 'date-time') {
-            if (typeof filterProperty === 'object')
+    } else if (schemaProperty.format === 'date-time') {
+      if (typeof filterProperty === 'object')
         filter.args = [variable, literal(filterProperty.toISOString(), getFullIriNamedNode('xsd:dateTime'))];
       else filter.args = [variable, literal(filterProperty, getFullIriNamedNode('xsd:dateTime'))];
-          }
-        } else if (schemaProperty.type === 'integer') {
+    }
+  } else if (schemaProperty.type === 'integer') {
     filter.args = [variable, literal(`${filterProperty}`, getFullIriNamedNode('xsd:integer'))];
-        } else if (schemaProperty.type === 'object') {
-          if (schemaProperty.format === 'date-time') {
-            if (typeof filterProperty === 'object')
+  } else if (schemaProperty.type === 'object') {
+    if (schemaProperty.format === 'date-time') {
+      if (typeof filterProperty === 'object')
         filter.args = [variable, literal(filterProperty.toISOString(), getFullIriNamedNode('xsd:dateTime'))];
-            else filter.args = [variable, literal(`${filterProperty}`)];
-          } else {
-            if (typeof filterProperty === 'string')
+      else filter.args = [variable, literal(`${filterProperty}`)];
+    } else {
+      if (typeof filterProperty === 'string')
         filter.args = [variable, getFullIriNamedNode(filterProperty)];
-            else filter.args = [variable, literal(`${filterProperty}`)];
-          }
-        } else filter.args = [variable, literal(`${filterProperty}`)];
-        return {
-          expression: filter,
-          type: 'filter',
-        };
+      else filter.args = [variable, literal(`${filterProperty}`)];
+    }
+  } else filter.args = [variable, literal(`${filterProperty}`)];
+  return {
+    expression: filter,
+    type: 'filter',
+  };
 }
 
 function buildEnumFilter(
-        filter: any,
-        filterKey: Variable,
+  filter: any,
+  filterKey: Variable,
   getFullIriNamedNode: GetFullIriNamedNodeType,
-        filterValues: any[] = [],
-        type = 'url',
-        concatOperator = '||',
-        compareOperator = '=',
-      ): any {
-        if (filterValues.length === 1) {
-          filter.type = 'operation';
-          filter.operator = compareOperator;
-          if (type === 'integer') {
+  filterValues: any[] = [],
+  type = 'url',
+  concatOperator = '||',
+  compareOperator = '=',
+): any {
+  if (filterValues.length === 1) {
+    filter.type = 'operation';
+    filter.operator = compareOperator;
+    if (type === 'integer') {
       filter.args = [filterKey, literal(`${filterValues[0]}`, getFullIriNamedNode('xsd:integer'))];
-          } else {
+    } else {
       filter.args = [filterKey, getFullIriNamedNode(filterValues[0])];
-          }
-        } else if (filterValues.length > 1) {
-          filter.type = 'operation';
-          filter.operator = concatOperator;
-          filter.args = [
+    }
+  } else if (filterValues.length > 1) {
+    filter.type = 'operation';
+    filter.operator = concatOperator;
+    filter.args = [
       buildEnumFilter(
-              {},
-              filterKey,
+        {},
+        filterKey,
         getFullIriNamedNode,
-              filterValues.slice(0, filterValues.length - 1),
-              type,
-              concatOperator,
-              compareOperator,
-            ),
+        filterValues.slice(0, filterValues.length - 1),
+        type,
+        concatOperator,
+        compareOperator,
+      ),
       buildEnumFilter(
-              {},
-              filterKey,
+        {},
+        filterKey,
         getFullIriNamedNode,
-              filterValues.slice(filterValues.length - 1, filterValues.length),
-              type,
-              concatOperator,
-              compareOperator,
-            ),
-          ];
-        }
-        return filter;
+        filterValues.slice(filterValues.length - 1, filterValues.length),
+        type,
+        concatOperator,
+        compareOperator,
+      ),
+    ];
+  }
+  return filter;
 }
 
-      /**
-       *
-       * @param shape
-       */
+/**
+ *
+ * @param shape
+ */
 function getDataTriples(shape: SparqlShapeInternal2, getFullIriNamedNode: GetFullIriNamedNodeType): any[] {
-        const triples: Quad[] = [];
+  const triples: Quad[] = [];
   let subj = shape.subj;
   if (shape.subj.termType && shape.subj.termType === 'NamedNode') subj = getFullIriNamedNode(shape.subj);
-        /*triples.push(
-          triple(
-            subj,
-            namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+  /*triples.push(
+    triple(
+      subj,
+      namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
       getFullIriNamedNode(shape.schema['@id']),
-          ),
-        );*/
+    ),
+  );*/
   Object.keys(shape.data).forEach((propertyKey) => {
     if (shape.schema.properties) {
       const property = shape.schema.properties[propertyKey];
       const value = shape.data[propertyKey];
-            if (!propertyKey.startsWith('@')) {
+      if (!propertyKey.startsWith('@')) {
         const propUri = getSchemaPropUri(shape.schema, propertyKey);
-              if (property !== undefined && propUri) {
+        if (property !== undefined && propUri) {
           let triple: Quad = getConditionalTriple(property, subj, value, propUri, getFullIriNamedNode);
-                if (triple) {
-                  triples.push(triple);
-                } else if (property.type === 'array') {
-                  const prop = {
-                    ...property,
-                    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-                    ...(<any>property.items),
-                  };
-                  if (Array.isArray(value)) {
-                    value.forEach((v) => {
+          if (triple) {
+            triples.push(triple);
+          } else if (property.type === 'array') {
+            const prop = {
+              ...property,
+              // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+              ...(<any>property.items),
+            };
+            if (Array.isArray(value)) {
+              value.forEach((v) => {
                 triple = getConditionalTriple(prop, subj, v, propUri, getFullIriNamedNode);
-                      if (triple) triples.push(triple);
-                    });
-                  } else {
+                if (triple) triples.push(triple);
+              });
+            } else {
               triple = getConditionalTriple(prop, subj, value, propUri, getFullIriNamedNode);
-                    if (triple) triples.push(triple);
-                  }
-                } else {
-                  console.warn('getDataTriples: Unknown property');
-                }
-              }
-            }
-          }
-        });
-        return triples;
-}
-
-      //TODO: упростить сигнатуру функции!
-      //Гармонизировать сигнатуру с другими функциями (getSimpleFilter, getDataTriples)
-function getExtendedFilter(
-        shape: SparqlShapeInternal2,
-        filterKey: string,
-        schemaProperty: any,
-        filterProperty: any,
-        variable: Variable,
-  getFullIriNamedNode: GetFullIriNamedNodeType
-      ): any {
-        const filter: any = {
-          type: 'operation',
-        };
-        if (schemaProperty.type === 'object') {
-          switch (filterProperty.relation) {
-            case 'any':
-        buildEnumFilter(filter, variable, getFullIriNamedNode, filterProperty.value);
-              break;
-            case 'notAny':
-        buildEnumFilter(filter, variable, getFullIriNamedNode, filterProperty.value, 'url', '&&', '!=');
-              break;
-            default:
-              break;
-          }
-          if (
-            filterProperty.value[0] !== undefined &&
-            typeof filterProperty.value[0] === 'string' &&
-            filterProperty.relation === 'equal'
-          ) {
-            filter.operator = '=';
-      filter.args = [variable, getFullIriNamedNode(filterProperty.value[0])];
-          }
-        } else if (schemaProperty.type === 'string') {
-          if (schemaProperty.format === 'iri') {
-            switch (filterProperty.relation) {
-              case 'equal':
-                filter.operator = '=';
-          filter.args = [variable, getFullIriNamedNode(filterProperty.value[0])];
-                break;
-              case 'any':
-          buildEnumFilter(filter, variable, getFullIriNamedNode, filterProperty.value);
-                break;
-              case 'notAny':
-          buildEnumFilter(filter, variable, getFullIriNamedNode, filterProperty.value, 'url', '&&', '!=');
-                break;
-              default:
-                break;
-            }
-          } else if (schemaProperty.format === 'date-time') {
-            switch (filterProperty.relation) {
-              case 'equal':
-                filter.operator = '=';
-          filter.args = [variable, literal(filterProperty.value[0], getFullIriNamedNode('xsd:dateTime'))];
-                break;
-              case 'notEqual':
-                filter.operator = '!=';
-          filter.args = [variable, literal(filterProperty.value[0], getFullIriNamedNode('xsd:dateTime'))];
-                break;
-              case 'after':
-                filter.operator = '>=';
-          filter.args = [variable, literal(filterProperty.value[0], getFullIriNamedNode('xsd:dateTime'))];
-                break;
-              case 'before':
-                filter.operator = '<=';
-          filter.args = [variable, literal(filterProperty.value[0], getFullIriNamedNode('xsd:dateTime'))];
-                break;
-              case 'between':
-                filter.operator = '&&';
-                filter.args = [
-                  {
-              args: [variable, literal(filterProperty.value[0], getFullIriNamedNode('xsd:dateTime'))],
-                    operator: '>=',
-                    type: 'operation',
-                  },
-                  {
-              args: [variable, literal(filterProperty.value[1], getFullIriNamedNode('xsd:dateTime'))],
-                    operator: '<',
-                    type: 'operation',
-                  },
-                ];
-                break;
-              default:
-                break;
+              if (triple) triples.push(triple);
             }
           } else {
-            switch (filterProperty.relation) {
-              case 'contains':
-                filter.operator = 'contains';
-                filter.args = [variable, literal(`${filterProperty.value[0]}`)];
-                break;
-              case 'notContains':
-                filter.operator = '!';
-                filter.args = [
-                  {
-                    args: [variable, literal(`${filterProperty.value[0]}`)],
-                    operator: 'contains',
-                    type: 'operation',
-                  },
-                ];
-                break;
-              case 'equal':
-                filter.operator = '=';
-                filter.args = [variable, literal(`${filterProperty.value[0]}`)];
-                break;
-              case 'startWith':
-                filter.operator = 'strstarts';
-                filter.args = [variable, literal(`${filterProperty.value[0]}`)];
-                break;
-              case 'endWith':
-                filter.operator = 'strends';
-                filter.args = [variable, literal(`${filterProperty.value[0]}`)];
-                break;
-              case 'regEx':
-                filter.operator = 'regex';
-                filter.args = [variable, literal(`${filterProperty.value[0]}`), literal('i')];
-                break;
-              default:
-                break;
-            }
+            console.warn('getDataTriples: Unknown property');
           }
-        } else if (schemaProperty.type === 'integer') {
-          switch (filterProperty.relation) {
-            case 'equal':
-              filter.operator = '=';
-        filter.args = [variable, literal(`${filterProperty.value[0]}`, getFullIriNamedNode('xsd:integer'))];
-              break;
-            case 'any':
-        buildEnumFilter(filter, variable, getFullIriNamedNode, filterProperty.value, 'integer');
-              break;
-            default:
-              break;
-          }
-        } else if (schemaProperty.type === 'array') {
         }
-
-  const propUri = getSchemaPropUri(shape.schema, filterKey);
-        switch (filterProperty.relation) {
-          case 'exists':
-            if (propUri) {
-              filter.operator = 'exists';
-              filter.args = [
-                {
-                  type: 'bgp',
-            triples: [triple(shape.subj, getFullIriNamedNode(propUri), variable)],
-                },
-              ];
-            }
-            break;
-          case 'notExists':
-            if (propUri) {
-              filter.operator = 'notexists';
-              filter.args = [
-                {
-                  type: 'bgp',
-            triples: [triple(shape.subj, getFullIriNamedNode(propUri), variable)],
-                },
-              ];
-            }
-            break;
-          case 'unassigned':
-            break;
-          default:
-            break;
-        }
-        return {
-          expression: filter,
-          type: 'filter',
-        };
+      }
+    }
+  });
+  return triples;
 }
 
-      /**
-       *
-       * @param schema
-       * @param conditions
-       */
+//TODO: упростить сигнатуру функции!
+//Гармонизировать сигнатуру с другими функциями (getSimpleFilter, getDataTriples)
+function getExtendedFilter(
+  shape: SparqlShapeInternal2,
+  filterKey: string,
+  schemaProperty: any,
+  filterProperty: any,
+  variable: Variable,
+  getFullIriNamedNode: GetFullIriNamedNodeType
+): any {
+  const filter: any = {
+    type: 'operation',
+  };
+  if (schemaProperty.type === 'object') {
+    switch (filterProperty.relation) {
+      case 'any':
+        buildEnumFilter(filter, variable, getFullIriNamedNode, filterProperty.value);
+        break;
+      case 'notAny':
+        buildEnumFilter(filter, variable, getFullIriNamedNode, filterProperty.value, 'url', '&&', '!=');
+        break;
+      default:
+        break;
+    }
+    if (
+      filterProperty.value[0] !== undefined &&
+      typeof filterProperty.value[0] === 'string' &&
+      filterProperty.relation === 'equal'
+    ) {
+      filter.operator = '=';
+      filter.args = [variable, getFullIriNamedNode(filterProperty.value[0])];
+    }
+  } else if (schemaProperty.type === 'string') {
+    if (schemaProperty.format === 'iri') {
+      switch (filterProperty.relation) {
+        case 'equal':
+          filter.operator = '=';
+          filter.args = [variable, getFullIriNamedNode(filterProperty.value[0])];
+          break;
+        case 'any':
+          buildEnumFilter(filter, variable, getFullIriNamedNode, filterProperty.value);
+          break;
+        case 'notAny':
+          buildEnumFilter(filter, variable, getFullIriNamedNode, filterProperty.value, 'url', '&&', '!=');
+          break;
+        default:
+          break;
+      }
+    } else if (schemaProperty.format === 'date-time') {
+      switch (filterProperty.relation) {
+        case 'equal':
+          filter.operator = '=';
+          filter.args = [variable, literal(filterProperty.value[0], getFullIriNamedNode('xsd:dateTime'))];
+          break;
+        case 'notEqual':
+          filter.operator = '!=';
+          filter.args = [variable, literal(filterProperty.value[0], getFullIriNamedNode('xsd:dateTime'))];
+          break;
+        case 'after':
+          filter.operator = '>=';
+          filter.args = [variable, literal(filterProperty.value[0], getFullIriNamedNode('xsd:dateTime'))];
+          break;
+        case 'before':
+          filter.operator = '<=';
+          filter.args = [variable, literal(filterProperty.value[0], getFullIriNamedNode('xsd:dateTime'))];
+          break;
+        case 'between':
+          filter.operator = '&&';
+          filter.args = [
+            {
+              args: [variable, literal(filterProperty.value[0], getFullIriNamedNode('xsd:dateTime'))],
+              operator: '>=',
+              type: 'operation',
+            },
+            {
+              args: [variable, literal(filterProperty.value[1], getFullIriNamedNode('xsd:dateTime'))],
+              operator: '<',
+              type: 'operation',
+            },
+          ];
+          break;
+        default:
+          break;
+      }
+    } else {
+      switch (filterProperty.relation) {
+        case 'contains':
+          filter.operator = 'contains';
+          filter.args = [variable, literal(`${filterProperty.value[0]}`)];
+          break;
+        case 'notContains':
+          filter.operator = '!';
+          filter.args = [
+            {
+              args: [variable, literal(`${filterProperty.value[0]}`)],
+              operator: 'contains',
+              type: 'operation',
+            },
+          ];
+          break;
+        case 'equal':
+          filter.operator = '=';
+          filter.args = [variable, literal(`${filterProperty.value[0]}`)];
+          break;
+        case 'startWith':
+          filter.operator = 'strstarts';
+          filter.args = [variable, literal(`${filterProperty.value[0]}`)];
+          break;
+        case 'endWith':
+          filter.operator = 'strends';
+          filter.args = [variable, literal(`${filterProperty.value[0]}`)];
+          break;
+        case 'regEx':
+          filter.operator = 'regex';
+          filter.args = [variable, literal(`${filterProperty.value[0]}`), literal('i')];
+          break;
+        default:
+          break;
+      }
+    }
+  } else if (schemaProperty.type === 'integer') {
+    switch (filterProperty.relation) {
+      case 'equal':
+        filter.operator = '=';
+        filter.args = [variable, literal(`${filterProperty.value[0]}`, getFullIriNamedNode('xsd:integer'))];
+        break;
+      case 'any':
+        buildEnumFilter(filter, variable, getFullIriNamedNode, filterProperty.value, 'integer');
+        break;
+      default:
+        break;
+    }
+  } else if (schemaProperty.type === 'array') {
+  }
+
+  const propUri = getSchemaPropUri(shape.schema, filterKey);
+  switch (filterProperty.relation) {
+    case 'exists':
+      if (propUri) {
+        filter.operator = 'exists';
+        filter.args = [
+          {
+            type: 'bgp',
+            triples: [triple(shape.subj, getFullIriNamedNode(propUri), variable)],
+          },
+        ];
+      }
+      break;
+    case 'notExists':
+      if (propUri) {
+        filter.operator = 'notexists';
+        filter.args = [
+          {
+            type: 'bgp',
+            triples: [triple(shape.subj, getFullIriNamedNode(propUri), variable)],
+          },
+        ];
+      }
+      break;
+    case 'unassigned':
+      break;
+    default:
+      break;
+  }
+  return {
+    expression: filter,
+    type: 'filter',
+  };
+}
+
+/**
+  *
+  * @param schema
+  * @param conditions
+  */
 function processConditions(shape: SparqlShapeInternal2, conditions: any, getFullIriNamedNode: GetFullIriNamedNodeType): { bgps: Quad[]; options: Quad[]; filters: any[]; binds: any[] } {
-        const bgps: Quad[] = [];
-        const options: Quad[] = [];
-        const filters: any[] = [];
-        const binds: any[] = [];
-        Object.keys(conditions).forEach((key) => {
+  const bgps: Quad[] = [];
+  const options: Quad[] = [];
+  const filters: any[] = [];
+  const binds: any[] = [];
+  Object.keys(conditions).forEach((key) => {
     if (shape.schema.properties && !key.startsWith('@')) {
-            const filterProperty = conditions[key];
+      const filterProperty = conditions[key];
       const schemaProperty = shape.schema.properties[key];
       const propUri = getSchemaPropUri(shape.schema, key);
-            const varName = shape.props2vars[key];
+      const varName = shape.props2vars[key];
 
-            if (varName) {
-              if (schemaProperty) {
-                if (propUri) {
-                  // add FILTER statement
-                  if (filterProperty.value !== undefined && filterProperty.relation) {
+      if (varName) {
+        if (schemaProperty) {
+          if (propUri) {
+            // add FILTER statement
+            if (filterProperty.value !== undefined && filterProperty.relation) {
               filters.push(getExtendedFilter(shape, key, schemaProperty, filterProperty, variable(varName), getFullIriNamedNode));
-                  } else {
-              filters.push(getSimpleFilter(schemaProperty, filterProperty, variable(shape.props2vars[key]), getFullIriNamedNode));
-                  }
-                } else {
-                  // add BIND statement
-                  if (filterProperty.bind) {
-                    if (filterProperty.bind.relation) {
-                      if (filterProperty.bind.relation === 'exists') {
-                        const bind: any = {
-                          expression: {
-                            args: [
-                              {
-                                type: 'bgp',
-                                triples: filterProperty.bind.triples,
-                              },
-                            ],
-                            operator: 'exists',
-                            type: 'operation',
-                          },
-                          type: 'bind',
-                          variable: variable(varName),
-                        };
-                        binds.push(bind);
-                      }
-                    }
-                  }
-                }
-              }
             } else {
-              // add bgp condition triple
-              if (schemaProperty && propUri) {
-                let option;
-                if (typeof filterProperty === 'string' && filterProperty.startsWith('?')) {
-                  option = triple(
-                    shape.subj,
-              getFullIriNamedNode(propUri),
-                    variable(filterProperty.substring(1)),
-                  );
-                } else {
-            option = getConditionalTriple(schemaProperty, shape.subj, filterProperty, propUri, getFullIriNamedNode);
+              filters.push(getSimpleFilter(schemaProperty, filterProperty, variable(shape.props2vars[key]), getFullIriNamedNode));
+            }
+          } else {
+            // add BIND statement
+            if (filterProperty.bind) {
+              if (filterProperty.bind.relation) {
+                if (filterProperty.bind.relation === 'exists') {
+                  const bind: any = {
+                    expression: {
+                      args: [
+                        {
+                          type: 'bgp',
+                          triples: filterProperty.bind.triples,
+                        },
+                      ],
+                      operator: 'exists',
+                      type: 'operation',
+                    },
+                    type: 'bind',
+                    variable: variable(varName),
+                  };
+                  binds.push(bind);
                 }
-                //all schema-optional properties treats as required if conditional value exists
-                //if (shape.schema.required && shape.schema.required.includes(key)) {
-                bgps.push(option);
-                //} else {
-                //  options.push(option);
-                //}
               }
             }
           }
-        });
-        return { bgps, options, filters, binds };
+        }
+      } else {
+        // add bgp condition triple
+        if (schemaProperty && propUri) {
+          let option;
+          if (typeof filterProperty === 'string' && filterProperty.startsWith('?')) {
+            option = triple(
+              shape.subj,
+              getFullIriNamedNode(propUri),
+              variable(filterProperty.substring(1)),
+            );
+          } else {
+            option = getConditionalTriple(schemaProperty, shape.subj, filterProperty, propUri, getFullIriNamedNode);
+          }
+          //all schema-optional properties treats as required if conditional value exists
+          //if (shape.schema.required && shape.schema.required.includes(key)) {
+          bgps.push(option);
+          //} else {
+          //  options.push(option);
+          //}
+        }
+      }
+    }
+  });
+  return { bgps, options, filters, binds };
 }
 
 const gen = new Generator();
@@ -888,7 +889,7 @@ export const Query2 = types
   .views((self) => ({
     get optionsJs() {
       return self.options ? getSnapshot(self.options) : undefined;
-      },
+    },
   }))
 
   /**
@@ -899,16 +900,31 @@ export const Query2 = types
     const queryPrefixes = repository.queryPrefixes;
 
     return {
-      getInternalShapes() {
-        return self.shapes.map<SparqlShapeInternal2>((shape, index) => {
+      getInternalShapes: flow(function* getInternalShapes() {
+        const internalShapes: SparqlShapeInternal2[] = [];
+        for (let index = 0; index < self.shapes.length; index++) {
+          const shape = self.shapes[index];
+          let schema: any =  shape.schemaJs;
+          if (schema.allOf)
+            schema = yield repository.schemas.getSchemaByIri(schema['@id']);
+          // make schema snapshot modifiable again by copying it
+          schema = cloneDeep(schema);
+
           const uriVar = genUniqueVarName2('eIri', index, self.shapes);
           const conditions = unscreenIds(shape.conditionsJs) || {};
           const data = unscreenIds(shape.dataJs) || {};
           const variables = unscreenIds(shape.variablesJs);
-          const uri =
-            (conditions && conditions['@id']) || (data && data['@id']);
+          if (variables) {
+            if (schema.required === undefined) schema.required = [];
+            Object.keys(variables).forEach((key) => {
+              if (!schema.required.includes(key)) schema.required.push(key);
+            });
+          }
+          const uri = (conditions && conditions['@id']) || (data && data['@id']);
+          
           const internalShape: SparqlShapeInternal2 = {
-            schema: shape.schemaJs,
+            // TODO: partial schema!!!
+            schema,
             conditions,
             data,
             variables,
@@ -922,10 +938,11 @@ export const Query2 = types
             conditionsWithArrays: {},
           };
           addprops2vars2props(internalShape, '@id', uriVar);
-          return internalShape;
-        });
-      },
-
+          internalShapes.push(internalShape);
+        }
+        return internalShapes;
+      }),
+      
       /**
        * SELECT
        */
@@ -938,20 +955,23 @@ export const Query2 = types
             //  copyUniqueObjectProps(shape.query.variables, shape.variables);
             //}
             //else {
-          // if variables not set, copy all from schema except @type
+              // if variables not set, copy all from schema except @type
               // copy as variables: all non-conditional properties, properties with "extended filter functions" or "bindings"
               // did not copy properties with conditions with values or reference ?xxx variables
-              const ignoredProperties: JsObject = { '@type': null };
+              const ignoredProperties: JsObject = {
+                '@type': null,
+                //targetClass: null,
+              };
               const conditions = shape.conditions;
               Object.keys(conditions).forEach((key) => {
                 const filterProperty = conditions[key];
-                  if (
-                    filterProperty.value === undefined &&
-                    filterProperty.relation === undefined &&
-                    filterProperty.bind === undefined
-                  )
-                    ignoredProperties[key] = null;
-                });
+                if (
+                  filterProperty.value === undefined &&
+                  filterProperty.relation === undefined &&
+                  filterProperty.bind === undefined
+                )
+                  ignoredProperties[key] = null;
+              });
               const properties = shape.schema.properties;
               // if shape has only conditions and array property then did not make subquery
               //extract array variables into subquery
@@ -964,17 +984,17 @@ export const Query2 = types
                 } else {
                   shape.schemaPropsWithoutArrays[key] = properties[key];
                   if (conditions[key] !== undefined) shape.conditionsWithoutArrays[key] = conditions[key];
-              }
+                }
               });
               if (shape.variables) {
                 copyUniqueObjectProps(shape.query.variables, shape.variables);
               } else {
                 //copy the rest
-              copyUniqueObjectProps(
+                copyUniqueObjectProps(
                   shape.query.variables,
                   copyObjectPropsWithRenameOrFilter(shape.schemaPropsWithoutArrays, ignoredProperties),
-              );
-            }
+                );
+              }
             //}
           }
           renumerateShapeVariables(shape, index);
@@ -990,13 +1010,14 @@ export const Query2 = types
         return internalShapes;
       },
 
-      selectObjectsInternalShapes() {
-        const internalShapes = this.selectInternalShapes(this.getInternalShapes());
+      selectObjectsInternalShapes: flow(function* selectObjectsInternalShapes() {
+        //@ts-ignore
+        const internalShapes: SparqlShapeInternal2[] = self.selectInternalShapes(yield self.getInternalShapes());
         internalShapes.forEach((shape) => {
-            addToBgpTypeCondition(shape, queryPrefixes.getFullIriNamedNode);
+          addToBgpTypeCondition(shape, queryPrefixes.getFullIriNamedNode);
         });
         return internalShapes;
-      },
+      }),
 
       selectQueryFromShapes(internalShapes: SparqlShapeInternal2[]) {
         const query: SelectQuery = {
@@ -1005,8 +1026,12 @@ export const Query2 = types
           prefixes: queryPrefixes.currentJs,
           variables: [],
         };
+        // generate query
         internalShapes.forEach((shape, index) => {
-          // generate query
+          //add SHACL graph
+          /*if (shape.schema.targetClass) {
+            shape.schema.targetClass;
+          }*/
           // check variables for uniquiness
           const generatedVariables = propsToSparqlVars(shape);
           let variablesToAdd: Variable[];
@@ -1050,35 +1075,20 @@ export const Query2 = types
         return query;
       },
 
-      selectObjectsQueryStr() {
-        const internalShapes = this.selectObjectsInternalShapes();
-        const query = this.selectQueryFromShapes(internalShapes);
+      selectObjectsQueryStr: flow(function* selectObjectsQueryStr() {
+        //@ts-ignore
+        const internalShapes = yield self.selectObjectsInternalShapes();
+        //@ts-ignore
+        const query = self.selectQueryFromShapes(internalShapes);
         return gen.stringify(query as SelectQuery);
-      },
-
-      selectObjectsWithTypeInfoShapes() {
-        return this;
-      },
-
-      selectObjectsWithTypeInfoQueryStr() {
-        const internalShapes = this.selectInternalShapes(this.getInternalShapes());
-        const query = this.selectQueryFromShapes(internalShapes);
-        internalShapes.forEach((shape) => {
-          query.where = [
-            ...createToWhereSuperTypesFilter(shape, queryPrefixes.getFullIriNamedNode),
-            ...(query.where || []),
-          ];
-          //this.addToBgpTypeCondition(shape);
-        });
-
-        return gen.stringify(query);
-      },
+      }),
 
       /**
        * Заменяет
        * @param obj
        */
       selectObjectsArrayProperties: flow(function* selectObjectsArrayProperties(internalShapes: SparqlShapeInternal2[], objects: JsObject[]) {
+        //console.debug('selectObjectsArrayProperties');
         for(let index = 0; index < internalShapes.length; index++){
           const shape = internalShapes[index];
           const schema = shape.schema;
@@ -1089,6 +1099,7 @@ export const Query2 = types
               const prop = shape.schemaPropsWithArrays[key];
               const schemaWithArrayProperty: any = {
                 ...schema,
+                '@id': '_' + uuid62.v4(),
                 '@context': {
                   [key]: context[key],
                 },
@@ -1101,16 +1112,17 @@ export const Query2 = types
               const propType = getSchemaPropType(schemaWithArrayProperty.properties, context, key);
               if (prop && prop.type && propType) {
                 let schemaUri: string | undefined = undefined;
-                if (prop.type === 'array' && prop.items) {
-                  schemaUri = propType;
-                } else if (prop.type === 'object') {
-                  schemaUri = propType;
+                if ((prop.type === 'array' && prop.items) || (prop.type === 'object')) {
+                  schemaUri = repository.schemas.getByClassId(propType);
+                  if (!schemaUri) {
+                    schemaUri = propType;
+                  }
                 } else if (prop.type === 'string' && prop.format === 'iri') {
                   schemaUri = propType;
                 }
                 if (schemaUri) {
-                  const schema2 = yield repository.schemas.getSchemaByUri(schemaUri);
-                  const query = repository.addQuery([
+                  const schema2 = yield repository.schemas.getSchemaByIri(schemaUri);
+                  const query = yield repository.addQuery([
                     {
                       schema: schemaWithArrayProperty,
                       conditions: {
@@ -1124,32 +1136,78 @@ export const Query2 = types
                     }
                   ]);
                   //const genQueryStr = query.selectObjectsQueryStr();
-                  //console.log('selectObjectsArrayProperties query=', genQueryStr);
+                  //console.debug('selectObjectsArrayProperties query=', genQueryStr);
                   const subObjects: Results = yield query.selectObjects()
-                  //console.log('selectObjectsArrayProperties results=', json2str(subObjects));
+                  repository.removeQuery(query);
+                  //console.debug('selectObjectsArrayProperties results=', json2str(subObjects));
                   object[key] = subObjects;
                 }
               }
             }
           }
         }
+        //console.debug('END selectObjectsArrayProperties');
         return objects;
       }),
 
       selectObjects: flow(function* selectObjects() {
+        const s1 = getSnapshot(self);
         //@ts-ignore
-        const internalShapes = self.selectObjectsInternalShapes();
+        const internalShapes = yield self.selectObjectsInternalShapes();
         //@ts-ignore
         const query = self.selectQueryFromShapes(internalShapes);
         const queryStr = gen.stringify(query as SelectQuery);
-        //console.log(queryStr);
+        //console.debug('selectObjects query=', queryStr);
         const results: Results = yield repository.sparqlSelect(queryStr, self.optionsJs);
         const objects = results.bindings.map((b) => sparqlBindingsToObjectProp(b, internalShapes, queryPrefixes.abbreviateIri));
 
         //process array properties
         //@ts-ignore
         yield self.selectObjectsArrayProperties(internalShapes, objects);
-        //console.debug(() => `selectObjects objects_with_arrays=${json2str(objects)}`);
+        //console.debug('selectObjects objects_with_arrays=', json2str(objects));
+        return objects;
+      }),
+
+      selectObjectsWithTypeInfoQuery: flow(function* selectObjectsWithTypeInfoQuery(internalShapes: SparqlShapeInternal2[]) {
+        if (internalShapes[0].variables === undefined) {
+          internalShapes[0].query.variables['@type'] = internalShapes[0].schema.properties['@type'];
+          addprops2vars2props(internalShapes[0], '@type', 'type0');
+        }
+        //@ts-ignore
+        const query = self.selectQueryFromShapes(internalShapes);
+        internalShapes.forEach((shape) => {
+          query.where = [
+            ...createToWhereSuperTypesFilter(shape, queryPrefixes.getFullIriNamedNode),
+            ...(query.where || []),
+          ];
+          //this.addToBgpTypeCondition(shape);
+        });
+
+        return query;
+      }),
+
+      selectObjectsWithTypeInfoQueryStr: flow(function* selectObjectsWithTypeInfoQueryStr() {
+        //@ts-ignore
+        const internalShapes: SparqlShapeInternal2[] = self.selectInternalShapes(yield self.getInternalShapes());
+        //@ts-ignore
+        const query = yield self.selectObjectsWithTypeInfoQuery(internalShapes);
+        return gen.stringify(query);
+      }),
+
+      selectObjectsWithTypeInfo: flow(function* selectObjectsWithTypeInfo() {
+        //@ts-ignore
+        const internalShapes: SparqlShapeInternal2[] = self.selectInternalShapes(yield self.getInternalShapes());
+        //@ts-ignore
+        const query = yield self.selectObjectsWithTypeInfoQuery(internalShapes);
+        const queryStr = gen.stringify(query as SelectQuery);
+        //console.debug('selectObjectsWithTypeInfo query=', queryStr);
+        const results: Results = yield repository.sparqlSelect(queryStr, self.optionsJs);
+        const objects = results.bindings.map((b) => sparqlBindingsToObjectProp(b, internalShapes, queryPrefixes.abbreviateIri));
+
+        //process array properties
+        //@ts-ignore
+        yield self.selectObjectsArrayProperties(internalShapes, objects);
+        //console.debug('selectObjects objects_with_arrays=', json2str(objects));
         return objects;
       }),
 
@@ -1208,11 +1266,21 @@ export const Query2 = types
         return query;
       },
 
-      deleteObjectQueryStr() {
-        const internalShapes = this.getInternalShapes();
-        const query = this.deleteObjectQuery(internalShapes);
+      deleteObjectQueryStr: flow(function* deleteObjectQueryStr() {
+        //@ts-ignore
+        const internalShapes: SparqlShapeInternal2[] = yield self.getInternalShapes();
+        //@ts-ignore
+        const query = self.deleteObjectQuery(internalShapes);
         return gen.stringify(query);
-      },
+      }),
+
+      deleteObject: flow(function* deleteObject() {
+        //@ts-ignore
+        const queryStr = yield self.deleteObjectQueryStr();
+        //console.debug('deleteObject query=', queryStr);
+        const response: AxiosResponse = yield repository.sparqlUpdate(queryStr, self.optionsJs);
+        return response;
+      }),
 
       /**
        * INSERT
@@ -1237,11 +1305,21 @@ export const Query2 = types
         return query;
       },
 
-      insertObjectQueryStr() {
-        const internalShapes = this.getInternalShapes();
-        const query = this.insertObjectQuery(internalShapes);
+      insertObjectQueryStr: flow(function* insertObjectQueryStr() {
+        //@ts-ignore
+        const internalShapes: SparqlShapeInternal2[] = yield self.getInternalShapes();
+        //@ts-ignore
+        const query = self.insertObjectQuery(internalShapes);
         return gen.stringify(query);
-      },
+      }),
+
+      createObject: flow(function* createObject() {
+        //@ts-ignore
+        const queryStr = yield self.insertObjectQueryStr();
+        //console.debug('createObject query=', queryStr);
+        const response: AxiosResponse = yield repository.sparqlUpdate(queryStr, self.optionsJs);
+        return response;
+      }),
 
      /**
        * UPDATE
@@ -1289,11 +1367,21 @@ export const Query2 = types
         return query;
       },
 
-      updateObjectQueryStr() {
-        const internalShapes = this.getInternalShapes();
-        const query = this.updateObjectQuery(internalShapes);
+      updateObjectQueryStr: flow(function* updateObjectQueryStr() {
+        //@ts-ignore
+        const internalShapes: SparqlShapeInternal2[] = yield self.getInternalShapes();
+        //@ts-ignore
+        const query = self.updateObjectQuery(internalShapes);
         return gen.stringify(query);
-      },
+      }),
+
+      updateObject: flow(function* updateObject() {
+        //@ts-ignore
+        const queryStr = yield self.updateObjectQueryStr();
+        //console.debug('updateObject query=', queryStr);
+        const response: AxiosResponse = yield repository.sparqlUpdate(queryStr, self.optionsJs);
+        return response;
+      }),
     };
   });
 //export interface IQuery2 extends Instance<typeof Query2> {}

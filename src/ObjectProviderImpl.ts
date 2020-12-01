@@ -144,6 +144,9 @@ function propertyShapeToJsonSchemaProperty(
           schemaContexts[shapePropKey] = shapePropUri;
         }
       }
+    } else {
+      //TODO: handle sh:or ( [ sh:datatype xsd:string ] [ sh:datatype rdf:langString ] ) ;
+      schemaProp.type = 'string';
     }
     //labels
     if (shapeProp.name) schemaProp.title = shapeProp.name;
@@ -462,9 +465,9 @@ export class ObjectProviderImpl implements ObjectProvider {
     if (!uiSchema) {
       uiSchema = {};
     }
-    this.schemas[uri] = schema;
+    this.schemas[uri] = schema as any;
     this.uiSchemas[uri] = uiSchema;
-    return schema;
+    return schema as any;
   }
 
   /**

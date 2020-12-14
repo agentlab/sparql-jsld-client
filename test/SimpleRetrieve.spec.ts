@@ -2,6 +2,7 @@ import { rdfServerUrl, rmRepositoryParam, rmRepositoryType } from './config';
 import { rootStore } from '../src/models/model';
 import { vocabsFiles, shapesFiles, usersFiles, projectsFoldersFiles, samplesFiles, rootFolder } from './configTests';
 import { genTimestampedName } from './TestHelpers';
+import { variable } from '@rdfjs/data-model';
 
 // See https://stackoverflow.com/questions/49603939/async-callback-was-not-invoked-within-the-5000ms-timeout-specified-by-jest-setti
 jest.setTimeout(5000000);
@@ -27,7 +28,6 @@ beforeAll(async () => {
     await repository.uploadFiles(projectsFoldersFiles, rootFolder);
     await repository.uploadFiles(samplesFiles, rootFolder);
     await repository.uploadFiles(shapesFiles, rootFolder);
-    await repository.queryPrefixes.reloadQueryPrefixes();
     await repository.queryPrefixes.reloadQueryPrefixes();
     //await sleep(5000); // give RDF classifier some time to classify resources after upload
   } catch (err) {
@@ -169,5 +169,97 @@ describe('SimpleRetrieve', () => {
       inCreationMenu: true,
     });
     expect(artifactClasses).toEqual(expect.arrayContaining(artifactClasses0));
+  });
+
+  it('should return ProjectView queries', async () => {
+    let query: any = {
+      // globally unique ID of this Query object, could be used for references in mobx JSON-LD storage or server storage, not processed by query generator
+      '@id': 'rm:ProjectViewClass_Artifacts_Query',
+      '@type': 'rm:Query',
+      shapes: [
+        {
+          // globally unique ID of this Shape object, could be used for references in mobx JSON-LD storage or server storage, not processed by query generator
+          '@id': 'rm:ProjectViewClass_Artifacts_Query_Shape0',
+          '@type': 'rm:QueryShape',
+          // JSON Schema (often same as Class IRI), required!
+          // it could be schema object or class IRI string
+          schema: 'rm:ArtifactShape',
+          // key-value {}:JsObject, could be omitted
+          conditions: {
+            // globally unique ID of this Condition object, could be used for references in mobx JSON-LD storage or server storage, not processed by query generator
+            '@id': 'rm:ProjectViewClass_Artifacts_Query_Shape0_Condition',
+            // globally unique ID of the Class of this condition object, could be used for mobx JSON-LD storage or server storage, not processed by query generator
+            '@type': 'rm:QueryCondition',
+            //'@_id':
+            //'@_type':
+            assetFolder: 'folders:root',
+          },
+          //variables: {},
+          //fields: [], //string[]
+        },
+      ],
+      // could be string or string[]. varname or property IRI?
+      // ['?identifier0', 'DESC(?title0)']
+      orderBy: [{ expression: variable('identifier0'), descending: false }], // if last digit not specified, we assuming '0' (identifier0)
+      limit: 50,
+    };
+    let objects = await repository.selectObjects(query);
+    expect(objects.length).toBe(0);
+    
+    query = {
+      '@id': 'rm:ProjectViewClass_Folders_Query',
+        '@type': 'rm:Query',
+        shapes: [
+          {
+            '@id': 'rm:ProjectViewClass_Folders_Query_Shape0',
+            '@type': 'rm:QueryShape',
+            schema: 'nav:folderShape',
+          },
+        ],
+    };
+    objects = await repository.selectObjects(query);
+    expect(objects.length).toBe(8);
+
+    query = {
+      '@id': 'rm:ProjectViewClass_Users_Query',
+      '@type': 'rm:Query',
+      shapes: [
+        {
+          '@id': 'rm:Users_Shape0',
+          '@type': 'rm:QueryShape',
+          schema: 'pporoles:UserShape',
+        },
+      ],
+    };
+    objects = await repository.selectObjects(query);
+    expect(objects.length).toBe(5);
+
+    query = {
+      '@id': 'rm:ProjectViewClass_ArtifactClasses_Query',
+      '@type': 'rm:Query',
+      shapes: [
+        {
+          '@id': 'rm:ProjectViewClass_ArtifactClasses_Query_Shape0',
+          '@type': 'rm:QueryShape',
+          schema: 'rm:ArtifactClassesShape',
+        },
+      ],
+    };
+    objects = await repository.selectObjects(query);
+    expect(objects.length).toBe(56);
+
+    query = {
+      '@id': 'rm:ProjectViewClass_ArtifactFormats_Query',
+      '@type': 'rm:Query',
+      shapes: [
+        {
+          '@id': 'rm:ProjectViewClass_ArtifactFormats_Query_Shape0',
+          '@type': 'rm:QueryShape',
+          schema: 'rmUserTypes:_YwcOsRmREemK5LEaKhoOowShape',
+        },
+      ],
+    };
+    objects = await repository.selectObjects(query);
+    expect(objects.length).toBe(3);
   });
 });

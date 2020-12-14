@@ -5,12 +5,10 @@ import {
   getParentOfType,
   IAnyModelType,
   IAnyType,
-  Instance,
-  applySnapshot,
   getSnapshot,
 } from 'mobx-state-tree';
 
-import { JSONSchema6forRdf, copyUniqueObjectPropsWithRenameOrFilter, copyObjectProps, copyUniqueArrayElements, JsObject } from '../ObjectProvider';
+import { JSONSchema6forRdf, copyUniqueObjectPropsWithRenameOrFilter, JsObject } from '../ObjectProvider';
 import {
   propertyShapesToSchemaProperties,
   uiMapping,
@@ -409,9 +407,9 @@ export const Schemas = types
       },
 
       /**
-       * Возвращает по URI сборную JSON Schema + JSON-LD с разрешенными ссылками на другие схемы
+       * Возвращает по IRI класса дефолтную для него сборную JSON Schema + JSON-LD с разрешенными ссылками на другие схемы
        * Т.е. полную, со всеми объявлениями полей и списком required
-       * @param uri
+       * @param iri
        */
       getSchemaByClassIri: flow(function* getSchemaByClassIri(iri: string) {
         //console.debug('getSchemaByClassIri', iri);
@@ -425,6 +423,11 @@ export const Schemas = types
         return schemaResult;
       }),
 
+      /**
+       * Возвращает по IRI (значению поля '@id') сборную JSON Schema + JSON-LD с разрешенными ссылками на другие схемы
+       * Т.е. полную, со всеми объявлениями полей и списком required
+       * @param iri
+       */
       getSchemaByIri: flow(function* getSchemaByIri(iri: string) {
         //console.debug('getSchemaByIri', iri);
         let schema = yield getSchemaByIriInternal(iri);

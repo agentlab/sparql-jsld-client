@@ -6,8 +6,7 @@ import moment from 'moment';
 import { isArray } from 'lodash';
 
 import { JsObject } from '../ObjectProvider';
-import { executeUpdate, FileUploadConfig, Results, sendPostQuery, sendPostStatements } from '../SparqlClient';
-import { createRepositoryConfig } from '../SparqlClientImpl';
+import { executeUpdate, FileUploadConfig, Results, sendPostQuery, sendPostStatements, createRepositoryConfig } from '../SparqlClient';
 
 import { Query2 } from './Query';
 import { Prefixes } from './Prefixes';
@@ -285,6 +284,11 @@ export const Repository = types
       }),
 
       /**
+       * Возвращает полученный с сервера набор JSON объектов определенного типа со значениями полей, соответствующий JSON Schema + JSON-LD
+       * ограничениям и дополнительным условиям на значения объектов из conditions.
+       * Дополнительно запрашивает конечный тип объекта (самый "нижний" / специфичный в иерархии наследования).
+       * Особым образом обрабатывает поля-массивы.
+       * 
        * See selectObjects
        */
       selectObjectsWithTypeInfo: flow(function* selectObjectsWithTypeInfo(data: any) {
@@ -297,6 +301,7 @@ export const Repository = types
       }),
 
       /**
+       * Находит один объект по его идентификатору (численному полю identifier)
        * Accepts shape IRI or schema object
        */
       selectMaxObjectId: flow(function* selectMaxObjectId(schema: any) {

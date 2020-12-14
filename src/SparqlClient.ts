@@ -212,25 +212,136 @@ export async function executeUpdate(url: string, query: string, queryParams: JsO
   return response;
 }
 
-export interface SparqlClient {
-  setServerUrl(url: string): void;
-  setRepositoryId(repId: string): void;
-
-  getNamespaces(): Promise<{ [s: string]: string }>;
-
-  uploadStatements(statements: string, baseURI?: string, graph?: string): Promise<void>;
-  uploadFiles(files: FileUploadConfig[], rootFolder?: string): Promise<void[]>;
-  //downloadStatements(graph?: string): Promise<string>;
-
-  sparqlSelect(query: string, queryParams?: JsObject): Promise<Results>;
-  sparqlUpdate(query: string, queryParams?: JsObject): Promise<AxiosResponse>;
-
-  clearGraph(graph?: string): Promise<any>;
-
-  createRepositoryAndSetCurrent(repParam: JsObject): Promise<void>;
-  createRepositoryAndSetCurrent(repParam: JsObject, repType: string): Promise<void>;
-
-  createRepository(repParam: JsObject): Promise<void>;
-  createRepository(repParam: JsObject, repType: string): Promise<void>;
-  deleteRepository(repId: string): Promise<void>;
+export function createRepositoryConfig(repParam: JsObject = {}, repType: string = 'native-rdfs'): string {
+  if (repType === 'native-rdfs')
+    return `
+  #
+  # Sesame configuration template for a native RDF repository with
+  # RDF Schema inferencing
+  #
+  @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+  @prefix rep: <http://www.openrdf.org/config/repository#>.
+  @prefix sr: <http://www.openrdf.org/config/repository/sail#>.
+  @prefix sail: <http://www.openrdf.org/config/sail#>.
+  @prefix ns: <http://www.openrdf.org/config/sail/native#>.
+  @prefix sb: <http://www.openrdf.org/config/sail/base#>.
+        
+  [] a rep:Repository ;
+    rep:repositoryID "${repParam['Repository ID']}" ;
+    rdfs:label "${repParam['Repository title'] || 'Native store with RDF Schema inferencing'}" ;
+    rep:repositoryImpl [
+      rep:repositoryType "openrdf:SailRepository" ;
+      sr:sailImpl [
+          sail:sailType "rdf4j:SchemaCachingRDFSInferencer" ;
+          sail:delegate [
+            sail:sailType "openrdf:NativeStore" ;
+            sail:iterationCacheSyncThreshold "${repParam['Query Iteration Cache size'] || 10000}";
+            ns:tripleIndexes "${repParam['Triple indexes'] || 'spoc,posc'}";
+            sb:evaluationStrategyFactory "${repParam['EvaluationStrategyFactory'] ||
+              'org.eclipse.rdf4j.query.algebra.evaluation.impl.StrictEvaluationStrategyFactory'}"
+          ]
+        ]
+    ].
+  `;
+  if (repType === 'native-rdfs-dt')
+    return `
+  #
+  # Sesame configuration template for a native RDF repository with
+  # RDF Schema and direct type hierarchy inferencing
+  #
+  @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+  @prefix rep: <http://www.openrdf.org/config/repository#>.
+  @prefix sr: <http://www.openrdf.org/config/repository/sail#>.
+  @prefix sail: <http://www.openrdf.org/config/sail#>.
+  @prefix ns: <http://www.openrdf.org/config/sail/native#>.
+  @prefix sb: <http://www.openrdf.org/config/sail/base#>.
+        
+  [] a rep:Repository ;
+    rep:repositoryID "${repParam['Repository ID']}" ;
+    rdfs:label "${repParam['Repository title'] || 'Native store with RDF Schema and direct type inferencing'}" ;
+    rep:repositoryImpl [
+      rep:repositoryType "openrdf:SailRepository" ;
+      sr:sailImpl [
+        sail:sailType "openrdf:DirectTypeHierarchyInferencer" ;
+        sail:delegate [
+          sail:sailType "rdf4j:SchemaCachingRDFSInferencer" ;
+          sail:delegate [
+            sail:sailType "openrdf:NativeStore" ;
+            sail:iterationCacheSyncThreshold "${repParam['Query Iteration Cache size'] || 10000}";
+            ns:tripleIndexes "${repParam['Triple indexes'] || 'spoc,posc'}";
+            sb:evaluationStrategyFactory "${repParam['EvaluationStrategyFactory'] ||
+              'org.eclipse.rdf4j.query.algebra.evaluation.impl.StrictEvaluationStrategyFactory'}"
+          ]
+        ]
+      ]
+    ].
+  `;
+  if (repType === 'native-rdfs-dt-shacl')
+    return `
+  #
+  # Sesame configuration template for a native RDF repository with
+  # RDF Schema inferencing
+  #
+  @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+  @prefix rep: <http://www.openrdf.org/config/repository#>.
+  @prefix sail: <http://www.openrdf.org/config/sail#>.
+  @prefix sail-shacl: <http://rdf4j.org/config/sail/shacl#> .
+  @prefix ns: <http://www.openrdf.org/config/sail/native#>.
+  @prefix sb: <http://www.openrdf.org/config/sail/base#>.
+  @prefix sr: <http://www.openrdf.org/config/repository/sail#>.
+  @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+        
+  [] a rep:Repository ;
+    rep:repositoryID "${repParam['Repository ID']}" ;
+    rdfs:label "${repParam['Repository title'] || 'Native store with RDF Schema inferencing'}" ;
+    rep:repositoryImpl [
+      rep:repositoryType "openrdf:SailRepository" ;
+      sr:sailImpl [
+        sail:sailType "rdf4j:SparqledShaclSail" ;
+        sail:delegate [
+          sail:sailType "openrdf:DirectTypeHierarchyInferencer" ;
+          sail:delegate [
+            sail:sailType "rdf4j:SchemaCachingRDFSInferencer" ;
+            sail:delegate [
+              sail:sailType "openrdf:NativeStore" ;
+              sail:iterationCacheSyncThreshold "${repParam['Query Iteration Cache size'] || 10000}";
+              ns:tripleIndexes "${repParam['Triple indexes'] || 'spoc,posc'}";
+              sb:evaluationStrategyFactory "${repParam['EvaluationStrategyFactory'] || 'org.eclipse.rdf4j.query.algebra.evaluation.impl.StrictEvaluationStrategyFactory'}"
+            ]
+          ]
+        ]
+      ]
+    ].
+  `;
+  if (repType === 'virtuoso')
+    return `
+  #
+  # Sesame configuration template for a virtuoso repository
+  #
+  @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+  @prefix rep: <http://www.openrdf.org/config/repository#>.
+  @prefix vr: <http://www.openrdf.org/config/repository/virtuoso#>.
+    
+  [] a rep:Repository ;
+    rep:repositoryID "${repParam['Repository ID'] || 'virtuoso'}" ;
+    rdfs:label "${repParam['Repository title'] || 'Virtuoso repository'}" ;
+    rep:repositoryImpl [
+      rep:repositoryType "openrdf:VirtuosoRepository" ;
+      vr:hostList "${repParam['Host list'] || 'localhost:1111'}" ;
+      vr:username "${repParam['Username'] || 'dba'}" ;
+      vr:password "${repParam['Password'] || 'dba'}" ;
+      vr:defGraph "${repParam['Default graph name'] || 'sesame:nil'}" ;
+      vr:roundRobin ${repParam['Use RoundRobin for connection'] || false} ;
+      vr:useLazyAdd ${repParam['Enable using batch optimization'] || false} ;
+      vr:batchSize ${repParam['Batch size for Inserts data'] || 5000} ;
+      vr:insertBNodeAsVirtuosoIRI ${repParam['Insert BNode as Virtuoso IRI'] || false} ;
+      vr:fetchSize ${repParam['Buffer fetch size'] || 100} ;
+      vr:ruleSet "${repParam['Inference RuleSet name'] || null}";
+      vr:macroLib "${repParam['Inference MacroLib name'] || null}";
+      vr:concurrency ${repParam['ConcurrencyMode'] || 0} ;
+      vr:useDefGraphForQueries ${repParam["Use defGraph with SPARQL queries, if query default graph wasn't set"] ||
+        true}
+    ].
+  `;
+  return '';
 }

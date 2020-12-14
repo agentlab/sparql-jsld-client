@@ -5,8 +5,8 @@ import { rootStore } from '../src/models/model';
 
 import { textFormatUri } from './schema/TestSchemas';
 import { vocabsFiles, shapesFiles, rootFolder, usersFiles, projectsFoldersFiles } from './configTests';
-import { JsObject } from '../src/ObjectProvider';
-import { genTimestampedName, sleep } from './TestHelpers';
+import { JsObject, sleep } from '../src/ObjectProvider';
+import { genTimestampedName } from './TestHelpers';
 
 // See https://stackoverflow.com/questions/49603939/async-callback-was-not-invoked-within-the-5000ms-timeout-specified-by-jest-setti
 jest.setTimeout(500000);

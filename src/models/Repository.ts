@@ -1,6 +1,12 @@
-import { types, flow, getParentOfType } from 'mobx-state-tree';
-import axios from 'axios';
-import fs from 'fs';
+/********************************************************************************
+ * Copyright (c) 2020 Agentlab and others.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License v. 2.0 which is available at
+ * https://www.eclipse.org/legal/epl-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ ********************************************************************************/
 import uuid62 from 'uuid62';
 import moment from 'moment';
 import { isArray } from 'lodash';

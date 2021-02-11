@@ -7,8 +7,23 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
+import { getSnapshot } from 'mobx-state-tree';
 import moment from 'moment';
 
 export function genTimestampedName(name: string): string {
   return  name + '_' + moment().format('YYYYMMDD_HHmmssSSSS');
+}
+
+export function sleep(ms: number): Promise<NodeJS.Timeout> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export async function selectHelper(repository: any, data: any, testerFn: (data: any) => void) {
+  const constr = repository.addCollConstr(data);
+  const coll = await repository.loadColl(constr);
+  expect(coll).not.toBeUndefined();
+  //console.log('artifact30000', json2str(artifact30000));
+  const loadedData = coll && coll.data !== undefined ? getSnapshot(coll.data) : [];
+  testerFn(loadedData);
+  repository.removeCollConstr(constr);
 }

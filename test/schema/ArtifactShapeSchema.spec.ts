@@ -8,29 +8,30 @@
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
 import { rdfServerUrl, rmRepositoryParam, rmRepositoryType } from '../config';
-import { rootStore } from '../../src/models/model';
-import { createSchemaWithSubClassOf } from '../../src/models/Schemas';
-import { idComparator } from '../../src/ObjectProvider';
+import { rootModelInitialState } from '../../src/models/model';
+import { Repository } from '../../src/models/Repository';
+import { createSchemaWithSubClassOf, resolveSchemaFromServer } from '../../src/models/Schemas';
+import { SparqlClientImpl } from '../../src/SparqlClientImpl';
 
-import { ClassSchema, ResourceSchema } from '../../src/schema/RdfsSchema';
-import { ArtifactShapeSchema, PropertyShapeSchema } from '../../src/schema/ArtifactShapeSchema';
-import { artifactSchema, classifierSchema, artifactShapeNoProperty, artifactShapeProperty, classifierCompleteSchema } from '../schema/TestSchemas';
-import { vocabsFiles, shapesFiles, rootFolder } from '../configTests';
+import { vocabsFiles, shapesFiles, rootFolder, testNs } from '../configTests';
 import { genTimestampedName } from '../TestHelpers';
+import { ClassSchema } from '../../src/schema/RdfsSchema';
+import { artifactSchema, classifierSchema, classifierCompleteSchema } from '../schema/TestSchemas';
+import { selectObjectsQuery } from '../../src/SparqlGenSelect';
 
 
 // See https://stackoverflow.com/questions/49603939/async-callback-was-not-invoked-within-the-5000ms-timeout-specified-by-jest-setti
 jest.setTimeout(5000000);
 
 
-rootStore.server.setURL(rdfServerUrl);
-const repository = rootStore.server.repository;
+const client = new SparqlClientImpl(rdfServerUrl);
+const repository = Repository.create(rootModelInitialState, { client });
 let rmRepositoryID: string;
 
 beforeAll(async () => {
   rmRepositoryID = genTimestampedName('test_ArtifactSchemaSchema');
   try {
-    await repository.createRepository(
+    await client.createRepository(
       {
         ...rmRepositoryParam,
         'Repository ID': rmRepositoryID,
@@ -38,9 +39,9 @@ beforeAll(async () => {
       rmRepositoryType,
     );
     repository.setId(rmRepositoryID);
-    await repository.uploadFiles(vocabsFiles, rootFolder);
-    await repository.uploadFiles(shapesFiles, rootFolder);
-    await repository.queryPrefixes.reloadQueryPrefixes();
+    const files = vocabsFiles.concat(shapesFiles);
+    await client.uploadFiles(files, rootFolder);
+    await repository.ns.reloadNs();
   } catch (err) {
     fail(err);
   }
@@ -48,157 +49,132 @@ beforeAll(async () => {
 
 afterAll(async () => {
   try {
-    await repository.deleteRepository(rmRepositoryID);
+    await client.deleteRepository(rmRepositoryID);
   } catch (err) {
     fail(err);
   }
 });
 
 describe('classshape-scenario', () => {
-  describe('retrieve schema', () => {
-    it('should retrieve shape from server', async () => {
-      expect(repository.queryPrefixes.current.size).toBeGreaterThan(4);
-      // Class Shape search by property
-      let artifactShapeSchema1 = await repository.selectObjects({
-        schema: ArtifactShapeSchema['@id'],
-        conditions: {
-          targetClass: 'rm:Artifact',
-        },
-      });
+  it('should retrieve shape from server by select', async () => {
+    expect(repository.ns.current.size).toBeGreaterThan(4);
+    // Class Shape search by property
+    const { schema: artifactShapeSchema1 }  = await resolveSchemaFromServer({targetClass: 'rm:Artifact'}, testNs, client);
+    const { schema: artifactShapeSchema11 } = await resolveSchemaFromServer({targetClass: 'rm:Artifact'}, testNs, client);
 
-      let artifactShapeSchema11 = await repository.selectObjects({
-        schema: ArtifactShapeSchema['@id'],
-        conditions: {
-          targetClass: 'rm:Artifact',
-        },
-      });
+    expect(artifactShapeSchema1).toMatchObject(artifactSchema);
+    expect(artifactShapeSchema1).toMatchObject(artifactShapeSchema11);
 
-      expect(artifactShapeSchema1).toHaveLength(1);
-      artifactShapeSchema1[0] = {
-        ...artifactShapeSchema1[0],
-        $schema: 'http://json-schema.org/draft-07/schema#',
-      };
-      expect(artifactShapeSchema1[0]).toEqual(expect.objectContaining(artifactShapeNoProperty));
-      expect(artifactShapeSchema1[0].property.sort(idComparator)).toEqual(
-        expect.arrayContaining(artifactShapeProperty.sort(idComparator)),
-      );
-      expect(artifactShapeSchema11).toHaveLength(1);
-      artifactShapeSchema11[0] = {
-        ...artifactShapeSchema11[0],
-        $schema: 'http://json-schema.org/draft-07/schema#',
-      };
-      expect(artifactShapeSchema11[0]).toEqual(expect.objectContaining(artifactShapeNoProperty));
-      expect(artifactShapeSchema11[0].property).toEqual(expect.arrayContaining(artifactShapeProperty));
-
-      // search node shape by shape uri
-      let artifactShapeSchema2 = await repository.selectObjects({
-        schema: ArtifactShapeSchema['@id'],
-        conditions: {
-          '@_id': 'rm:ArtifactShape',
-        },
-      });
-      expect(artifactShapeSchema2).toHaveLength(1);
-      artifactShapeSchema2[0] = {
-        ...artifactShapeSchema2[0],
-        $schema: 'http://json-schema.org/draft-07/schema#',
-      };
-      const ss = artifactShapeNoProperty;
-      expect(artifactShapeSchema2[0]).toEqual(expect.objectContaining(ss));
-      expect(artifactShapeSchema2[0].property).toEqual(expect.arrayContaining(artifactShapeProperty));
-
-      //search property shape by uri
-      let modifiedByShapeSchema = await repository.selectObjects({
-        schema: PropertyShapeSchema['@id'],
-        conditions: {
-          '@_id': 'rm:modifiedByShape',
-        }
-      });
-      expect(modifiedByShapeSchema).toHaveLength(1);
-    });
-
-    it('should retrieve 0 superclasses for root class from server', async () => {
-      expect(repository.queryPrefixes.current.size).toBeGreaterThan(4);
-      const iri = 'rm:Artifact';//'cpgu:Document';
-      const query = {
-        shapes: [{
-          schema: createSchemaWithSubClassOf(ClassSchema, iri, 'rm:ArtifactClasses'),
-          conditions: {
-            '@_id': iri,
-          },
-        }],
-        // RDF4J REST API options
-        //options: {
-        //  infer: 'false',
-        //},
-      };
-      const superClassesIris = await repository.selectObjects(query);
-      expect(superClassesIris).toHaveLength(1);
-    });
-
-    it('should retrieve 2 superclasses for sub-class with  from server', async () => {
-      expect(repository.queryPrefixes.current.size).toBeGreaterThan(4);
-      const iri = 'cpgu:Document';
-      const query = {
-        shapes: [{
-          schema: createSchemaWithSubClassOf(ClassSchema, iri, 'rm:ArtifactClasses'),
-          conditions: {
-            '@_id': iri,
-          },
-        }],
-        // RDF4J REST API options
-        //options: {
-        //  infer: 'false',
-        //},
-      };
-      const superClassesIris = await repository.selectObjects(query);
-      expect(superClassesIris).toHaveLength(2);
-    });
-
-    it('should retrieve schema from server', async () => {
-      expect(repository.queryPrefixes.current.size).toBeGreaterThan(4);
-      //const propertySchema = await repository.schemas.getSchemaByUri('rm:identifierShape');
-      //expect(propertySchema).toEqual(expect.anything());
-
-      // check first-time schema retrieving
-      const artifactSchema1 = await repository.schemas.getSchemaByClassIri(artifactSchema.targetClass);
-      expect(artifactSchema1).toEqual(expect.anything());
-      expect(artifactSchema1).toMatchObject(artifactSchema);
-      // check cached schema retrieving
-      const artifactSchema2 = await repository.schemas.getSchemaByClassIri(artifactSchema.targetClass);
-      expect(artifactSchema2).toEqual(expect.anything());
-      expect(artifactSchema2).toMatchObject(artifactSchema);
-    });
-
-    it('get all shape properties from 2 parent shapes', async () => {
-      expect(repository.queryPrefixes.current.size).toBeGreaterThan(4);
-      // check first-time schema retrieving
-      const classifierSchema1 = await repository.schemas.getSchemaByClassIri(classifierSchema.targetClass);
-      expect(classifierSchema1).toEqual(expect.anything());
-      const ss = classifierCompleteSchema;
-      expect(classifierSchema1).toMatchObject(ss);
-      // check cached schema retrieving
-      const classifierSchema2 = await repository.schemas.getSchemaByClassIri(classifierSchema.targetClass);
-      expect(classifierSchema2).toEqual(expect.anything());
-      expect(classifierSchema2).toMatchObject(classifierCompleteSchema);
-    });
-
-    it('get all shape properties from 2 parent shapes with UTF-8', async () => {
-      expect(repository.queryPrefixes.current.size).toBeGreaterThan(4);
-      // check first-time schema retrieving
-      const classifierSchema1 = await repository.schemas.getSchemaByClassIri('cpgu:Группировка');
-      expect(classifierSchema1).toEqual(expect.anything());
-      // check cached schema retrieving
-      const classifierSchema2 = await repository.schemas.getSchemaByClassIri('cpgu:Группировка');
-      expect(classifierSchema2).toEqual(expect.anything());
-    });
-
-    /*it('should retrieve all non-empty schemas from server', async () => {
-      const artifactSchema2 = await repository.schemas.getSchemaByUri(artifactSchema['@id']);
-      const artifactSubclasses = await repository.selectSubclasses(artifactSchema2);
-      const allArtifactSubClassesSchemas = await Promise.all(
-        artifactSubclasses.map(async (subClass) => repository.schemas.getSchemaByUri(subClass['@id'])),
-      );
-      expect(allArtifactSubClassesSchemas.length).toBeGreaterThan(5);
-    });*/
+    // search node shape by shape uri
+    const { schema: artifactShapeSchema2 } = await resolveSchemaFromServer({'@_id': 'rm:ArtifactShape'}, testNs, client);
+    expect(artifactShapeSchema2).toMatchObject(artifactSchema);
   });
+
+  it('should retrieve 0 superclasses for root class from server', async () => {
+    const iri = 'rm:Artifact';//'cpgu:Document';
+    const collConstr = {
+      entConstrs: [{
+        schema: createSchemaWithSubClassOf(ClassSchema, iri, 'rm:ArtifactClasses'),
+        conditions: {
+          '@_id': iri,
+        },
+      }],
+      // RDF4J REST API options
+      //options: {
+      //  infer: 'false',
+      //},
+    };
+    const superClassesIris = await selectObjectsQuery(collConstr, testNs, client);
+    expect(superClassesIris).toHaveLength(1);
+  });
+
+  it('should retrieve 2 superclasses for sub-class from server', async () => {
+    const iri = 'cpgu:Document';
+    const collConstr = {
+      entConstrs: [{
+        schema: createSchemaWithSubClassOf(ClassSchema, iri, 'rm:ArtifactClasses'),
+        conditions: {
+          '@_id': iri,
+        },
+      }],
+      // RDF4J REST API options
+      //options: {
+      //  infer: 'false',
+      //},
+    };
+    const superClassesIris = await selectObjectsQuery(collConstr, testNs, client);
+    expect(superClassesIris).toHaveLength(2);
+  });
+
+  it('should retrieve Artifact schema from server by class', async () => {
+    expect(repository.ns.current.size).toBeGreaterThan(4);
+    //const propertySchema = await repository.schemas.getSchemaByUri('rm:identifierShape');
+    //expect(propertySchema).toEqual(expect.anything());
+
+    // check first-time schema retrieving
+    const artifactSchema0Observ = await repository.schemas.loadSchemaByClassIri(artifactSchema.targetClass);
+    const artifactSchema0 = artifactSchema0Observ?.js;
+    expect(artifactSchema0).toMatchObject(artifactSchema);
+
+    const artifactSchema1Observ = repository.schemas.getOrLoadSchemaByClassIri(artifactSchema.targetClass);
+    expect(artifactSchema1Observ).toEqual(expect.anything());
+    const artifactSchema1 = artifactSchema1Observ?.js;
+    expect(artifactSchema1).toMatchObject(artifactSchema);
+    // check cached schema retrieving
+    const artifactSchema2Observ = repository.schemas.getOrLoadSchemaByClassIri(artifactSchema.targetClass);
+    const artifactSchema2 = artifactSchema2Observ?.js;
+    expect(artifactSchema2).toEqual(expect.anything());
+    expect(artifactSchema2).toMatchObject(artifactSchema);
+  });
+
+  it('should retrieve Artifact schema from server by id', async () => {
+    expect(repository.ns.current.size).toBeGreaterThan(4);
+    // check first-time schema retrieving
+    const artifactSchema1Observ = await repository.schemas.loadSchemaByIri(artifactSchema['@id']);
+    expect(artifactSchema1Observ).toEqual(expect.anything());
+    const artifactSchema1 = artifactSchema1Observ?.js;
+    expect(artifactSchema1).toMatchObject(artifactSchema);
+    // check cached schema retrieving
+    const artifactSchema2Observ = repository.schemas.getOrLoadSchemaByIri(artifactSchema['@id']);
+    const artifactSchema2 = artifactSchema2Observ?.js;
+    expect(artifactSchema2).toEqual(expect.anything());
+    expect(artifactSchema2).toMatchObject(artifactSchema);
+  });
+
+  it('get all shape properties from 2 parent entConstrs with ASCII', async () => {
+    expect(repository.ns.current.size).toBeGreaterThan(4);
+    // check first-time schema retrieving
+    await repository.schemas.loadSchemaByClassIri(classifierSchema.targetClass);
+    const classifierSchema1Observ = repository.schemas.getOrLoadSchemaByClassIri(classifierSchema.targetClass);
+    expect(classifierSchema1Observ).toEqual(expect.anything());
+    const classifierSchema1 = classifierSchema1Observ?.js;
+    
+    const ss = classifierCompleteSchema;
+    expect(classifierSchema1).toMatchObject(ss);
+    // check cached schema retrieving
+    const classifierSchema2Observ = repository.schemas.getOrLoadSchemaByClassIri(classifierSchema.targetClass);
+    expect(classifierSchema2Observ).toEqual(expect.anything());
+    const classifierSchema2 = classifierSchema2Observ?.js;
+    expect(classifierSchema2).toMatchObject(classifierCompleteSchema);
+  });
+
+  it('get all shape properties from 2 parent entConstrs with UTF-8', async () => {
+    expect(repository.ns.current.size).toBeGreaterThan(4);
+    // check first-time schema retrieving
+    await repository.schemas.loadSchemaByClassIri('cpgu:Группировка');
+    const classifierSchema1 = repository.schemas.getOrLoadSchemaByClassIri('cpgu:Группировка');
+    expect(classifierSchema1).toEqual(expect.anything());
+    // check cached schema retrieving
+    const classifierSchema2 = repository.schemas.getOrLoadSchemaByClassIri('cpgu:Группировка');
+    expect(classifierSchema2).toEqual(expect.anything());
+  });
+
+  /*it('should retrieve all non-empty schemas from server', async () => {
+    const artifactSchema2 = await repository.schemas.getSchemaByUri(artifactSchema['@id']);
+    const artifactSubclasses = await repository.selectSubclasses(artifactSchema2);
+    const allArtifactSubClassesSchemas = await Promise.all(
+      artifactSubclasses.map(async (subClass) => repository.schemas.getSchemaByUri(subClass['@id'])),
+    );
+    expect(allArtifactSubClassesSchemas.length).toBeGreaterThan(5);
+  });*/
 });

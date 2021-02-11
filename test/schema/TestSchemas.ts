@@ -24,19 +24,34 @@ export const artifactSchema: JSONSchema6forRdf = {
   type: 'object',
   '@context': {
     '@type': 'rdf:type',
-    identifier: 'dcterms:identifier',
-    title: 'dcterms:title',
-    description: 'dcterms:description',
+    identifier: {
+      '@id': 'dcterms:identifier',
+      '@type': 'xsd:integer',
+    },
+    title: {
+      '@id': 'dcterms:title',
+      '@type': 'xsd:string',
+    },
+    description: {
+      '@id': 'dcterms:description',
+      '@type': 'xsd:string',
+    },
     creator: {
       '@id': 'dcterms:creator',
       '@type': 'pporoles:User',
     },
-    created: 'dcterms:created',
+    created: {
+      '@id': 'dcterms:created',
+      '@type': 'xsd:dateTime',
+    },
     modifiedBy: {
       '@id': 'oslc:modifiedBy',
       '@type': 'pporoles:User',
     },
-    modified: 'dcterms:modified',
+    modified: {
+      '@id': 'dcterms:modified',
+      '@type': 'xsd:dateTime',
+    },
     processArea: {
       '@id': 'nav:processArea',
       '@type': 'nav:ProjectArea',
@@ -151,13 +166,19 @@ export const genericArtifactSchema: JSONSchema6forRdf = {
   targetClass: 'cpgu:GenericArtifact',
   type: 'object',
   '@context': {
-    alternative: 'dcterms:alternative',
+    alternative: {
+      '@id': 'dcterms:alternative',
+      '@type': 'xsd:string',
+    },
     uri: 'cpgu:uri',
     status: {
       '@id': 'cpgu:status',
       '@type': 'rmUserTypes:_YwrbNRmREemK5LEaKhoOow',
     },
-    abstract: 'dcterms:abstract',
+    abstract: {
+      '@id': 'dcterms:abstract',
+      '@type': 'xsd:string',
+    },
   },
   properties: {
     alternative: {
@@ -206,6 +227,7 @@ export const classifierSchema: JSONSchema6forRdf = {
   //defaultIndividNs: 'cpgu:',
   //defaultFormat: 'rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Module',
   //iconReference: 'http://cpgu.kbpm.ru/ns/rm/images/use-case',
+  properties: {},
 };
 
 export const classifierCompleteSchema: JSONSchema6forRdf ={
@@ -225,8 +247,6 @@ export const classifierCompleteSchema: JSONSchema6forRdf ={
 };
 
 export const artifactShape: JsObject = {
-  $schema: 'http://json-schema.org/draft-07/schema#',
-  //$id: 'http://cpgu.kbpm.ru/ns/rm/rdf#ArtifactShape',
   '@id': 'rm:ArtifactShape',
   '@type': 'sh:NodeShape',
   //defaultFormat: undefined,
@@ -235,6 +255,21 @@ export const artifactShape: JsObject = {
   //iconReference: undefined,
   //inCreationMenu: undefined,
   property: [
+    {
+      '@id': 'rm:identifierShape',
+      '@type': 'sh:PropertyShape',
+      //class: undefined,
+      datatype: 'xsd:integer',
+      description: 'Числовой идентификатор требования, уникальный только в пределах этой системы',
+      maxCount: 1,
+      //minCount: undefined,
+      name: 'Идентификатор',
+      //nodeKind: undefined,
+      order: 2,
+      path: 'dcterms:identifier',
+      shapeModifiability: 'system',
+      valueModifiability: 'system',
+    },
     {
       '@id': 'rm:titleShape',
       '@type': 'sh:PropertyShape',
@@ -247,6 +282,21 @@ export const artifactShape: JsObject = {
       //nodeKind: undefined,
       order: 3,
       path: 'dcterms:title',
+      shapeModifiability: 'system',
+      valueModifiability: 'user',
+    },
+    {
+      '@id': 'rm:xhtmlTextShape',
+      '@type': 'sh:PropertyShape',
+      //class: undefined,
+      datatype: 'rdf:HTML',
+      description: 'Форматированный текст',
+      maxCount: 1,
+      //minCount: undefined,
+      name: 'Форматированный текст',
+      //nodeKind: undefined,
+      order: 4,
+      path: 'rm:xhtmlText',
       shapeModifiability: 'system',
       valueModifiability: 'user',
     },
@@ -264,21 +314,6 @@ export const artifactShape: JsObject = {
       path: 'dcterms:description',
       shapeModifiability: 'system',
       valueModifiability: 'user',
-    },
-    {
-      '@id': 'rm:identifierShape',
-      '@type': 'sh:PropertyShape',
-      //class: undefined,
-      datatype: 'xsd:integer',
-      description: 'Числовой идентификатор требования, уникальный только в пределах этой системы',
-      maxCount: 1,
-      //minCount: undefined,
-      name: 'Идентификатор',
-      //nodeKind: undefined,
-      order: 2,
-      path: 'dcterms:identifier',
-      shapeModifiability: 'system',
-      valueModifiability: 'system',
     },
     {
       '@id': 'rm:creatorShape',
@@ -385,51 +420,42 @@ export const artifactShape: JsObject = {
       shapeModifiability: 'system',
       valueModifiability: 'user',
     },
-    {
-      '@id': 'rm:xhtmlTextShape',
-      '@type': 'sh:PropertyShape',
-      //class: undefined,
-      datatype: 'rdf:HTML',
-      description: 'Форматированный текст',
-      maxCount: 1,
-      //minCount: undefined,
-      name: 'Форматированный текст',
-      //nodeKind: undefined,
-      order: 4,
-      path: 'rm:xhtmlText',
-      shapeModifiability: 'system',
-      valueModifiability: 'user',
-    },
   ],
   targetClass: 'rm:Artifact',
   title: 'Требование',
 };
 
-export const usedInSchema: JSONSchema6forRdf = {
+export const linkSchema: JSONSchema6forRdf = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   //$id: 'http://cpgu.kbpm.ru/ns/rm/user-types#UsedInShape',
-  '@id': 'rmUserTypes:UsedInShape',
+  '@id': 'rm:LinkShape',
   '@type': 'sh:NodeShape',
   type: 'object',
-  title: 'Использование',
-  description: 'Собирает информацию о связях между требованиями.',
-  targetClass: 'rmUserTypes:UsedIn',
+  title: 'Тип связи',
+  description: 'Тип связи.',
+  targetClass: 'rm:Link',
   '@context': {
     '@type': 'rdf:type',
-    /*creator: {
+    creator: {
       '@id': 'dcterms:creator',
       '@type': 'pporoles:User'
     },
-    created: 'dcterms:created',
+    created: {
+      '@id': 'dcterms:created',
+      '@type': 'xsd:dateTime',
+    },
     modifiedBy: {
       '@id': 'oslc:modifiedBy',
       '@type': 'pporoles:User'
     },
-    modified: 'dcterms:modified',
+    modified: {
+      '@id': 'dcterms:modified',
+      '@type': 'xsd:dateTime',
+    },
     processArea: {
       '@id': 'nav:processArea',
       '@type': 'nav:ProjectArea'
-    },*/
+    },
     object: {
       '@id': 'rdf:object',
       '@type': 'rm:Artifact',
@@ -450,7 +476,7 @@ export const usedInSchema: JSONSchema6forRdf = {
       type: 'string',
       format: 'iri',
     },
-    /*creator: {
+    creator: {
       type: 'string',
       format: 'iri',
       title: 'Кем создан',
@@ -484,7 +510,7 @@ export const usedInSchema: JSONSchema6forRdf = {
       title: 'Проект',
       description: 'Связано с проектной областью',
       shapeModifiability: 'system'
-    },*/
+    },
     object: {
       type: 'string',
       format: 'iri',
@@ -503,61 +529,46 @@ export const usedInSchema: JSONSchema6forRdf = {
   required: ['@id', '@type', 'object', 'subject'],
 };
 
+export const usedInSchema: JSONSchema6forRdf = {
+  ...linkSchema,
+  '@id': 'rmUserTypes:UsedInShape',
+  title: 'Использование',
+  description: 'Собирает информацию о связях между требованиями.',
+  targetClass: 'rmUserTypes:UsedIn',
+};
+
 export const usedInModuleSchema: JSONSchema6forRdf = {
-  $schema: 'http://json-schema.org/draft-07/schema#',
-  //$id: 'http://cpgu.kbpm.ru/ns/rm/user-types#UsedInModuleShape',
+  ...usedInSchema,
   allOf: [{ $ref: 'rmUserTypes:UsedInShape' }],
   '@id': 'rmUserTypes:UsedInModuleShape',
-  '@type': 'sh:NodeShape',
   title: 'Использование в модуле',
   description: 'Собирает информацию о связях между требованиями в модуле.',
   targetClass: 'rmUserTypes:UsedInModule',
-  type: 'object',
   '@context': {
-    '@type': 'rdf:type', //from parent
-    object: {
-      '@id': 'rdf:object', //from parent
-      '@type': 'rm:Artifact',
-    },
-    subject: {
-      '@id': 'rdf:subject', //from parent
-      '@type': 'rm:Artifact',
-    },
+    ...usedInSchema['@context'],
     parentBinding: {
-      '@id': 'rmUserTypes:parentBinding', //from parent
+      '@id': 'rmUserTypes:parentBinding',
       '@type': 'rm:Artifact',
     },
-    depth: 'rmUserTypes:depth',
-    bookOrder:
-      'rmUserTypes:bookOrder' /*,
-    sectionNumber: 'rmUserTypes:sectionNumber',
-    isHeading: 'rmUserTypes:isHeading'*/,
+    depth: {
+      '@id': 'rmUserTypes:depth',
+      '@type': 'xsd:integer',
+    },
+    bookOrder: {
+      '@id': 'rmUserTypes:bookOrder',
+      '@type': 'xsd:integer',
+    },
+    sectionNumber: {
+      '@id': 'rmUserTypes:sectionNumber',
+      '@type': 'xsd:string',
+    },
+    isHeading: {
+      '@id': 'rmUserTypes:isHeading',
+      '@type': 'xsd:boolean',
+    },
   },
   properties: {
-    '@id': {
-      title: 'URI', //from parent
-      type: 'string',
-      format: 'iri',
-    },
-    '@type': {
-      title: 'Тип', //from parent
-      type: 'string',
-      format: 'iri',
-    },
-    object: {
-      type: 'string', //from parent
-      format: 'iri',
-      title: 'Object',
-      description: 'The object of the subject RDF statement.',
-      shapeModifiability: 'system',
-    },
-    subject: {
-      type: 'string', //from parent
-      format: 'iri',
-      title: 'Subject',
-      description: 'The subject of the subject RDF statement.',
-      shapeModifiability: 'system',
-    },
+    ...usedInSchema.properties,
     parentBinding: {
       type: 'string',
       format: 'iri',
@@ -576,7 +587,7 @@ export const usedInModuleSchema: JSONSchema6forRdf = {
       title: 'Порядок',
       description: 'Порядок',
       shapeModifiability: 'system',
-    } /*,
+    },
     sectionNumber: {
       type: 'string',
       title: 'Номер раздела',
@@ -588,16 +599,11 @@ export const usedInModuleSchema: JSONSchema6forRdf = {
       title: 'Это заголовок',
       description: 'Это заголовок',
       shapeModifiability: 'system'
-    }*/,
+    },
   },
   required: [
-    '@id',
-    '@type',
-    'object',
-    'subject', //from parent
-    'parentBinding',
-    'depth',
-    'bookOrder' /*, 'sectionNumber'*/,
+    ...usedInSchema.required || [],
+    'parentBinding', 'depth', 'bookOrder', 'sectionNumber',
   ],
 };
 

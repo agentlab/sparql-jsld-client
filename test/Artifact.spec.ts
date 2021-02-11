@@ -10,7 +10,9 @@
 import uuid62 from 'uuid62';
 
 import { rdfServerUrl, rmRepositoryParam, rmRepositoryType } from './config';
-import { rootStore } from '../src/models/model';
+import { rootModelInitialState } from '../src/models/model';
+import { Repository } from '../src/models/Repository';
+import { SparqlClientImpl } from '../src/SparqlClientImpl';
 
 import { textFormatUri } from './schema/TestSchemas';
 import { vocabsFiles, shapesFiles, rootFolder, usersFiles, projectsFoldersFiles } from './configTests';
@@ -20,16 +22,16 @@ import { genTimestampedName } from './TestHelpers';
 // See https://stackoverflow.com/questions/49603939/async-callback-was-not-invoked-within-the-5000ms-timeout-specified-by-jest-setti
 jest.setTimeout(500000);
 
-rootStore.server.setURL(rdfServerUrl);
-const repository = rootStore.server.repository;
+const client = new SparqlClientImpl(rdfServerUrl);
+const repository = Repository.create(rootModelInitialState, { client });
 let rmRepositoryID: string;
 
 const assetFolder = 'folders:folder1';
 
-beforeAll(async () => {
+/*beforeAll(async () => {
   rmRepositoryID = genTimestampedName('test_Artifact');
   try {
-    await repository.createRepository(
+    await client.createRepository(
       {
         ...rmRepositoryParam,
         'Repository ID': rmRepositoryID,
@@ -37,13 +39,13 @@ beforeAll(async () => {
       rmRepositoryType,
     );
     repository.setId(rmRepositoryID);
-    await repository.uploadFiles(vocabsFiles, rootFolder);
-    await repository.uploadFiles(usersFiles, rootFolder);
-    await repository.uploadFiles(projectsFoldersFiles, rootFolder);
-    await repository.uploadFiles(shapesFiles, rootFolder);
+    await client.uploadFiles(vocabsFiles, rootFolder);
+    await client.uploadFiles(usersFiles, rootFolder);
+    await client.uploadFiles(projectsFoldersFiles, rootFolder);
+    await client.uploadFiles(shapesFiles, rootFolder);
     //await sleep(5000); // give RDF classifier some time to classify resources after upload
 
-    await repository.queryPrefixes.reloadQueryPrefixes();
+    await repository.ns.reloadNs();
   } catch (err) {
     throw err;
     //fail(err);
@@ -52,7 +54,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   try {
-    await repository.deleteRepository(rmRepositoryID);
+    await client.deleteRepository(rmRepositoryID);
   } catch (err) {
     fail(err);
   }
@@ -83,11 +85,11 @@ async function deleteAllArtifacts(schema: any): Promise<void> {
       conditions: { '@_id': element['@id'] },
     });
   }
-  /*await Promise.all(
-    emptyList.map((element: JsObject) => {
-      provider.deleteObject(artifactSchema, { '@id': element['@id'] });
-    }),
-  );*/
+  //await Promise.all(
+  //  emptyList.map((element: JsObject) => {
+  //    provider.deleteObject(artifactSchema, { '@id': element['@id'] });
+  //  }),
+  //);
   emptyList = await repository.selectObjects(schema);
   if (emptyList.length > 0) {
     console.log(emptyList[0]);
@@ -103,8 +105,10 @@ async function deleteAllArtifacts(schema: any): Promise<void> {
 
 describe('create-artifact-scenario', () => {
   it(`should persist artifact in the store`, async () => {
-    const artifactSchema = await repository.schemas.getSchemaByClassIri('rm:Artifact');
-    const classifierGroupSchema = await repository.schemas.getSchemaByClassIri('cpgu:Группировка');
+    await repository.schemas.loadSchemaByClassIri('rm:Artifact');
+    const artifactSchema = repository.schemas.getOrLoadSchemaByClassIri('rm:Artifact');
+    await repository.schemas.loadSchemaByClassIri('cpgu:Группировка');
+    const classifierGroupSchema = repository.schemas.getOrLoadSchemaByClassIri('cpgu:Группировка');
 
     await deleteAllArtifacts(artifactSchema);
     expect(await repository.selectMaxObjectId(artifactSchema)).toBe(0);
@@ -214,7 +218,8 @@ describe('create-artifact-scenario', () => {
     const forUpdateArtifact4: JsObject = newArtifact4;
     forUpdateArtifact4.title = 'Изменение заголовка требования';
 
-    /*const updatedArtifact4 = */await repository.updateObject({
+    //const updatedArtifact4 =
+    await repository.updateObject({
       schema: artifactSchema,
       conditions: { identifier: forUpdateArtifact4.identifier },
       data: {
@@ -242,7 +247,7 @@ describe('create-artifact-scenario', () => {
     const currentList6 = await repository.selectObjectsWithTypeInfo(artifactSchema);
     expect(currentList6.length).toBe(3);
   });
-});
+});*/
 
 /*describe('Retrieve artifacts from folder', () => {
   it(`select should return artifacts with expected schema`, async () => {

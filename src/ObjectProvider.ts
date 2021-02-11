@@ -22,24 +22,12 @@ export interface JsObject {
   [key: string]: any;
 }
 
-export interface QueryShape {
-  '@id'?: string;
-  '@type'?: string;
-  // properties could be changed by client-code only (GUI code, etc.), immutable within SPARQL generation
-  schema: string | JSONSchema6forRdf; // could be class IRI, resolved from local schema reposiory (local cache) or from server
-  conditions?: JsObject;
-  variables?: JsObject;
-  data?: JsObject;
+export interface JsStrObj {
+  [key: string]: string;
 }
 
-export interface Query {
-  '@id'?: string;
-  '@type'?: string;
-  // properties could be changed by client-code only (GUI code, etc.), immutable within SPARQL generation
-  shapes: QueryShape[];
-  orderBy?: string | string[]; // if last digit not specified, we assuming '0' (identifier0)
-  limit?: number;
-  offset?: number;
+export interface JsStrObjObj {
+  [key: string]: string | JsStrObjObj;
 }
 
 export function idComparator(a: JsObject, b: JsObject): number {
@@ -79,7 +67,7 @@ export interface JSONSchema6forRdf extends JSONSchema6, JsObject {
    * json-ld Node
    * https://github.com/json-ld/json-ld.org/blob/master/schemas/jsonld-schema.json
    */
-  '@context'?: {}; // json-ld
+  '@context'?: JsStrObjObj; // json-ld
   '@id': string; // json-ld
   //'@included' // json-ld
   //'@graph'?: [] | {}; // json-ld
@@ -88,13 +76,18 @@ export interface JSONSchema6forRdf extends JSONSchema6, JsObject {
   //'@reverse'
   //'@index'
 
+  targetClass: string,
+
   //inCreationMenu?: boolean;
   //defaultFormat?: string;
   //iconReference?: string;
 
-  properties?: {
+  properties: {
     [key: string]: JSONSchema6DefinitionForRdfProperty;
   };
+}
+export type JSONSchema6forRdf2 = JSONSchema6forRdf & {
+  '@id'?: string,
 }
 
 export function copyObjectProps(objTo: JsObject, objFrom: JsObject): void {

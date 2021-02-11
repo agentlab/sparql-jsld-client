@@ -7,24 +7,31 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-import { rdfServerUrl, rmRepositoryParam, rmRepositoryType } from './config';
-import { rootStore } from '../src/models/model';
-import { vocabsFiles, shapesFiles, usersFiles, projectsFoldersFiles, samplesFiles, rootFolder } from './configTests';
-import { genTimestampedName } from './TestHelpers';
 import { variable } from '@rdfjs/data-model';
+
+import { rdfServerUrl, rmRepositoryParam, rmRepositoryType } from './config';
+import { rootModelInitialState } from '../src/models/model';
+import { Repository } from '../src/models/Repository';
+import { SparqlClientImpl } from '../src/SparqlClientImpl';
+
+import { vocabsFiles, shapesFiles, usersFiles, projectsFoldersFiles, samplesFiles, rootFolder } from './configTests';
+import { genTimestampedName, selectHelper } from './TestHelpers';
+import { when } from 'mobx';
+import { getSnapshot } from 'mobx-state-tree';
+
 
 // See https://stackoverflow.com/questions/49603939/async-callback-was-not-invoked-within-the-5000ms-timeout-specified-by-jest-setti
 jest.setTimeout(5000000);
 
 
-rootStore.server.setURL(rdfServerUrl);
-const repository = rootStore.server.repository;
+const client = new SparqlClientImpl(rdfServerUrl);
+const repository = Repository.create(rootModelInitialState, { client });
 let rmRepositoryID: string;
 
 beforeAll(async () => {
   rmRepositoryID = genTimestampedName('test_SimpleRetrieve');
   try {
-    await repository.createRepository(
+    await client.createRepository(
       {
         ...rmRepositoryParam,
         'Repository ID': rmRepositoryID,
@@ -32,12 +39,12 @@ beforeAll(async () => {
       rmRepositoryType,
     );
     repository.setId(rmRepositoryID);
-    await repository.uploadFiles(vocabsFiles, rootFolder);
-    await repository.uploadFiles(usersFiles, rootFolder);
-    await repository.uploadFiles(projectsFoldersFiles, rootFolder);
-    await repository.uploadFiles(samplesFiles, rootFolder);
-    await repository.uploadFiles(shapesFiles, rootFolder);
-    await repository.queryPrefixes.reloadQueryPrefixes();
+    await client.uploadFiles(vocabsFiles, rootFolder);
+    await client.uploadFiles(usersFiles, rootFolder);
+    await client.uploadFiles(projectsFoldersFiles, rootFolder);
+    await client.uploadFiles(samplesFiles, rootFolder);
+    await client.uploadFiles(shapesFiles, rootFolder);
+    await repository.ns.reloadNs();
     //await sleep(5000); // give RDF classifier some time to classify resources after upload
   } catch (err) {
     fail(err);
@@ -46,7 +53,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   try {
-    await repository.deleteRepository(rmRepositoryID);
+    await client.deleteRepository(rmRepositoryID);
   } catch (err) {
     fail(err);
   }
@@ -54,11 +61,22 @@ afterAll(async () => {
 
 describe('SimpleRetrieve', () => {
   it('should return Artifacts with expected schema', async () => {
-    const schema = await repository.schemas.getSchemaByClassIri('rm:Artifact');
-    const artifacts = await repository.selectObjects(schema);
-    expect(artifacts.length).toBe(15);
-    const artifacts2 = await repository.selectObjects('rm:ArtifactShape');
-    expect(artifacts2.length).toBe(15);
+    await selectHelper(
+      repository,
+      'rm:ArtifactShape',
+      (data) => {
+        expect(data.length).toBe(15);
+      }
+    );
+
+    const schema = await repository.schemas.loadSchemaByClassIri('rm:Artifact');
+    await selectHelper(
+      repository,
+      schema,
+      (data) => {
+        expect(data.length).toBe(15);
+      }
+    );
   });
 
   it('should return Specific Artifacts with id=30000 with expected schema', async () => {
@@ -75,117 +93,186 @@ describe('SimpleRetrieve', () => {
       modified: '2014-02-10T10:12:16.000Z',
       title: 'ТН ВЭД ТС',
     };
-    const schema = await repository.schemas.getSchemaByClassIri('rm:Artifact');
-    const artifact30000 = await repository.selectObjectsWithTypeInfo({
-      schema,
-      conditions: { identifier: 30000 },
-    });
-    //console.log('artifact30000', json2str(artifact30000));
-    expect(artifact30000.length).toBe(1);
-    expect(artifact30000[0]).toMatchObject(artifact30000Orig);
+    await repository.schemas.loadSchemaByClassIri('rm:Artifact');
+    let  origSchema: any = repository.schemas.getOrLoadSchemaByClassIri('rm:Artifact');
+    origSchema = getSnapshot(origSchema);
+    let schema = {
+      ...origSchema,
+      //required: [...origSchema.required, 'identifier'],
+    };
+    await selectHelper(repository,
+      {
+        schema,
+        conditions: { identifier: 30000 },
+        resolveType: true,
+      },
+      (data) => {
+        expect(data.length).toBe(1);
+        expect(data[0]).toMatchObject(artifact30000Orig);
+      }
+    );
+    schema = {
+      ...origSchema,
+      //required: [...origSchema.required, 'assetFolder'],
+    };
+    await selectHelper(repository,
+      {
+        schema,
+        conditions: { assetFolder: 'folders:samples_module' },
+      },
+      (data) => expect(data.length).toBe(11)
+    );
+  });
 
-    const artifactsFromFolder = await repository.selectObjects({
-      schema,
-      conditions: { assetFolder: 'folders:samples_module' },
-    });
-    expect(artifactsFromFolder.length).toBe(11);
-  });
   it('should return NO Artifacts with unexisted values', async () => {
-    const schema = await repository.schemas.getSchemaByClassIri('rm:Artifact');
-    const artifact40000 = await repository.selectObjects({
-      schema,
-      conditions: { identifier: 40000 },
-    });
-    expect(artifact40000.length).toBe(0);
-    const artifactsFromFolder1 = await repository.selectObjects({
-      schema,
-      conditions: { assetFolder: 'folders:folder2' },
-    });
-    expect(artifactsFromFolder1.length).toBe(0);
+    await repository.schemas.loadSchemaByClassIri('rm:Artifact');
+    let schema: any = repository.schemas.getOrLoadSchemaByClassIri('rm:Artifact');
+    await selectHelper(repository,
+      {
+        schema,
+        conditions: { identifier: 40000 },
+      },
+      (data) => expect(data.length).toBe(0)
+    );
+    await selectHelper(repository,
+      {
+        schema,
+        conditions: { assetFolder: 'folders:folder2' },
+      },
+      (data) => expect(data.length).toBe(0)
+    );
   });
+
   it('should return Specific Artifacts with expected schema', async () => {
-    //console.log("Get SCHEMA ===============================");
-    const schema = await repository.schemas.getSchemaByClassIri('cpgu:Группировка');
-    //console.log("Get DATA ===============================");
-    const classifierGroups = await repository.selectObjects(schema);
-    //console.log("Check DATA ===============================");
-    expect(classifierGroups.length).toBe(10);
+    await repository.schemas.loadSchemaByClassIri('cpgu:Группировка');
+    const schema = repository.schemas.getOrLoadSchemaByClassIri('cpgu:Группировка');
+    await selectHelper(repository,
+      {
+        schema,
+      },
+      (data) => expect(data.length).toBe(10)
+    );
   });
+
   it('should return Specific Artifacts with id=30001 with expected schema', async () => {
-    const schema = await repository.schemas.getSchemaByClassIri('cpgu:Группировка');
-    const classifierGroups30001 = await repository.selectObjects({
-      schema, 
-      conditions: { identifier: 30001 },
-    });
-    expect(classifierGroups30001.length).toBe(1);
-    const classifierGroupsFromFolder = await repository.selectObjects({
-      schema,
-      conditions: { assetFolder: 'folders:samples_module'},
-    });
-    expect(classifierGroupsFromFolder.length).toBe(10);
+    await repository.schemas.loadSchemaByClassIri('cpgu:Группировка');
+    const schema = repository.schemas.getOrLoadSchemaByClassIri('cpgu:Группировка');
+    await selectHelper(repository,
+      {
+        schema, 
+        conditions: { identifier: 30001 },
+      },
+      (data) => expect(data.length).toBe(1)
+    );
+    await selectHelper(repository,
+      {
+        schema,
+        conditions: { assetFolder: 'folders:samples_module'},
+      },
+      (data) => expect(data.length).toBe(10)
+    );
   });
+
   it('should return NO Specific Artifacts with unexisted values', async () => {
-    const schema = await repository.schemas.getSchemaByClassIri('cpgu:Группировка');
-    const classifierGroups40001 = await repository.selectObjects({
-      schema,
-      conditions: { identifier: 40001 },
-    });
-    expect(classifierGroups40001.length).toBe(0);
-    const classifierGroupsFromFolder1 = await repository.selectObjects({
-      schema,
-      conditions: { assetFolder: 'folders:samples_collection' },
-    });
-    expect(classifierGroupsFromFolder1.length).toBe(0);
+    await repository.schemas.loadSchemaByClassIri('cpgu:Группировка');
+    const schema = repository.schemas.getOrLoadSchemaByClassIri('cpgu:Группировка');
+    await selectHelper(repository,
+      {
+        schema,
+        conditions: { identifier: 40001 },
+      },
+      (data) => expect(data.length).toBe(0)
+    );
+    await selectHelper(repository,
+      {
+        schema,
+        conditions: { assetFolder: 'folders:samples_collection' },
+      },
+      (data) => expect(data.length).toBe(0)
+    );
   });
+
   it('should return Formats with expected schema', async () => {
-    const schema = await repository.schemas.getSchemaByClassIri('rmUserTypes:_YwcOsRmREemK5LEaKhoOow');
-    const formats = await repository.selectObjects(schema);
-    //console.log('formats', json2str(formats));
-    expect(formats.length).toBe(3);
+    await repository.schemas.loadSchemaByClassIri('rmUserTypes:_YwcOsRmREemK5LEaKhoOow');
+    const schema = repository.schemas.getOrLoadSchemaByClassIri('rmUserTypes:_YwcOsRmREemK5LEaKhoOow');
+    await selectHelper(repository,
+      {
+        schema,
+      },
+      (data) => expect(data.length).toBe(3)
+    );
   });
+
   it('should return DataType with expected schema', async () => {
-    const schema = await repository.schemas.getSchemaByClassIri('rdfs:Datatype');
-    const dataTypes = await repository.selectObjects(schema);
-    //console.log('dataTypes', json2str(dataTypes));
-    expect(dataTypes.length).toBe(39);
+    await repository.schemas.loadSchemaByClassIri('rdfs:Datatype');
+    const schema = repository.schemas.getOrLoadSchemaByClassIri('rdfs:Datatype');
+    await selectHelper(repository,
+      {
+        schema,
+      },
+      (data) => expect(data.length).toBe(39)
+    );
   });
+
   it('should return Folders with expected schema', async () => {
-    const schema = await repository.schemas.getSchemaByClassIri('nav:folder');
-    const folders = await repository.selectObjects(schema);
-    //console.log('dataTypes', json2str(folders));
-    expect(folders.length).toBe(8);
+    await repository.schemas.loadSchemaByClassIri('nav:folder');
+    const schema = repository.schemas.getOrLoadSchemaByClassIri('nav:folder');
+    await selectHelper(repository,
+      {
+        schema,
+      },
+      (data) => expect(data.length).toBe(8)
+    );
   });
+
   it('should return ArtifactClasses with expected schema', async () => {
     //const schema2 = await repository.schemas.getSchemaByIri('rm:ArtifactClassesShape');
-    const artifactClasses0 = await repository.selectObjectsWithTypeInfo('rm:ArtifactClassesShape');
-    const classifierClass0 = artifactClasses0.find((e: any) => e['@id'] === 'cpgu:Classifier');
-    expect(classifierClass0).toMatchObject({
-      '@id': 'cpgu:Classifier',
-      '@type': 'rm:ArtifactClasses',
-      title: 'Классификатор',
-      description: 'Классификатор или справочник. Описывает структуру классификатора (не данные из него).',
-      inCreationMenu: true,
-    });
-    const schema = await repository.schemas.getSchemaByClassIri('rm:ArtifactClasses');
-    const artifactClasses = await repository.selectObjects(schema);
-    expect(artifactClasses.length).toBeGreaterThan(10);
-    const classifierClass = artifactClasses.find((e: any) => e['@id'] === 'cpgu:Classifier');
-    expect(classifierClass).toMatchObject({
-      '@id': 'cpgu:Classifier',
-      '@type': 'rm:ArtifactClasses',
-      title: 'Классификатор',
-      description: 'Классификатор или справочник. Описывает структуру классификатора (не данные из него).',
-      inCreationMenu: true,
-    });
-    expect(artifactClasses).toEqual(expect.arrayContaining(artifactClasses0));
+    let artifactClasses0: any[] = [];
+    await selectHelper(repository,
+      {
+        schema: 'rm:ArtifactClassesShape',
+        resolveType: true,
+      },
+      (data) => {
+        artifactClasses0 = data;
+        expect(data.length).toBeGreaterThan(0);
+        const classifierClass0 = data.find((e: any) => e['@id'] === 'cpgu:Classifier');
+        expect(classifierClass0).toMatchObject({
+          '@id': 'cpgu:Classifier',
+          '@type': 'rm:ArtifactClasses',
+          title: 'Классификатор',
+          description: 'Классификатор или справочник. Описывает структуру классификатора (не данные из него).',
+          inCreationMenu: true,
+        });
+      }
+    );
+    await repository.schemas.loadSchemaByClassIri('rm:ArtifactClasses');
+    const schema = repository.schemas.getOrLoadSchemaByClassIri('rm:ArtifactClasses');    
+    await selectHelper(repository,
+      {
+        schema,
+      },
+      (data) => {
+        expect(data.length).toBeGreaterThan(10);
+        const classifierClass = data.find((e: any) => e['@id'] === 'cpgu:Classifier');
+        expect(classifierClass).toMatchObject({
+          '@id': 'cpgu:Classifier',
+          '@type': 'rm:ArtifactClasses',
+          title: 'Классификатор',
+          description: 'Классификатор или справочник. Описывает структуру классификатора (не данные из него).',
+          inCreationMenu: true,
+        });
+        expect(data).toEqual(expect.arrayContaining(artifactClasses0));
+      }
+    );
   });
 
   it('should return ProjectView queries', async () => {
-    let query: any = {
+    let collConstr: any = {
       // globally unique ID of this Query object, could be used for references in mobx JSON-LD storage or server storage, not processed by query generator
       '@id': 'rm:ProjectViewClass_Artifacts_Query',
       '@type': 'rm:Query',
-      shapes: [
+      entConstrs: [
         {
           // globally unique ID of this Shape object, could be used for references in mobx JSON-LD storage or server storage, not processed by query generator
           '@id': 'rm:ProjectViewClass_Artifacts_Query_Shape0',
@@ -212,63 +299,75 @@ describe('SimpleRetrieve', () => {
       orderBy: [{ expression: variable('identifier0'), descending: false }], // if last digit not specified, we assuming '0' (identifier0)
       limit: 50,
     };
-    let objects = await repository.selectObjects(query);
-    expect(objects.length).toBe(0);
+
+    await selectHelper(
+      repository,
+      collConstr,
+      (data) => expect(data.length).toBe(0)
+    );
     
-    query = {
-      '@id': 'rm:ProjectViewClass_Folders_Query',
+    await selectHelper(
+      repository,
+      {
+        '@id': 'rm:ProjectViewClass_Folders_Query',
+          '@type': 'rm:Query',
+          entConstrs: [
+            {
+              '@id': 'rm:ProjectViewClass_Folders_Query_Shape0',
+              '@type': 'rm:QueryShape',
+              schema: 'nav:folderShape',
+            },
+          ],
+      },
+      (data) => expect(data.length).toBe(8)
+    );
+
+    await selectHelper(
+      repository,
+      {
+        '@id': 'rm:ProjectViewClass_Users_Query',
         '@type': 'rm:Query',
-        shapes: [
+        entConstrs: [
           {
-            '@id': 'rm:ProjectViewClass_Folders_Query_Shape0',
+            '@id': 'rm:Users_Shape0',
             '@type': 'rm:QueryShape',
-            schema: 'nav:folderShape',
+            schema: 'pporoles:UserShape',
           },
         ],
-    };
-    objects = await repository.selectObjects(query);
-    expect(objects.length).toBe(8);
+      },
+      (data) => expect(data.length).toBe(5)
+    );
 
-    query = {
-      '@id': 'rm:ProjectViewClass_Users_Query',
-      '@type': 'rm:Query',
-      shapes: [
-        {
-          '@id': 'rm:Users_Shape0',
-          '@type': 'rm:QueryShape',
-          schema: 'pporoles:UserShape',
-        },
-      ],
-    };
-    objects = await repository.selectObjects(query);
-    expect(objects.length).toBe(5);
+    await selectHelper(
+      repository,
+      {
+        '@id': 'rm:ProjectViewClass_ArtifactClasses_Query',
+        '@type': 'rm:Query',
+        entConstrs: [
+          {
+            '@id': 'rm:ProjectViewClass_ArtifactClasses_Query_Shape0',
+            '@type': 'rm:QueryShape',
+            schema: 'rm:ArtifactClassesShape',
+          },
+        ],
+      },
+      (data) => expect(data.length).toBe(56)
+    );
 
-    query = {
-      '@id': 'rm:ProjectViewClass_ArtifactClasses_Query',
-      '@type': 'rm:Query',
-      shapes: [
-        {
-          '@id': 'rm:ProjectViewClass_ArtifactClasses_Query_Shape0',
-          '@type': 'rm:QueryShape',
-          schema: 'rm:ArtifactClassesShape',
-        },
-      ],
-    };
-    objects = await repository.selectObjects(query);
-    expect(objects.length).toBe(56);
-
-    query = {
-      '@id': 'rm:ProjectViewClass_ArtifactFormats_Query',
-      '@type': 'rm:Query',
-      shapes: [
-        {
-          '@id': 'rm:ProjectViewClass_ArtifactFormats_Query_Shape0',
-          '@type': 'rm:QueryShape',
-          schema: 'rmUserTypes:_YwcOsRmREemK5LEaKhoOowShape',
-        },
-      ],
-    };
-    objects = await repository.selectObjects(query);
-    expect(objects.length).toBe(3);
+    await selectHelper(
+      repository,
+      {
+        '@id': 'rm:ProjectViewClass_ArtifactFormats_Query',
+        '@type': 'rm:Query',
+        entConstrs: [
+          {
+            '@id': 'rm:ProjectViewClass_ArtifactFormats_Query_Shape0',
+            '@type': 'rm:QueryShape',
+            schema: 'rmUserTypes:_YwcOsRmREemK5LEaKhoOowShape',
+          },
+        ],
+      },
+      (data) => expect(data.length).toBe(3)
+    );
   });
 });

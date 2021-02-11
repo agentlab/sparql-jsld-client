@@ -111,7 +111,10 @@ function propertyShapeToJsonSchemaProperty(
         schemaProp.type = 'string';
         schemaProp.contentEncoding = 'base64';
       }
-      schemaContexts[shapePropKey] = shapePropUri;
+      schemaContexts[shapePropKey] = {
+        '@id': shapePropUri,
+        '@type': shapeProp.datatype,
+      };
     } else if (shapeProp.nodeKind) {
       if (shapeProp.nodeKind === 'sh:IRI' || shapeProp.nodeKind === 'sh:BlankNodeOrIRI') {
         schemaProp.type = 'string';
@@ -155,7 +158,6 @@ export function makeOrderBy(orderBy: string): any {
   // if not ends with a digit, assume 0
   const c = variable1.charAt(variable1.length - 1);
   if (c < '0' || c > '9') variable1 += '0';
-
   return {
     expression: variable(variable1),
     descending,
@@ -227,25 +229,27 @@ function propertyShapeToUiSchema(
 }
 
 export function propertyShapesToSchemaProperties(
-  shapeProps: any[],
+  shapeProps: any[] | undefined,
 ): [{ [key: string]: JSONSchema6DefinitionForRdfProperty }, JsObject, string[], JsObject] {
   const schemaProps: { [key: string]: JSONSchema6DefinitionForRdfProperty } = {};
   const schemaContexts: JsObject = {};
   const schemaReqs: string[] = [];
   const uiSchema: JsObject = {};
-  shapeProps.forEach((shapeProp) => {
-    const schemaPropUri = shapeProp.path;
-    const propKey = propertyShapeToJsonSchemaProperty(
-      shapeProp,
-      schemaPropUri,
-      schemaProps,
-      schemaContexts,
-      schemaReqs,
-    );
-    if (propKey) {
-      propertyShapeToUiSchema(shapeProp, schemaProps, propKey, uiSchema);
-    }
-  });
+  if (shapeProps) {
+    shapeProps.forEach((shapeProp) => {
+      const schemaPropUri = shapeProp.path;
+      const propKey = propertyShapeToJsonSchemaProperty(
+        shapeProp,
+        schemaPropUri,
+        schemaProps,
+        schemaContexts,
+        schemaReqs,
+      );
+      if (propKey) {
+        propertyShapeToUiSchema(shapeProp, schemaProps, propKey, uiSchema);
+      }
+    });
+  }
   return [schemaProps, schemaContexts, schemaReqs, uiSchema];
 }
 

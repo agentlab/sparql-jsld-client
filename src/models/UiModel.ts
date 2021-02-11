@@ -7,11 +7,25 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
+import { triple, variable, namedNode } from '@rdfjs/data-model';
+import { types } from 'mobx-state-tree';
+
 import { ResourceSchema, ClassSchema } from '../schema/RdfsSchema';
 import { ArtifactShapeSchema, PropertyShapeSchema } from '../schema/ArtifactShapeSchema';
 
+import { Repository } from './Repository';
+import { Views } from './ViewDescr';
 
-export const rootModelInitialState = {
+
+export const UiModel = types
+.compose(
+  Repository,
+  Views
+)
+.named('UiModel');
+//export interface IUiModel extends Instance<typeof UiModel> {}
+
+export const uiModelInitialState = {
   repId: '',
   user: {
     //'@id': 'mailto:guest@example.com',//<mailto:guest@example.com>
@@ -45,14 +59,5 @@ export const rootModelInitialState = {
   },
   collsConstr: {},
   colls: {},
+  views: {},
 };
-
-
-/*onSnapshot(rootStore, (snapshot) => {
-  console.debug('Snapshot: ', snapshot);
-  localStorage.setItem('rootState', JSON.stringify(snapshot));
-});
-
-onPatch(rootStore, (snapshot) => {
-  console.debug('Snapshot Patch: ', snapshot);
-});*/

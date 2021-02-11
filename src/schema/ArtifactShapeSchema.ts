@@ -9,7 +9,7 @@
  ********************************************************************************/
 import { JSONSchema6forRdf } from '../ObjectProvider';
 
-export const ArtifactShapeSchema: any/*JSONSchema6forRdf*/ = {
+export const ArtifactShapeSchema: JSONSchema6forRdf = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   '@id': 'sh:NodeShapeShape',
   '@type': 'sh:NodeShape',
@@ -19,17 +19,30 @@ export const ArtifactShapeSchema: any/*JSONSchema6forRdf*/ = {
   type: 'object',
   '@context': {
     '@type': 'rdf:type',
-    targetClass: 'sh:targetClass',
+    targetClass: {
+      '@id': 'sh:targetClass',
+      '@type': '@id',
+    },
     title: 'dcterms:title',
     description: 'dcterms:description',
-    property: {
+    /*property: {
       '@id': 'sh:property',
       '@type': 'sh:PropertyShape',
-    },
+    },*/
+    property: 'sh:property',
     inCreationMenu: 'rm:inCreationMenu',
-    defaultIndividNs: 'rm:defaultIndividNs',
-    defaultFormat: 'rm:defaultFormat',
-    iconReference: 'rm:iconReference',
+    defaultIndividNs: {
+      '@id': 'rm:defaultIndividNs',
+      '@type': 'xsd:anyURI',//'@id',
+    },
+    defaultFormat: {
+      '@id': 'rm:defaultFormat',
+      '@type': '@id',
+    },
+    iconReference: {
+      '@id': 'rm:iconReference',
+      '@type': '@id',
+    },
   },
   properties: {
     '@id': {
@@ -71,10 +84,10 @@ export const ArtifactShapeSchema: any/*JSONSchema6forRdf*/ = {
       type: 'object',
     },
   },
-  required: ['@id', 'targetClass', 'property'], // arrays should be required
+  required: ['@id', 'targetClass'/*, 'property'*/], // arrays should be required
 };
 
-export const PropertyShapeSchema: any/*JSONSchema6forRdf*/ = {
+export const PropertyShapeSchema: JSONSchema6forRdf = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   //$id: 'http://example.com/product.schema.json',
   '@id': 'sh:PropertyShapeShape',
@@ -86,14 +99,35 @@ export const PropertyShapeSchema: any/*JSONSchema6forRdf*/ = {
   '@context': {
     '@type': 'rdf:type',
     description: 'sh:description',
-    datatype: 'sh:datatype',
-    path: 'sh:path', // object with unknown type should resolve in Resource URI
-    order: 'sh:order',
+    datatype: {
+      '@id': 'sh:datatype',
+      '@type': '@id',
+    },
+    path: { // object with unknown type should resolve in Resource URI
+      '@id': 'sh:path',
+      '@type': '@id',
+    },
+    order: {
+      '@id': 'sh:order',
+      '@type': 'xsd:integer',
+    },
     name: 'sh:name',
-    minCount: 'sh:minCount',
-    maxCount: 'sh:maxCount',
-    class: 'sh:class',
-    nodeKind: 'sh:nodeKind',
+    minCount: {
+      '@id': 'sh:minCount',
+      '@type': 'xsd:integer',
+    },
+    maxCount: {
+      '@id': 'sh:maxCount',
+      '@type': 'xsd:integer',
+    },
+    class: {
+      '@id': 'sh:class',
+      '@type': '@id',
+    },
+    nodeKind: {
+      '@id': 'sh:nodeKind',
+      '@type': '@id',
+    },
     shapeModifiability: 'rm:shapeModifiability',
     valueModifiability: 'rm:valueModifiability',
   },

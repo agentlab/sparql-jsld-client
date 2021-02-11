@@ -8,6 +8,8 @@
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
 import uuid62 from 'uuid62';
+import { variable } from '@rdfjs/data-model';
+import { IKeyValueMap } from 'mobx';
 import {
   types,
   flow,
@@ -15,9 +17,13 @@ import {
   IAnyModelType,
   IAnyType,
   getSnapshot,
+  Instance,
+  IAnyStateTreeNode,
+  getEnv,
+  getRoot,
 } from 'mobx-state-tree';
 
-import { JSONSchema6forRdf, copyUniqueObjectPropsWithRenameOrFilter, JsObject } from '../ObjectProvider';
+import { JSONSchema6forRdf, copyUniqueObjectPropsWithRenameOrFilter, JsObject, JSONSchema6forRdf2 } from '../ObjectProvider';
 import {
   propertyShapesToSchemaProperties,
   uiMapping,
@@ -25,11 +31,12 @@ import {
   addToSchemaParentSchema,
 } from '../ObjectProviderImpl';
 
-import { ResourceSchema, ClassSchema } from '../schema/RdfsSchema';
-import { ArtifactShapeSchema } from '../schema/ArtifactShapeSchema';
+import { ClassSchema } from '../schema/RdfsSchema';
+import { ArtifactShapeSchema, PropertyShapeSchema } from '../schema/ArtifactShapeSchema';
+import { abbreviateIri } from '../SparqlGen';
+import { constructObjectsQuery, selectObjectsQuery } from '../SparqlGenSelect';
+import { SparqlClient } from '../SparqlClient';
 
-import { Repository } from './Repository';
-import { IKeyValueMap } from 'mobx';
 
 export function createSchemaWithSubClassOf(schema: any, iri: string, classIri?: string) {
   return {
@@ -158,6 +165,23 @@ export const JSONSchema7PropertyForRdf = types.model('JSONSchema7PropertyForRdf'
 
 //export interface IJSONSchema7PropertyForRdf extends Instance<typeof JSONSchema7PropertyForRdf> {}
 
+export const JSONSchema7forRdfReference = types.maybe(
+  types.reference(JSONSchema7forRdf, {
+    get(identifier: string, parent): any {
+      if (!parent) return null;
+      const repository: any = getRoot(parent);//getParentOfType(parent, Repository);
+      if (!repository) return null;
+      const schemas = repository.schemas as Instance<typeof Schemas>;
+      const ss = getSnapshot(schemas);
+      const r = schemas.getOrLoadSchemaByIri(identifier);
+      return r;
+    },
+    set(value) {
+      return value['@id'];
+    }
+  })
+);
+
 export const Schemas = types
   .model('Schemas', {
     /**
@@ -174,219 +198,118 @@ export const Schemas = types
   /**
    * Views
    */
-  .views((self) => ({
-    get(id: string) {
-      return self.json.get(id);
-    },
-    getByClassId(id: string) {
-      return self.class2schema.get(id);
-    },
-  }))
+  .views((self) => {
+    const repository: any = getRoot(self);//getParentOfType(self, Repository);
+    return {
+      get(id: string) {
+        return self.json.get(id);
+      },
+      getByClassId(id: string) {
+        return self.class2schema.get(id);
+      },
+      /**
+       * Возвращает по IRI класса дефолтную для него сборную JSON Schema + JSON-LD с разрешенными ссылками на другие схемы
+       * Т.е. полную, со всеми объявлениями полей и списком required
+       * @param iri
+       */
+      getOrLoadSchemaByClassIri(iri: string | undefined) {
+        if (!iri || iri.length === 0) return null;
+        iri = abbreviateIri(iri, repository.ns.currentJs);
+        if (self.class2schema.has(iri)) {
+          const schemaIri = self.class2schema.get(iri);
+          return schemaIri ? self.json.get(schemaIri) : null;
+        } else {
+          // TODO: this is ugly, but workaround the idea that views should be side effect free.
+          // We need a more elegant solution.
+          //@ts-ignore
+          setImmediate(() => self.loadSchemaByClassIri(iri));
+          return null;
+        }
+      },
+      /**
+       * Возвращает по IRI (значению поля '@id') сборную JSON Schema + JSON-LD с разрешенными ссылками на другие схемы
+       * Т.е. полную, со всеми объявлениями полей и списком required
+       * @param iri
+       */
+      getOrLoadSchemaByIri(iri: string | undefined) {
+        if (!iri || iri.length === 0) return null;
+        iri = abbreviateIri(iri, repository.ns.currentJs);
+        if (!self.json.has(iri)) {
+          // TODO: this is ugly, but workaround the idea that views should be side effect free.
+          // We need a more elegant solution.
+          setImmediate(async () => {
+            try {
+              //@ts-ignore
+              await self.loadSchemaByIri(iri);
+            } catch (err) {
+              console.log(err);
+            }
+          });
+          return null;
+        } else {
+          return self.json.get(iri);
+        }
+      },
+    };
+  })
 
   /**
    * Actions
    */
   .actions((self) => {
-    const repository: any = getParentOfType(self, Repository);
+    const repository: IAnyStateTreeNode = getRoot(self);//getParentOfType(self, Repository);
+    const client: SparqlClient = getEnv(self).client;
 
-    /**
-     * Retrieves element's SHACL Shape from server and converts it to 'JSON Schema + LD' and UI Schema
-     * for this element.
-     * Element's UI Schema could be further customized during visualization process by concrete View settings
-     * @param iri -- element's class uri
-     */
-    const resolveSchemaFromServer = flow(function* resolveSchemaFromServer(conditions: JsObject) {
-      //console.debug('resolveSchemaFromServer conditions=', conditions);
-      const shapes = yield repository.selectObjects({
-        schema: ArtifactShapeSchema['@id'],
-        conditions,
-      });
-      if (!shapes || shapes.length === 0) {
-        return { schema: undefined, uiSchema: undefined };
+    const loadSchemaInternal = flow(function* loadSchemaInternal(conditions: JsObject) {
+      const r = yield resolveSchemaFromServer(conditions, repository.ns.currentJs, client);
+      const schema = r.schema;
+      let uiSchema = r.uiSchema;
+      if (!schema) return Promise.reject('Cannot load schema with conditions' + conditions);
+      // get parent schemas
+      let schemaQueue: JSONSchema6forRdf[] = yield getDirectSuperSchemas(schema);
+      schemaQueue = [schema, ...schemaQueue];
+      // copy loaded schema and parents into new schema
+      let schemaResult: any = { '@id': schema['@id'], '@type': schema['@type'] };
+      schemaResult = copyAllSchemasToOne(schemaQueue, schemaResult);
+      // add schema to registries
+      self.json.set(schemaResult['@id'], schemaResult);
+      //console.log('loadSchemaInternal self.json.set', schema['@id']);
+      const classIri: string = abbreviateIri(schemaResult.targetClass, repository.ns.currentJs);
+      if (!self.class2schema.get(classIri)) {
+        self.class2schema.set(classIri, schemaResult['@id']);
+        //console.log('loadSchemaInternal self.class2schema.set', classIri, schema['@id']);
       }
-      const shape = shapes[0];
-      const schema: any/*JSONSchema6forRdf*/ = {
-        $schema: 'http://json-schema.org/draft-07/schema#',
-        type: 'object',
-        '@context': {
-          '@type': 'rdf:type',
-        },
-        properties: {
-          '@id': {
-            title: 'URI',
-            type: 'string',
-            format: 'iri',
-          },
-          '@type': {
-            title: 'Тип',
-            type: 'string',
-            format: 'iri',
-          },
-        },
-        required: ['@id', '@type'],
-      };
-      copyUniqueObjectPropsWithRenameOrFilter(schema, shape, {
-        property: null,
-      });
-      // properties from shapes hierarchy
-      const superClassesUris = yield repository.selectObjects({
-        shapes: [
-          {
-            schema: createSchemaWithSubClassOf(ClassSchema, shape['@id']),
-            conditions: {
-              '@_id': schema.targetClass,
-            },
-          },
-          {
-            schema: ArtifactShapeSchema['@id'],
-            conditions: {
-              targetClass: '?subClassOf0',
-            },
-            variables: {
-              'eIri1': null
-            },
-          }
-        ],
-      });
-      //console.debug('resolveSchemaFromServer superClasses=', superClassesUris);
-      const superClassesSchemas = superClassesUris.filter((c: any) => c.subClassOf && c.subClassOf !== 'rdfs:Resource' &&  c['@id1'] && c['@id1'] !== shape['@id']);
-      if (superClassesSchemas.length > 0) {
-        schema.allOf = [];
-        superClassesSchemas.forEach((superClassesSchema: any) => {
-          if (superClassesSchema['@id1'])
-            schema.allOf?.push({
-              $ref: superClassesSchema['@id1'],
-            })
-          }
-        );
-      }
-      const [props, contexts, reqs, uiSchemaTmp] = propertyShapesToSchemaProperties(shape.property);
-      schema.properties = { ...schema.properties, ...props };
-      schema['@context'] = { ...(schema['@context'] as any), ...contexts };
-      schema.required?.push(...reqs);
-
-      const uiSchema = {
-        '@id': {
-          ...uiMapping['@id'],
-          'ui:disabled': true,
-          'ui:order': 0,
-        },
-        '@type': {
-          ...uiMapping['@type'],
-          'ui:disabled': true,
-          'ui:order': 1,
-        },
-        ...uiSchemaTmp,
-      };
-      //console.debug('resolveSchemaFromServer END conditions=', conditions);
-      return { schema, uiSchema };
+      //console.log('END loadSchemaInternal', conditions);
+      return self.json.get(schemaResult['@id']);
     });
 
-    const getSchemaByIriInternal = flow(function* getSchemaByIriInternal(iri: string) {
-      iri = repository.queryPrefixes.abbreviateIri(iri);
-      //console.debug('getSchemaByIriInternal', iri);
-      let schema: any | undefined = self.json.get(iri);
-      if (schema === undefined) {
-        //console.debug('getSchemaByIriInternal NOT found', { uri, schema });
-        const r = yield resolveSchemaFromServer({ '@_id': iri });
-        schema = r.schema;
-        let uiSchema: any | undefined = r.uiSchema;
-        if (!schema) {
-          // if not found fallback to Resource with URI and maybe label
-          schema = {
-            ...ResourceSchema,
-            '@id': iri + 'Shape',
-            '@type': 'sh:NodeShape',
-          };
-        }
-        if (!uiSchema) {
-          uiSchema = {};
-        }
-        self.json.set(schema['@id'], schema);
-        //console.debug('getSchemaByIriInternal self.json.set', schema['@id']);
-        const classIri: string = repository.queryPrefixes.abbreviateIri(schema.targetClass);
-        if (!self.class2schema.get(classIri)) {
-          self.class2schema.set(classIri, schema['@id']);
-          //console.debug('getSchemaByIriInternal self.class2schema.set', classIri, schema['@id']);
-        }
-      } else {
-        schema = getSnapshot(schema);
-        //console.debug('getSchemaByIriInternal found', { uri, schema });
-      }
-      //console.debug('END getSchemaByIriInternal', iri);
-      return schema;
-    });
-
-    const getSchemaByClassIriInternal = flow(function* getSchemaByClassIriInternal(iri: string) {
-      iri = repository.queryPrefixes.abbreviateIri(iri);
-      //console.debug('getSchemaByClassIriInternal', iri);
-      const schemaIri = self.class2schema.get(iri);
-      let schema: any | undefined = schemaIri ? self.json.get(schemaIri) : undefined;
-      if (schema === undefined) {
-        //console.debug('getSchemaByClassIriInternal NOT found', { uri, schema });
-        const r = yield resolveSchemaFromServer({ targetClass: iri });
-        schema = r.schema;
-        let uiSchema: any | undefined = r.uiSchema;
-        if (!schema) {
-          // if not found fallback to Resource with URI and maybe label
-          schema = {
-            ...ResourceSchema,
-            '@id': iri + 'Shape',
-            '@type': 'sh:NodeShape',
-          };
-        }
-        if (!uiSchema) {
-          uiSchema = {};
-        }
-        self.json.set(schema['@id'], schema);
-        //console.debug('getSchemaByClassIriInternal self.json.set', schema['@id']);
-        const classIri: string = repository.queryPrefixes.abbreviateIri(schema.targetClass);
-        if (!self.class2schema.get(classIri)) {
-          self.class2schema.set(classIri, schema['@id']);
-          //console.debug('getSchemaByClassIriInternal self.class2schema.set', classIri, schema['@id']);
-        }
-      } else {
-        schema = getSnapshot(schema);
-        //console.debug('getSchemaByClassIriInternal found', { iri, schema });
-      }
-      //console.debug('END getSchemaByClassIriInternal', iri);
-      return schema;
-    });
-
-    const findAllSuperSchemas = flow(function* findAllSuperSchemas(schema: JSONSchema6forRdf) {
-      //console.debug('findAllSuperSchemas for schema=', schema['@id']);
-      const schemaQueue: JSONSchema6forRdf[] = [];
-      const schemaTmpQueue: JSONSchema6forRdf[] = [];
+    const getDirectSuperSchemas = flow(function* getDirectSuperSchemas(schema: JSONSchema6forRdf) {
+      //console.debug('getDirectSuperSchemas for schema=', schema['@id']);
       let schemaOrUndef: JSONSchema6forRdf | undefined = schema;
-      do {
-        if (schemaOrUndef.allOf) {
-          let schemaAllOf: any[] = schemaOrUndef.allOf.filter((s1: any) => s1.$ref !== undefined);
-          //console.debug('findAllSuperSchemas allOf', { uri, schema, schemaAllOf });
-          let schemaParents: JSONSchema6forRdf[] = [];
-          for (let i = 0; i < schemaAllOf.length; i++) {
-            const s2 = schemaAllOf[i];
-            const s3 = yield getSchemaByIriInternal(s2.$ref);
-            schemaParents.push(s3);
+      let parentSchemas: any[] = [];
+      if (schemaOrUndef.allOf) {
+        let schemaAllOf: any[] = schemaOrUndef.allOf.filter((s1: any) => s1.$ref !== undefined);
+        //console.debug('getDirectSuperSchemas allOf', { uri, schema, schemaAllOf });
+        for (let i = 0; i < schemaAllOf.length; i++) {
+          const iri = schemaAllOf[i].$ref;
+          if (!self.json.has(iri)) {
+            //@ts-ignore
+            yield self.loadSchemaByIri(iri);
           }
-          schemaTmpQueue.push(...schemaParents);
-          schemaQueue.push(...schemaParents);
+          const parentSchema = self.json.get(iri);
+          parentSchemas.push(parentSchema);
         }
-        schemaOrUndef = schemaTmpQueue.shift();
-      } while (schemaOrUndef !== undefined);
-      //console.debug('END findAllSuperSchemas for schema=', schema['@id']);
-      return schemaQueue;
+      }
+      //console.debug('END getDirectSuperSchemas for schema=', schema['@id']);
+      return parentSchemas;
     });
 
     const copyAllSchemasToOne = (schemaQueue: JSONSchema6forRdf[], schema: any) => {
       let schemaOrUndefined: any | undefined;
-      //const tmp = schemaQueue.shift();
-      //schema = tmp ? { ...tmp } : { ...ResourceSchema, '@id': uri, '@type': uri };
-      //schemaQueue.forEach((parentSchema) => addToSchemaParentSchema(schema, parentSchema));
-      //alternative realization of above
       while (schemaQueue.length > 0) {
         schemaOrUndefined = schemaQueue.pop();
         if (schemaOrUndefined.js !== undefined)
-          schemaOrUndefined = schemaOrUndefined.js();
+          schemaOrUndefined = schemaOrUndefined.js;
         if (schemaOrUndefined) {
           addToSchemaParentSchema(schema, schemaOrUndefined);
         }
@@ -405,50 +328,157 @@ export const Schemas = types
 
     return {
       addSchema(schema: JSONSchema6forRdf): void {
-        const iri: string = repository.queryPrefixes.abbreviateIri(schema['@id']);
+        const iri: string = abbreviateIri(schema['@id'], repository.ns.currentJs);
         if (!self.json.get(iri)) {
           self.json.set(iri, schema as any);
         }
-        const classIri: string = repository.queryPrefixes.abbreviateIri(schema.targetClass);
-        if (!self.class2schema.get(classIri)) {
-          self.class2schema.set(classIri, schema['@id']);
+        if (schema.targetClass) {
+          const classIri: string = abbreviateIri(schema.targetClass, repository.ns.currentJs);
+          if (!self.class2schema.get(classIri)) {
+            self.class2schema.set(classIri, schema['@id']);
+          }
         }
       },
 
       /**
-       * Возвращает по IRI класса дефолтную для него сборную JSON Schema + JSON-LD с разрешенными ссылками на другие схемы
+       * Загружает по IRI класса дефолтную для него сборную JSON Schema + JSON-LD с разрешенными ссылками на другие схемы
        * Т.е. полную, со всеми объявлениями полей и списком required
        * @param iri
        */
-      getSchemaByClassIri: flow(function* getSchemaByClassIri(iri: string) {
-        //console.debug('getSchemaByClassIri', iri);
-        let schema = yield getSchemaByClassIriInternal(iri);
-        let schemaQueue: JSONSchema6forRdf[] = yield findAllSuperSchemas(schema);
-        schemaQueue = [schema, ...schemaQueue];
-
-        let schemaResult = { '@id': schema['@id'], '@type': schema['@type'] };
-        schemaResult = copyAllSchemasToOne(schemaQueue, schemaResult);
-        //console.debug('END getSchemaByClassIri', iri);
-        return schemaResult;
+      loadSchemaByClassIri: flow(function* loadSchemaByClassIri(iri: string | undefined) {
+        //console.log('loadSchemaByClassIri', iri);
+        if (!iri || iri.length === 0) return;
+        const schemaObs = yield loadSchemaInternal({ targetClass: iri });
+        //console.log('END loadSchemaByClassIri', iri);
+        return schemaObs;
       }),
 
       /**
-       * Возвращает по IRI (значению поля '@id') сборную JSON Schema + JSON-LD с разрешенными ссылками на другие схемы
+       * Загружает по IRI (значению поля '@id') сборную JSON Schema + JSON-LD с разрешенными ссылками на другие схемы
        * Т.е. полную, со всеми объявлениями полей и списком required
        * @param iri
        */
-      getSchemaByIri: flow(function* getSchemaByIri(iri: string) {
-        //console.debug('getSchemaByIri', iri);
-        let schema = yield getSchemaByIriInternal(iri);
-        let schemaQueue: JSONSchema6forRdf[] = yield findAllSuperSchemas(schema);
-        schemaQueue = [schema, ...schemaQueue];
-
-        let schemaResult = { '@id': schema['@id'], '@type': schema['@type'] };
-        schemaResult = copyAllSchemasToOne(schemaQueue, schemaResult);
-        //console.debug('END getSchemaByIri', iri);
-        return schemaResult;
+      loadSchemaByIri: flow(function* loadSchemaByIri(iri: string | undefined) {
+        //console.log('loadSchemaByIri', iri);
+        if (!iri || iri.length === 0) return;
+        const schemaObs = yield loadSchemaInternal({ '@_id': iri });
+        //console.log('END loadSchemaByIri', iri);
+        return schemaObs;
       }),
     };
   });
 
-//export interface ISchemas extends Instance<typeof Schemas> {}
+export interface ISchemas extends Instance<typeof Schemas> {}
+
+
+/**
+ * Retrieves element's SHACL Shape from server and converts it to 'JSON Schema + LD' and UI Schema
+ * for this element.
+ * Element's UI Schema could be further customized during visualization process by concrete View settings
+ * @param iri -- element's class uri
+ */
+export async function resolveSchemaFromServer(conditions: JsObject, nsJs: any, client: SparqlClient) {
+  //console.debug('resolveSchemaFromServer conditions=', conditions);
+  const shapes = await constructObjectsQuery(
+    {
+      entConstrs: [
+        {
+          schema: ArtifactShapeSchema,
+          conditions: {
+            ...conditions,
+            property: '?eIri1',
+          },
+        },
+        {
+          schema: PropertyShapeSchema,
+        },
+      ],
+      orderBy: [{ expression: variable('order1'), descending: false }],
+    },
+    nsJs, client
+  );
+
+  if (!shapes || shapes.length === 0) {
+    return { schema: undefined, uiSchema: undefined };
+  }
+  const shape = shapes[0];
+  const schema: any = {
+    $schema: 'http://json-schema.org/draft-07/schema#',
+    type: 'object',
+    '@context': {
+      '@type': 'rdf:type',
+    },
+    properties: {
+      '@id': {
+        title: 'URI',
+        type: 'string',
+        format: 'iri',
+      },
+      '@type': {
+        title: 'Тип',
+        type: 'string',
+        format: 'iri',
+      },
+    },
+    required: ['@id', '@type'],
+  };
+  copyUniqueObjectPropsWithRenameOrFilter(schema, shape, {
+    property: null,
+  });
+  // properties from shapes hierarchy
+  const superClassesSchema = createSchemaWithSubClassOf(ClassSchema, shape['@id']);
+  const superClassesUris = await selectObjectsQuery(
+    {
+      entConstrs: [
+        {
+          schema: superClassesSchema,
+          conditions: {
+            '@_id': schema.targetClass,
+          },
+        },
+        {
+          schema: ArtifactShapeSchema,
+          conditions: {
+            targetClass: '?subClassOf0',
+          },
+          variables: {
+            'eIri1': null
+          },
+        }
+      ],
+    },
+    nsJs, client
+  );
+  //console.debug('resolveSchemaFromServer superClasses=', superClassesUris);
+  const superClassesSchemas = superClassesUris.filter((c: any) => c.subClassOf && c.subClassOf !== 'rdfs:Resource' &&  c['@id1'] && c['@id1'] !== shape['@id']);
+  if (superClassesSchemas.length > 0) {
+    schema.allOf = [];
+    superClassesSchemas.forEach((superClassesSchema: any) => {
+      if (superClassesSchema['@id1'])
+        schema.allOf?.push({
+          $ref: superClassesSchema['@id1'],
+        })
+      }
+    );
+  }
+  const [props, contexts, reqs, uiSchemaTmp] = propertyShapesToSchemaProperties(shape.property);
+  schema.properties = { ...schema.properties, ...props };
+  schema['@context'] = { ...(schema['@context'] as any), ...contexts };
+  schema.required?.push(...reqs);
+
+  const uiSchema = {
+    '@id': {
+      ...uiMapping['@id'],
+      'ui:disabled': true,
+      'ui:order': 0,
+    },
+    '@type': {
+      ...uiMapping['@type'],
+      'ui:disabled': true,
+      'ui:order': 1,
+    },
+    ...uiSchemaTmp,
+  };
+  //console.debug('resolveSchemaFromServer END conditions=', conditions);
+  return { schema, uiSchema };
+}

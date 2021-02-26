@@ -19,25 +19,18 @@ export const Namespaces = types
     //default: types.map(types.string),
     current: types.map(types.string),
   })
-
-  /**
-   * Views
-   */
-  .views((self) => ({
-    get currentJs() {
-      return getSnapshot(self.current);
-    },
-    get(id: string) {
-      return self.current.get(id);
-    },
-  }))
-
-  /**
-   * Actions
-   */
+  .views((self) => {
+    return {
+      get currentJs() {
+        return getSnapshot(self.current);
+      },
+      get(id: string) {
+        return self.current.get(id);
+      },
+    }
+  })
   .actions((self) => {
     const client: SparqlClient = getEnv(self).client;
-    
     return {
       reloadNs: flow(function* reloadNs() {
         //console.log('reloadNs start');

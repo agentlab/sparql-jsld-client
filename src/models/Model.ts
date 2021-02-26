@@ -10,6 +10,9 @@
 import { ResourceSchema, ClassSchema } from '../schema/RdfsSchema';
 import { ArtifactShapeSchema, PropertyShapeSchema } from '../schema/ArtifactShapeSchema';
 
+import { mstSchemas } from './Coll';
+import { ViewDescr } from './ViewDescr';
+
 
 export const rootModelInitialState = {
   repId: '',
@@ -43,9 +46,12 @@ export const rootModelInitialState = {
       [PropertyShapeSchema.targetClass]: PropertyShapeSchema['@id'],
     },
   },
-  collsConstr: {},
+  //collsConstr: {},
   colls: {},
 };
+
+
+mstSchemas['rm:View'] = ViewDescr;
 
 
 /*onSnapshot(rootStore, (snapshot) => {

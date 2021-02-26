@@ -7,37 +7,76 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-import { types, getParentOfType, Instance, flow, isStateTreeNode, getRoot, getEnv } from 'mobx-state-tree';
 import moment from 'moment';
+import { types, Instance, flow, getEnv, getRoot, getSnapshot, IAnyStateTreeNode, IAnyComplexType } from 'mobx-state-tree';
 
-//import { Repository } from './Repository';
-import { constructObjects, constructObjectsSnapshot, JsObject2 } from './CollConstr';
-import { IRepository } from './Repository';
+import { JsObject } from '../ObjectProvider';
+import { CollConstr, constructObjects, constructObjectsSnapshot, ICollConstrSnapshotOut, JsObject2 } from './CollConstr';
+
+
+export interface MstModels {
+  [key: string]: IAnyComplexType;
+}
+export const mstSchemas: MstModels = {};
+
+export const DataType = types.union(
+  { dispatcher: (snapshot) => {
+    if (snapshot) {
+      const mstModel = mstSchemas[snapshot['@type']];
+      if (mstModel) {
+        //console.log('DataType, create mstModel for', snapshot['@id'], mstModel.name);
+        return mstModel;
+      }
+    }
+    //console.log('DataType, create JsObject2 for', snapshot['@id']);
+    return JsObject2; 
+  }},
+  JsObject2
+);
 
 /**
- * Collection, retrieved from server based on CollConstr with the same @id
+ * Syncronizable/updateabe collection, retrieved from server based on CollConstr with the same '@id'
+ * Incapsulates collection constraints, data, sync settings and metadata
  */
 export const Coll = types
 .model('Coll', {
   /**
-   * Collection id
+   * Collection id, the same as collConstr's id
    */
   '@id': types.identifier,
 
   /**
-   * Collection data array
+   * Collection constraint. Use this object as an observable
    */
-  data: types.array(JsObject2),
+  collConstr: types.union(CollConstr, types.safeReference(CollConstr)),
 
   /**
-   * Combined collection schema
+   * Update from server period in seconds
+   * undefined -- do not update from server at all
    */
-  //schema: types.map(JSONSchema7forRdf),
+  updPeriod: types.optional(types.number, 300),
 
   /**
-   * SPARQL Select query
+   * Update from server on first data access (true) or immediately (false)
    */
-  //selectQuery: types.string,
+  lazy: types.optional(types.boolean, true),
+
+  /**
+   * Should populate 'index' map
+   */
+  //indexed: types.optional(types.boolean, false),
+
+  /**
+   * Internal data array. Do not retrieve data on first access.
+   * Use <code>coll.data</code> getter instead of <code>coll.dataIntrnl</code>
+   */
+  dataIntrnl: types.array(DataType),
+
+  /**
+   * Index data entries (data references) by '@id' (element iri)
+   * Populated if 'indexed' is enabled
+   */
+  //index: types.map(types.reference(DataType)),
 
   /**
    * Last synced with the server datetime
@@ -47,38 +86,81 @@ export const Coll = types
 /**
  * Views
  */
-//.views((self) => ({
-//}))
+.views((self) => {
+  return {
+    /**
+     * Returns collection objects
+     * Preloads collection lazily and asyncronously
+     */
+    get data() {
+      // first-time load
+      if (self.updPeriod > 0 && !self.lastSynced) {
+        // TODO: this is ugly, but workaround the idea that views should be side effect free.
+        // We need a more elegant solution.
+        setImmediate(() => {
+          //@ts-ignore
+          self.loadColl();
+        });
+      }
+      return self.dataIntrnl;
+    },
+    get dataJs() {
+      return getSnapshot(this.data);
+    },
+    dataByIri(iri: string) {
+      return self.dataIntrnl.find((e) => e['@id'] === iri);
+    },
+  };
+})
 /**
  * Actions
  */
 .actions((self) => {
-  const repository: any = getRoot(self);//getParentOfType(self, Repository);
-  //const ns = repository.ns;
+  const rep: IAnyStateTreeNode = getRoot(self);
+  const client = getEnv(self).client;
   return {
-    /*afterCreate() {
-      console.log("afterCreate a new Coll!");
-    },
     afterAttach() {
-      console.log("afterAttach a new Coll!")
-    },
-    beforeDetach() {
-      console.log("beforeDetach a new Coll!")
-    }*/
-    loadColl: flow(function* loadColl(collConstr: any) {
-      let objects = [];
-      if (isStateTreeNode(collConstr)) {
-        objects = yield constructObjects(collConstr as any);
-      } else {
-        objects = yield constructObjectsSnapshot(collConstr, repository.schemas,
-          repository.ns.currentJs, getEnv(self).client);
+      // first-time load
+      if (self.lazy === false) {
+        setImmediate(() => {
+          //@ts-ignore
+          self.loadColl();
+        });
       }
-      
-      self.data = objects;
-      //schema: {},
-      //selectQuery: '',
-      self.lastSynced = moment.now();
+      //TODO: indexation is not working due to complex reference type
+      /*if(self.dataIntrnl.length > 0 && self.indexed) {
+        self.dataIntrnl.forEach((d: any) => {
+          const d2 = self.index.get(d['@id']);
+          if (d2 !== d) {
+            self.index.set(d['@id'], {'@id': d['@id']});
+            console.log('jlkj');
+          }
+        });
+      }*/
+    },
+    loadColl: flow(function* loadColl() {
+      let objects = [];
+      if (self.collConstr) {
+        const collConstr = getSnapshot<ICollConstrSnapshotOut>(self.collConstr);
+        objects = yield constructObjectsSnapshot(collConstr, rep.schemas, rep.ns.currentJs, client);
+        self.dataIntrnl = objects;
+        //schema: {},
+        //selectQuery: '',
+        self.lastSynced = moment.now();
+      } else {
+        console.warn('self.collConstr is undifined');
+      }
     }),
+    
+    changeCollConstr(constr: any) {
+    },
+
+    addElem(elem: JsObject) {
+      const existEl = self.dataIntrnl.find((e: any) => e['@id'] === elem['@id']);
+      if (!existEl) {
+        self.dataIntrnl.push(elem );
+      }
+    },
   };
 });
 export interface IColl extends Instance<typeof Coll> {};

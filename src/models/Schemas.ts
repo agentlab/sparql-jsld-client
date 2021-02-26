@@ -13,7 +13,6 @@ import { IKeyValueMap } from 'mobx';
 import {
   types,
   flow,
-  getParentOfType,
   IAnyModelType,
   IAnyType,
   getSnapshot,
@@ -23,7 +22,7 @@ import {
   getRoot,
 } from 'mobx-state-tree';
 
-import { JSONSchema6forRdf, copyUniqueObjectPropsWithRenameOrFilter, JsObject, JSONSchema6forRdf2 } from '../ObjectProvider';
+import { JSONSchema6forRdf, copyUniqueObjectPropsWithRenameOrFilter, JsObject } from '../ObjectProvider';
 import {
   propertyShapesToSchemaProperties,
   uiMapping,
@@ -128,17 +127,19 @@ export const JSONSchema7forRdf = types
    * Views
    */
 
-  .views((self) => ({
-    get js(): IKeyValueMap<any> {
-      return getSnapshot(self);
-    },
-    get propertiesJs(): IKeyValueMap<any> {
-      return getSnapshot(self.properties);
-    },
-    get requiredJs(): IKeyValueMap<any> {
-      return getSnapshot(self.required);
-    },
-  }));
+  .views((self) => {
+    return {
+      get js(): IKeyValueMap<any> {
+        return getSnapshot(self);
+      },
+      get propertiesJs(): IKeyValueMap<any> {
+        return getSnapshot(self.properties);
+      },
+      get requiredJs(): IKeyValueMap<any> {
+        return getSnapshot(self.required);
+      },
+    }
+  });
 
 //export interface IJSONSchema7forRdf extends Instance<typeof JSONSchema7forRdf> {}
 
@@ -169,7 +170,7 @@ export const JSONSchema7forRdfReference = types.maybe(
   types.reference(JSONSchema7forRdf, {
     get(identifier: string, parent): any {
       if (!parent) return null;
-      const repository: any = getRoot(parent);//getParentOfType(parent, Repository);
+      const repository: IAnyStateTreeNode = getRoot(parent);
       if (!repository) return null;
       const schemas = repository.schemas as Instance<typeof Schemas>;
       const ss = getSnapshot(schemas);
@@ -199,7 +200,7 @@ export const Schemas = types
    * Views
    */
   .views((self) => {
-    const repository: any = getRoot(self);//getParentOfType(self, Repository);
+    const repository: IAnyStateTreeNode = getRoot(self);
     return {
       get(id: string) {
         return self.json.get(id);
@@ -257,7 +258,7 @@ export const Schemas = types
    * Actions
    */
   .actions((self) => {
-    const repository: IAnyStateTreeNode = getRoot(self);//getParentOfType(self, Repository);
+    const repository: IAnyStateTreeNode = getRoot(self);
     const client: SparqlClient = getEnv(self).client;
 
     const loadSchemaInternal = flow(function* loadSchemaInternal(conditions: JsObject) {

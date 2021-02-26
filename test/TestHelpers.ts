@@ -19,11 +19,11 @@ export function sleep(ms: number): Promise<NodeJS.Timeout> {
 }
 
 export async function selectHelper(repository: any, data: any, testerFn: (data: any) => void) {
-  const constr = repository.addCollConstr(data);
-  const coll = await repository.loadColl(constr);
+  const coll = repository.addColl(data);
+  await coll.loadColl();
   expect(coll).not.toBeUndefined();
   //console.log('artifact30000', json2str(artifact30000));
   const loadedData = coll && coll.data !== undefined ? getSnapshot(coll.data) : [];
   testerFn(loadedData);
-  repository.removeCollConstr(constr);
+  repository.removeCollConstr(coll);
 }

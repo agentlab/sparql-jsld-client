@@ -8,15 +8,13 @@
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
 import { cloneDeep } from 'lodash';
-import { types, flow, getParentOfType, getSnapshot, getEnv, Instance, SnapshotOut, IAnyStateTreeNode, getRoot } from 'mobx-state-tree';
+import { types, getSnapshot, getEnv, getParent, getRoot, isReferenceType, Instance, SnapshotOut, IAnyStateTreeNode } from 'mobx-state-tree';
 
 import { JsObject } from '../ObjectProvider';
-import { Repository } from './Repository';
 import { ISchemas, JSONSchema7forRdf, JSONSchema7forRdfReference } from './Schemas';
 import { ICollConstrJs } from '../SparqlGen';
 import { constructObjectsQuery, selectObjectsQuery } from '../SparqlGenSelect';
 import { insertObjectQuery, deleteObjectQuery, updateObjectQuery } from '../SparqlGenUpdate';
-import { Coll } from './Coll';
 import { SparqlClient } from 'SparqlClient';
 
 
@@ -28,14 +26,22 @@ export const JsObject2 = types.map(types.frozen<any>());
  */
 export const EntConstr = types
   .model('EntConstr', {
+    /**
+     * IRI of entity constraint
+     */
     '@id': types.identifier,
+    /**
+     * IRI of a type of entity constraint. Should be 'rm:EntConstr' or undefined
+     */
     '@type': types.maybe(types.string),
-    // could be class IRI, resolved from local schema reposiory (local cache) or from server
-    // or could be 'private' schema (full qualified JS object)
-    //schema: types.reference(JSONSchema7forRdf),
+    /**
+     * could be class IRI, resolved from local schema reposiory (local cache) or from server
+     * or could be 'private' schema (full qualified JS object)
+     */
     schema: types.union(JSONSchema7forRdfReference, JSONSchema7forRdf),
-    //schema: types.union(types.reference(types.late(() => JSONSchema7forRdf)), types.late(() => JSONSchema7forRdf)), 
-    //schema: types.union(types.string, types.frozen<JSONSchema6forRdf>()),
+    /**
+     * 
+     */
     conditions: types.optional(JsObject2, {}),
     /**
      * if null, use all schema props
@@ -47,24 +53,25 @@ export const EntConstr = types
     data: types.optional(JsObject2, {}),
     /**
      * Дополнительно запрашивать конечный тип объекта (самый "нижний" / специфичный в иерархии наследования).
-     * Use instead if selectObjectsWithTypeInfo()
      */
     resolveType: types.maybe(types.boolean),
   })
-  .views((self) => ({
-    get schemaJs() {
-      return self.schema ? getSnapshot(self.schema): undefined;
-    },
-    get conditionsJs() {
-      return getSnapshot(self.conditions);
-    },
-    get variablesJs() {
-      return self.variables ? getSnapshot(self.variables) : undefined;
-    },
-    get dataJs() {
-      return getSnapshot(self.data);
-    },
-  }));
+  .views((self) => {
+    return {
+      get schemaJs() {
+        return self.schema ? getSnapshot(self.schema): undefined;
+      },
+      get conditionsJs() {
+        return getSnapshot(self.conditions);
+      },
+      get variablesJs() {
+        return self.variables ? getSnapshot(self.variables) : undefined;
+      },
+      get dataJs() {
+        return getSnapshot(self.data);
+      },
+    }
+  });
 
 export interface IEntConstr extends Instance<typeof EntConstr> {};
 
@@ -73,52 +80,67 @@ export interface IEntConstr extends Instance<typeof EntConstr> {};
  */
 export const CollConstr = types
   .model('CollConstr', {
+    /**
+     * IRI of collection constraint
+     */
     '@id': types.identifier,
-    '@type': types.union(types.string, types.undefined),
-    // properties could be changed by client-code only (GUI code, etc.), immutable within SPARQL generation
+    /**
+     * IRI of a type of collection constraint. Should be 'rm:CollConstr'
+     */
+    '@type': types.maybe(types.string),
+    /**
+     * Ordered array of entity constraints. Could be linked by conditions fields
+     */
     entConstrs: types.array(EntConstr),
-    // if last digit not specified, we assuming '0' (identifier0)
-    orderBy: types.union(types.array(types.frozen<any>()), types.undefined),
-    limit: types.union(types.number, types.undefined),
-    offset: types.union(types.number, types.undefined),
-    distinct: types.union(types.boolean, types.undefined),
-    //subqueries: types.optional(types.union(types.map(types.late(() => CollConstr)), types.undefined), undefined),
-    // RDF4J REST API options
+    /**
+     * Ordered array of order clauses
+     * If last digit not specified, we assuming '0' (identifier0)
+     */
+    orderBy: types.maybe(types.array(types.frozen<any>())),
+    limit: types.maybe(types.number),
+    offset: types.maybe(types.number),
+    distinct: types.maybe(types.boolean),
+    /**
+     * RDF4J REST API options
+     */
     options: types.union(types.map(types.string), types.undefined),
-
-    //coll: types.reference(types.late(() => Coll)),
   })
 
   /**
    * Views
    */
-  .views((self) => ({
-    get optionsJs() {
-      return self.options ? getSnapshot(self.options) : undefined;
-    },
-    
-    get client() {
-      return getEnv(self).client;
-    },
-    get repository() {
-      const repository: IAnyStateTreeNode = getRoot(self);//getParentOfType(self, Repository);
-      return repository;
-    },
-    get nsJs() {
-      const repository = this.repository;
-      return repository.ns.currentJs;
-    },
-    get coll() {
-      const repository = this.repository;
-      return repository.getColl(self['@id']);//repository.colls.get(self['@id']);
-    },
-  }))
+  .views((self) => {
+    const rep: IAnyStateTreeNode = getRoot(self);
+    const client = getEnv(self).client;
+    return {
+      get optionsJs() {
+        return self.options ? getSnapshot(self.options) : undefined;
+      },
+      get client() {
+        return client;
+      },
+      get rep() {
+        return rep;
+      },
+      get nsJs() {
+        return rep.ns.currentJs;
+      },
+      get coll() {
+        return rep.getColl(self['@id']);
+      },
+    }
+  })
 
   /**
    * Actions
    */
   .actions((self) => {
     return {
+      afterAttach() {
+      },
+      beforeDetach() {
+        console.log('CollConstr Detach');
+      },
       /**
        * SELECT
        */
@@ -277,7 +299,7 @@ export interface ICollConstrSnapshotOut extends SnapshotOut<typeof CollConstr> {
 
 async function resolveAndClone (self: ICollConstr) {
   const data = getSnapshot<ICollConstrSnapshotOut>(self);
-  return resolveAndCloneSnapshot(data, self.repository.schemas);
+  return resolveAndCloneSnapshot(data, self.rep.schemas);
 };
 
 async function resolveAndCloneSnapshot (data: ICollConstrSnapshotOut, schemas: ISchemas) {
@@ -311,6 +333,9 @@ export async function selectObjects(collConstr: ICollConstr) {
 export async function constructObjects(collConstr: ICollConstr) {
   //TODO: performance
   const collConstrJs = await resolveAndClone(collConstr);
+  if (!collConstr || !collConstr.client) {
+    console.log('collConstr is null');
+  }
   return constructObjectsQuery(collConstrJs, collConstr.nsJs, collConstr.client);
 }
 

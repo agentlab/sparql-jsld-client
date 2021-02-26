@@ -137,11 +137,10 @@ describe('ArtifactsInModules query should return Module UsedInModules with assoc
     //provider.addSchema(usedInSchema);
     //provider.addSchema(usedInModuleSchema);
 
-    const collConstr = repository.addCollConstr(usedInModuleCollConstrJs);
-    const coll = collConstr.coll;
+    const coll = repository.addColl(usedInModuleCollConstrJs, /*{ lazy: false }*/);
     expect(coll).not.toBeUndefined();
     when(
-      () => coll !== undefined && coll.lastSynced !== undefined,
+      () => coll !== undefined && coll.data.length > 0,
       () => {
         const linksAndArtifacts: JsObject[] = getSnapshot(coll?.data);
         expect(linksAndArtifacts.length).toBe(10);
@@ -173,7 +172,7 @@ describe('ArtifactsInModules query should return Module UsedInModules with assoc
             title: "ТН ВЭД ТС",
           }
         });
-        repository.removeCollConstr(collConstr);
+        repository.removeCollConstr(coll);
         done();
       }
     );
@@ -186,17 +185,16 @@ describe('ArtifactsInModules query should return Module UsedInModules with assoc
     //provider.addSchema(usedInSchema);
     //provider.addSchema(usedInModuleSchema);
 
-    const collConstr = repository.addCollConstr({
+    const coll = repository.addColl({
       ...usedInModuleCollConstrJs,
       orderBy: [{
         expression: variable('bookOrder0'),
         descending: false,
       }],
     });
-    const coll = collConstr.coll;
     expect(coll).not.toBeUndefined();
     when(
-      () => coll !== undefined && coll.lastSynced !== undefined,
+      () => coll !== undefined && coll.data.length > 0,
       () => {
         const linksAndArtifacts: JsObject[] = getSnapshot(coll?.data);
         expect(linksAndArtifacts.length).toBe(10);
@@ -228,7 +226,7 @@ describe('ArtifactsInModules query should return Module UsedInModules with assoc
             hasChild: true,
           },
         });
-        repository.removeCollConstr(collConstr);
+        repository.removeCollConstr(coll);
         done();
       }
     );
@@ -242,7 +240,7 @@ describe('ArtifactsInModules query should return Module UsedInModules with assoc
     //provider.addSchema(usedInSchema);
     //provider.addSchema(usedInModuleSchema);
 
-    const collConstr = repository.addCollConstr({
+    const coll = repository.addColl({
       ...usedInModuleCollConstrJs,
       entConstrs: [
         {
@@ -268,10 +266,9 @@ describe('ArtifactsInModules query should return Module UsedInModules with assoc
         descending: true,
       }],
     });
-    const coll = collConstr.coll;
     expect(coll).not.toBeUndefined();
     when(
-      () => coll !== undefined && coll.lastSynced !== undefined,
+      () => coll !== undefined && coll.data.length > 0,
       () => {
         const linksAndArtifacts: JsObject[] = getSnapshot(coll?.data);
         expect(linksAndArtifacts.length).toBe(10);
@@ -295,7 +292,7 @@ describe('ArtifactsInModules query should return Module UsedInModules with assoc
           artifactFormat: 'rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Text',
           hasChild: false,
         });
-        repository.removeCollConstr(collConstr);
+        repository.removeCollConstr(coll);
         done();
       }
     );
@@ -308,7 +305,7 @@ describe('ArtifactsInModules query should return Module UsedInModules with assoc
     //provider.addSchema(usedInSchema);
     //provider.addSchema(usedInModuleSchema);
 
-    const collConstr = repository.addCollConstr({
+    const coll = repository.addColl({
       ...usedInModuleCollConstrJs,
       orderBy: [
         {
@@ -321,10 +318,9 @@ describe('ArtifactsInModules query should return Module UsedInModules with assoc
         }
       ],
     });
-    const coll = collConstr.coll;
     expect(coll).not.toBeUndefined();
     when(
-      () => coll !== undefined && coll.lastSynced !== undefined,
+      () => coll !== undefined && coll.data.length > 0,
       () => {
         const linksAndArtifacts: JsObject[] = getSnapshot(coll?.data);
         expect(linksAndArtifacts.length).toBe(10);
@@ -338,7 +334,7 @@ describe('ArtifactsInModules query should return Module UsedInModules with assoc
           bookOrder: 7,
           hasChild: false,
         });
-        repository.removeCollConstr(collConstr);
+        repository.removeCollConstr(coll);
         done();
       }
     );

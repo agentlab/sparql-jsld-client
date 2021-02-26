@@ -68,7 +68,6 @@ describe('SimpleRetrieve', () => {
         expect(data.length).toBe(15);
       }
     );
-
     const schema = await repository.schemas.loadSchemaByClassIri('rm:Artifact');
     await selectHelper(
       repository,

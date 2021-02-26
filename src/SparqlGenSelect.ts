@@ -53,7 +53,7 @@ export async function constructObjectsQuery(collConstrJs2: ICollConstrJsOpt, nsJ
   const entConstrs: EntConstrInternal[] = getInternalCollConstrs(collConstrJs, nsJs);
   const query = constructQueryFromEntConstrs(entConstrs, collConstrJs);
   const queryStr = gen.stringify(query);
-  console.log('constructObjectsQuery  query=', queryStr);
+  //console.log('constructObjectsQuery  query=', queryStr);
   const results: JsObject[] = await client.sparqlConstruct(queryStr, collConstrJs.options);
   const objects: JsObject[] = await jsonLdToObjects(results, entConstrs);
   return objects;

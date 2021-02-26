@@ -607,4 +607,30 @@ export const usedInModuleSchema: JSONSchema6forRdf = {
   ],
 };
 
+export const ViewShapeSchema: JSONSchema6forRdf = {
+  $schema: 'http://json-schema.org/draft-07/schema#',
+  '@id': 'rm:ViewShape',
+  '@type': 'sh:NodeShape',
+  title: 'View Shape',
+  description: 'Artifact Shape',
+  targetClass: 'rm:View',
+  type: 'object',
+  '@context': {
+    '@type': 'rdf:type',
+  },
+  properties: {
+    '@id': {
+      title: 'URI',
+      type: 'string',
+      format: 'iri',
+    },
+    '@type': {
+      title: 'Тип',
+      type: 'string',
+      format: 'iri',
+    },
+  },
+  required: ['@id', '@type'],
+};
+
 export const { property: artifactShapeProperty, ...artifactShapeNoProperty } = artifactShape;

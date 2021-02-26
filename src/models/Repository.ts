@@ -7,19 +7,17 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-import { types, flow, getSnapshot, getEnv, Instance } from 'mobx-state-tree';
 import uuid62 from 'uuid62';
-import moment from 'moment';
 import { isArray } from 'lodash';
-import { variable } from '@rdfjs/data-model';
+import { types, flow, getSnapshot, getEnv, getRoot, Instance, IAnyComplexType, IAnyStateTreeNode } from 'mobx-state-tree';
 
+import { JsObject, JsStrObj } from '../ObjectProvider';
+import { abbreviateIri, deAbbreviateIri } from '../SparqlGen';
 import { SparqlClient } from '../SparqlClient';
 
 import { Coll } from './Coll';
-import { CollConstr, constructObjects, selectObjects } from './CollConstr';
 import { Namespaces } from './Namespaces';
 import { Schemas } from './Schemas';
-import { abbreviateIri, deAbbreviateIri } from '../SparqlGen';
 
 export const User = types
 .model('User', {
@@ -41,47 +39,36 @@ export const Repository = types
     //processArea: types.string,
     ns: Namespaces,
     schemas: Schemas,
-    collsConstr: types.map(CollConstr),
-    colls: types.map(Coll),
-  })
 
+    /**
+     * Internal colls map.
+     * Use <code>rep.getColl(iri)</code> instead of <code>rep.colls.get(iri)</code>
+     */
+    colls: types.map(Coll),
+    editingData: types.map(types.boolean),
+  })
   /**
    * Views
    */
   .views((self) => {
     return {
       /**
-       * Returns collection object
-       * If loadIfNeeded = true AND data is absent it loads collection lazily and asyncronously
-       * TODO: If loadIfNeeded = true AND data is old it reloads collection lazily and asyncronously
+       * Returns collection
        * @param iriOrCollConstr 
        */
-      getColl(iriOrCollConstr: string | any, loadIfNeeded = true) {
+      getColl(iriOrCollConstr: string | any) {
         const iri = (typeof iriOrCollConstr === 'string') ? iriOrCollConstr : iriOrCollConstr['@id'];
         const coll = self.colls.get(iri);
-
-        if (loadIfNeeded && coll && !coll.lastSynced) {
-          // TODO: this is ugly, but workaround the idea that views should be side effect free.
-          // We need a more elegant solution.
-          //@ts-ignore
-          setImmediate(() => self.loadColl(iriOrCollConstr));
-        }
         return coll;
       },
     };
   })
-
   /**
    * Actions
    */
   .actions((self) => {
     const client: SparqlClient = getEnv(self).client;
     client.setRepositoryId(self.repId);
-
-    const nsRouter = (schema: any): string => {
-      const individualNamespace = schema.defaultIndividNs || 'http://cpgu.kbpm.ru/ns/rm/rdf#';
-      return individualNamespace;
-    };
 
     const normalizeCollConstr = (data: any) => {
       let collConstr: any; // ICollConstr
@@ -136,10 +123,6 @@ export const Repository = types
     }
 
     return {
-      /*afterAttach() {
-        //const t = self.selectObjects('asd');
-      },*/
-
       setId(repId: string) {
         self.repId = repId;
         client.setRepositoryId(self.repId);
@@ -167,50 +150,80 @@ export const Repository = types
        *    }
        *  ])
        */
-      addCollConstr(data: any) {
-        const query = normalizeCollConstr(data);
+      addColl(constr: any, opt: JsObject = {}, data: JsObject[] = []) {
+        const collConstr = normalizeCollConstr(constr);
         /*for(let i = 0; i < query.entConstrs.length; i++) {
           const constr: any = query.entConstrs[i];
           if (typeof constr.schema === 'string') {
             yield self.schemas.getSchemaByIri(constr.schema);
           }
         };*/
-        let qid = query['@id'];
-        const schemas = getSnapshot(self.schemas);
-        self.collsConstr.set(qid, query as any);
-        const collConstr = self.collsConstr.get(qid);
-        if (!collConstr) throw new Error('Cannot create query object in model');
-        const c = getSnapshot(collConstr);
-
-        self.colls.put({
-          '@id': qid,
-          data: [],
+        let ccId = collConstr['@id'];
+        //const schemas = getSnapshot(self.schemas);
+        const collJs: any = {
+          '@id': ccId,
+          collConstr,
+          ...opt,
+          dataIntrnl: data,
           //schema: {},
-          //selectQuery: '',
-        });
-        /*reaction(
-          () => self.collsConstr.get(qid),
-          collConstr => {
-            if (collConstr) {
-                console.log("collConstr != null")
-            } else {
-                console.log("collConstr === null")
-            }
-          }
-        );*/
+        };
+        const collObs = self.colls.put(collJs);
+        if (!collObs) throw new Error('Cannot create query object in model');
+        //const c = getSnapshot(collObs);
+        return collObs;
+      },
 
-        return collConstr;
+      addCollByConstrRef(constr: any, opt: JsObject = {}, data: JsObject[] = []) {
+        let ccId = constr['@id'];
+        //const schemas = getSnapshot(self.schemas);
+        const collJs: any = {
+          '@id': ccId,
+          collConstr: ccId,
+          ...opt,
+          dataIntrnl: data,
+          //schema: {},
+        };
+        const collObs = self.colls.put(collJs);
+        if (!collObs) throw new Error('Cannot create query object in model');
+        //const c = getSnapshot(collObs);
+        return collObs;
       },
 
       removeCollConstr(query: string | any) {
         const id = (typeof query === 'string') ? query : query['@id'];
         if (id) {
-          self.collsConstr.delete(id);
           self.colls.delete(id);
         }
       },
+      
+      saveData(schemaUri: string) {},
+      selectData(schemaUri: string, data: any) {},
+      //////////  FORM  ///////////
+      onSaveFormData(formId: string) {},
+      onCancelForm(id: string) {},
+      setEditing(schemaUri: string, state: boolean, reset: boolean = false) {
+        if (self.editingData.get(schemaUri) !== state) {
+          self.editingData.set(schemaUri, state);
+          //if (schemaUri === 'root' && this.setParentEditing) {
+          //  self.setParentEditing(state);
+          //}
+          //if (this.saveLogicTree[schemaUri] && this.saveLogicTree[schemaUri].parent) {
+          //  this.setEditingChanges(this.saveLogicTree[schemaUri].parent as string, state, schemaUri);
+          //}
+          //if (reset) {
+          //  this.resetEditingChanges(schemaUri);
+          //}
+        }
+      },
+      setModalVisible(uri: string, state: boolean) {},
+      setOnValidate(form: string, id: string, state: boolean) {},
+      onChangeData(path: string, data: any) {},
+      setSaveLogic(parent: string, child: string) {},
+      setEditingChanges(parentUri: string, state: boolean, childUri: string) {},
+      onChangeFormData(form: string, path: string, data: any) {},
+      resetEditingChanges(schemaUri: string) {},
 
-      loadColl: flow(function* loadColl(iriOrCollConstr: string | any) {
+      /*loadColl: flow(function* loadColl(iriOrCollConstr: string | any) {
         const collConstr = (typeof iriOrCollConstr === 'string') ? self.collsConstr.get(iriOrCollConstr) : iriOrCollConstr;
         const iri = (typeof iriOrCollConstr === 'string') ? iriOrCollConstr : iriOrCollConstr['@id'];
         let coll = self.colls.get(iri);
@@ -223,7 +236,7 @@ export const Repository = types
         if (coll)
           yield coll.loadColl(collConstr);
         return coll;
-      }),
+      }),*/
 
       /**
        * Call variants:

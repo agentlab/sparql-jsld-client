@@ -105,6 +105,7 @@ const usedInModuleCollConstrJs: any = {
       // key-value {}:JsObject
       conditions: {
         // context-less property calculated by EXISTS function
+        //TODO: Move this to the schema because it is not a constraint
         hasChild: {
           bind: {
             relation: 'exists',
@@ -126,7 +127,7 @@ const usedInModuleCollConstrJs: any = {
     expression: variable('bookOrder0'),
     descending: false,
   }],
-  //limit: 10,
+  limit: 3,
 };
 
 describe('ArtifactsInModules query should return Module UsedInModules with associated Artifact', () => {
@@ -143,7 +144,7 @@ describe('ArtifactsInModules query should return Module UsedInModules with assoc
       () => coll !== undefined && coll.data.length > 0,
       () => {
         const linksAndArtifacts: JsObject[] = getSnapshot(coll?.data);
-        expect(linksAndArtifacts.length).toBe(10);
+        expect(linksAndArtifacts.length).toBe(3);
         expect(linksAndArtifacts[0]).toMatchObject({
           '@id': 'reqs:_M1HusThYEem2Z_XixsC3pQ',
           '@type': 'rmUserTypes:UsedInModule',
@@ -197,7 +198,7 @@ describe('ArtifactsInModules query should return Module UsedInModules with assoc
       () => coll !== undefined && coll.data.length > 0,
       () => {
         const linksAndArtifacts: JsObject[] = getSnapshot(coll?.data);
-        expect(linksAndArtifacts.length).toBe(10);
+        expect(linksAndArtifacts.length).toBe(3);  
         expect(linksAndArtifacts[0]).toMatchObject({
           "@id": "reqs:_M1HusThYEem2Z_XixsC3pQ",
           "@type": "rmUserTypes:UsedInModule",
@@ -271,7 +272,7 @@ describe('ArtifactsInModules query should return Module UsedInModules with assoc
       () => coll !== undefined && coll.data.length > 0,
       () => {
         const linksAndArtifacts: JsObject[] = getSnapshot(coll?.data);
-        expect(linksAndArtifacts.length).toBe(10);
+        expect(linksAndArtifacts.length).toBe(3);
         expect(linksAndArtifacts[0]).toMatchObject({
           '@id': 'reqs:_N1HusThYEem2Z_XixsC3pQ',
           '@type': ['rmUserTypes:UsedInModule', 'rm:Artifact'],
@@ -323,7 +324,7 @@ describe('ArtifactsInModules query should return Module UsedInModules with assoc
       () => coll !== undefined && coll.data.length > 0,
       () => {
         const linksAndArtifacts: JsObject[] = getSnapshot(coll?.data);
-        expect(linksAndArtifacts.length).toBe(10);
+        expect(linksAndArtifacts.length).toBe(3);
         expect(linksAndArtifacts[0]).toMatchObject({
           depth: 6,
           bookOrder: 6,

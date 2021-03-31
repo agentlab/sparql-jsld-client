@@ -287,7 +287,7 @@ describe('SimpleRetrieve', () => {
             '@type': 'rm:QueryCondition',
             //'@_id':
             //'@_type':
-            assetFolder: 'folders:root',
+            assetFolder: 'folders:samples_collection',
           },
           //variables: {},
           //fields: [], //string[]
@@ -296,14 +296,32 @@ describe('SimpleRetrieve', () => {
       // could be string or string[]. varname or property IRI?
       // ['?identifier0', 'DESC(?title0)']
       orderBy: [{ expression: variable('identifier0'), descending: false }], // if last digit not specified, we assuming '0' (identifier0)
-      limit: 50,
+      limit: 4,
     };
 
     await selectHelper(
       repository,
       collConstr,
-      (data) => expect(data.length).toBe(0)
+      (data) => {
+        expect(data.length).toBe(4);
+        expect(data[0].identifier).toBe(20000);
+      }
     );
+
+    //TODO: sorting is not working
+    /*await selectHelper(
+      repository,
+      {...
+        collConstr,
+        orderBy: [{ expression: variable('identifier0'), descending: true }], // if last digit not specified, we assuming '0' (identifier0)
+        limit: 3,
+      },
+      (data) => {
+        expect(data.length).toBe(3);
+        console.log('data[0].identifier', data[0].identifier);
+        expect(data[0].identifier).toBe(20003);
+      }
+    );*/
     
     await selectHelper(
       repository,

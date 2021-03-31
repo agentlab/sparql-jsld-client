@@ -95,8 +95,8 @@ const collsConstrs: any[] = [
     ],
     // could be string or string[]. varname or property IRI?
     // ['?identifier0', 'DESC(?title0)']
-    //orderBy: [{ expression: variable('identifier0'), descending: false }], // if last digit not specified, we assuming '0' (identifier0)
-    //limit: 50,
+    orderBy: [{ expression: variable('identifier0'), descending: false }], // if last digit not specified, we assuming '0' (identifier0)
+    limit: 50,
   },
   {
     '@id': 'rm:ProjectView_Folders_CollConstr',

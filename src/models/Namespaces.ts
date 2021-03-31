@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
 import { types, flow, applySnapshot, getSnapshot, getEnv } from 'mobx-state-tree';
-import { isEmpty } from 'lodash';
+import isEmpty from 'lodash/isEmpty';
 
 import { SparqlClient } from '../SparqlClient';
 import { JsStrObj } from '../ObjectProvider';

@@ -7,7 +7,6 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-import { cloneDeep } from 'lodash';
  import { Parser } from 'sparqljs';
 import { triple, variable } from '@rdfjs/data-model';
 

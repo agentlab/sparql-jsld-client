@@ -8,8 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
 import uuid62 from 'uuid62';
-import { isArray } from 'lodash';
-import { types, flow, getSnapshot, getEnv, getRoot, Instance, IAnyComplexType, IAnyStateTreeNode } from 'mobx-state-tree';
+import isArray from 'lodash/isArray';
 
 import { JsObject, JsStrObj } from '../ObjectProvider';
 import { abbreviateIri, deAbbreviateIri } from '../SparqlGen';

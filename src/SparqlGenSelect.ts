@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
 import uuid62 from 'uuid62';
-import { cloneDeep } from 'lodash';
+import cloneDeep from 'lodash/cloneDeep';
 import { Quad, Term, NamedNode, Variable } from 'rdf-js';
 import { literal, namedNode, triple, variable } from '@rdfjs/data-model';
 import { ConstructQuery, Ordering, Pattern, SelectQuery } from 'sparqljs';

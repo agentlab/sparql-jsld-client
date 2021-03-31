@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-import { cloneDeep } from 'lodash';
+import cloneDeep from 'lodash/cloneDeep';
 import { types, getSnapshot, getEnv, getParent, getRoot, isReferenceType, Instance, SnapshotOut, IAnyStateTreeNode } from 'mobx-state-tree';
 
 import { JsObject } from '../ObjectProvider';

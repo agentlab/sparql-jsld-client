@@ -8,5 +8,10 @@
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
 
-declare module 'uuid62';
-declare module 'jsonld';
+export function arrDiff(newArr: any[] | undefined, oldArr: any[] | undefined) {
+  if (oldArr === undefined) oldArr = [];
+  if (newArr === undefined) newArr = [];
+  const deleted = oldArr.filter((e) => newArr && !newArr.includes(e));
+  const added = newArr.filter((e) => oldArr && !oldArr.includes(e));
+  return { deleted, added };
+}

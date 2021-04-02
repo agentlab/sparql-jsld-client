@@ -42,15 +42,14 @@ This project was bootstrapped with [TSDX](https://github.com/jaredpalmer/tsdx).
 
 For single test run
 ```bash
-npm test -- -t "should select namespaces"
+yarn test -- -t "should select namespaces"
 ```
 
 For single testsuite run
 ```bash
-npm test SparqlClient.spec.ts
+yarn test SparqlClient.spec.ts
 ```
 
 ## License
 
 - [Eclipse Public License 2.0](LICENSE)
-- [一 (Secondary) GNU General Public License, version 2 with the GNU Classpath Exception](LICENSE)

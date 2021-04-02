@@ -1,3 +1,12 @@
+/********************************************************************************
+ * Copyright (c) 2020 Agentlab and others.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License v. 2.0 which is available at
+ * https://www.eclipse.org/legal/epl-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ ********************************************************************************/
 import fs from 'fs';
 import {
   SparqlClient,
@@ -7,11 +16,12 @@ import {
   executeUpdate,
   FileUploadConfig,
   Results,
+  ServerResponse,
 } from './SparqlClient';
-import { JsObject } from './ObjectProvider';
+import { JsObject, json2str, JsStrObj } from './ObjectProvider';
 import axios, { AxiosResponse } from 'axios';
 
-function createRepositoryConfig(repParam: JsObject = {}, repType: string = 'native-rdfs'): string {
+export function createRepositoryConfig(repParam: JsObject = {}, repType: string = 'native-rdfs'): string {
   if (repType === 'native-rdfs')
     return `
   #
@@ -31,13 +41,83 @@ function createRepositoryConfig(repParam: JsObject = {}, repType: string = 'nati
     rep:repositoryImpl [
       rep:repositoryType "openrdf:SailRepository" ;
       sr:sailImpl [
-        sail:sailType "rdf4j:SchemaCachingRDFSInferencer" ;
+          sail:sailType "rdf4j:SchemaCachingRDFSInferencer" ;
+          sail:delegate [
+            sail:sailType "openrdf:NativeStore" ;
+            sail:iterationCacheSyncThreshold "${repParam['Query Iteration Cache size'] || 10000}";
+            ns:tripleIndexes "${repParam['Triple indexes'] || 'spoc,posc'}";
+            sb:evaluationStrategyFactory "${repParam['EvaluationStrategyFactory'] ||
+              'org.eclipse.rdf4j.query.algebra.evaluation.impl.StrictEvaluationStrategyFactory'}"
+          ]
+        ]
+    ].
+  `;
+  if (repType === 'native-rdfs-dt')
+    return `
+  #
+  # Sesame configuration template for a native RDF repository with
+  # RDF Schema and direct type hierarchy inferencing
+  #
+  @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+  @prefix rep: <http://www.openrdf.org/config/repository#>.
+  @prefix sr: <http://www.openrdf.org/config/repository/sail#>.
+  @prefix sail: <http://www.openrdf.org/config/sail#>.
+  @prefix ns: <http://www.openrdf.org/config/sail/native#>.
+  @prefix sb: <http://www.openrdf.org/config/sail/base#>.
+        
+  [] a rep:Repository ;
+    rep:repositoryID "${repParam['Repository ID']}" ;
+    rdfs:label "${repParam['Repository title'] || 'Native store with RDF Schema and direct type inferencing'}" ;
+    rep:repositoryImpl [
+      rep:repositoryType "openrdf:SailRepository" ;
+      sr:sailImpl [
+        sail:sailType "openrdf:DirectTypeHierarchyInferencer" ;
         sail:delegate [
-          sail:sailType "openrdf:NativeStore" ;
-          sail:iterationCacheSyncThreshold "${repParam['Query Iteration Cache size'] || 10000}";
-          ns:tripleIndexes "${repParam['Triple indexes'] || 'spoc,posc'}";
-          sb:evaluationStrategyFactory "${repParam['EvaluationStrategyFactory'] ||
-            'org.eclipse.rdf4j.query.algebra.evaluation.impl.StrictEvaluationStrategyFactory'}"
+          sail:sailType "rdf4j:SchemaCachingRDFSInferencer" ;
+          sail:delegate [
+            sail:sailType "openrdf:NativeStore" ;
+            sail:iterationCacheSyncThreshold "${repParam['Query Iteration Cache size'] || 10000}";
+            ns:tripleIndexes "${repParam['Triple indexes'] || 'spoc,posc'}";
+            sb:evaluationStrategyFactory "${repParam['EvaluationStrategyFactory'] ||
+              'org.eclipse.rdf4j.query.algebra.evaluation.impl.StrictEvaluationStrategyFactory'}"
+          ]
+        ]
+      ]
+    ].
+  `;
+  if (repType === 'native-rdfs-dt-shacl')
+    return `
+  #
+  # Sesame configuration template for a native RDF repository with
+  # RDF Schema inferencing
+  #
+  @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+  @prefix rep: <http://www.openrdf.org/config/repository#>.
+  @prefix sail: <http://www.openrdf.org/config/sail#>.
+  @prefix sail-shacl: <http://rdf4j.org/config/sail/shacl#> .
+  @prefix ns: <http://www.openrdf.org/config/sail/native#>.
+  @prefix sb: <http://www.openrdf.org/config/sail/base#>.
+  @prefix sr: <http://www.openrdf.org/config/repository/sail#>.
+  @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+        
+  [] a rep:Repository ;
+    rep:repositoryID "${repParam['Repository ID']}" ;
+    rdfs:label "${repParam['Repository title'] || 'Native store with RDF Schema inferencing'}" ;
+    rep:repositoryImpl [
+      rep:repositoryType "openrdf:SailRepository" ;
+      sr:sailImpl [
+        sail:sailType "rdf4j:SparqledShaclSail" ;
+        sail:delegate [
+          sail:sailType "openrdf:DirectTypeHierarchyInferencer" ;
+          sail:delegate [
+            sail:sailType "rdf4j:SchemaCachingRDFSInferencer" ;
+            sail:delegate [
+              sail:sailType "openrdf:NativeStore" ;
+              sail:iterationCacheSyncThreshold "${repParam['Query Iteration Cache size'] || 10000}";
+              ns:tripleIndexes "${repParam['Triple indexes'] || 'spoc,posc'}";
+              sb:evaluationStrategyFactory "${repParam['EvaluationStrategyFactory'] || 'org.eclipse.rdf4j.query.algebra.evaluation.impl.StrictEvaluationStrategyFactory'}"
+            ]
+          ]
         ]
       ]
     ].
@@ -83,21 +163,25 @@ export class SparqlClientImpl implements SparqlClient {
   repId = '';
   repositoryUrl = '';
   statementsUrl = '';
+  
+  constructor(url: string) {
+    this.setServerUrl(url);
+  }
 
-  setServerUrl(url: string): void {
+  setServerUrl(url: string) {
     this.serverUrl = url;
     this.regenerateUrls();
   }
 
-  setRepositoryId(repId: string): void {
+  setRepositoryId(repId: string) {
     this.repId = repId;
     this.regenerateUrls();
   }
 
-  createRepositoryUrl(repId: string): string {
+  createRepositoryUrl(repId: string) {
     return `${this.serverUrl}/repositories/${repId}`;
   }
-  createStatementsUrl(repId: string): string {
+  createStatementsUrl(repId: string) {
     return `${this.serverUrl}/repositories/${repId}/statements`;
   }
 
@@ -106,43 +190,47 @@ export class SparqlClientImpl implements SparqlClient {
     this.statementsUrl = this.createStatementsUrl(this.repId);
   }
 
-  async getNamespaces(): Promise<{ [s: string]: string }> {
+  async loadNs() {
     let url = this.repositoryUrl + '/namespaces';
     let response = await sendGet(url);
     if (response.status < 200 && response.status > 204) return Promise.reject('Cannot get namespaces');
-    let queryPrefixes: { [s: string]: string } = {};
-    //console.log('response.data', response.data);
+    let ns: JsStrObj = {};
+    //console.debug('response.data', response.data);
     if (response.data && response.data.results) {
       let results: Results = { bindings: [] };
       results = response.data.results;
       if (results) {
         results.bindings.forEach((b) => {
           if (b.prefix && b.namespace && b.prefix.value && b.namespace.value) {
-            queryPrefixes[b.prefix.value] = b.namespace.value;
+            ns[b.prefix.value] = b.namespace.value;
           }
         });
       }
     }
-    return queryPrefixes;
+    ns['sesame'] = 'http://www.openrdf.org/schema/sesame#';
+    return ns;
   }
 
-  async uploadStatements(statements: string, baseURI?: string /*, graph?: string*/): Promise<void> {
+  async uploadStatements(statements: string, baseURI?: string, graph?: string): Promise<void> {
     //console.debug(() => `uploadStatements url=${this.statementsUrl} graph=${graph}`);
     statements = statements.replace(/^#.*$/gm, '');
     //console.debug(() => `uploadStatements statements=${statements}`);
-    const response = await sendPostStatements(this.statementsUrl, statements, { baseURI });
+    const params: JsObject = { baseURI };
+    if (graph) params['context'] = graph;
+    const response = await sendPostStatements(this.statementsUrl, statements, params);
     if (response.status < 200 && response.status > 204) return Promise.reject('Cannot upload statements');
   }
 
-  async uploadFiles(files: FileUploadConfig[], rootFolder = ''): Promise<void[]> {
-    //console.log('uploadFiles ', files);
-    const promises = files.map((f) => {
-      const statements = fs.readFileSync(rootFolder + f.file, 'utf8');
-      //console.log('file=', f.file);
-      //console.log('statements=', statements);
-      return this.uploadStatements(statements, f.baseURI);
+  async uploadFiles(files: FileUploadConfig[], rootFolder = '') {
+    //console.debug('uploadFiles ', files);
+    let statements = "";
+    files.forEach((f) => {
+      statements = statements + fs.readFileSync(rootFolder + f.file, 'utf8');
     });
-    return Promise.all(promises);
+
+    if (statements.length > 0 && files.length > 0) {
+      await this.uploadStatements(statements, files[0].baseURI);
+    }
   }
 
   //async downloadStatements(graph?: string): Promise<string> {
@@ -150,7 +238,7 @@ export class SparqlClientImpl implements SparqlClient {
   //return Promise.reject('');
   //}
 
-  async sparqlSelect(query: string, queryParams: JsObject = {}): Promise<Results> {
+  async sparqlSelect(query: string, queryParams: JsObject = {}) {
     //console.debug(() => `sparqlSelect url=${this.repositoryUrl} query=${query} queryParams=${json2str(queryParams)}`);
     const response = await sendPostQuery(this.repositoryUrl, query, queryParams);
     // console.debug(() => `sparqlSelect response=${json2str(response)}`);
@@ -161,7 +249,62 @@ export class SparqlClientImpl implements SparqlClient {
     return results;
   }
 
-  async sparqlUpdate(query: string, queryParams: JsObject = {}): Promise<AxiosResponse> {
+  async sparqlConstruct(query: string, queryParams: JsObject = {}) {
+    //console.debug(() => `sparqlSelect url=${this.repositoryUrl} query=${query} queryParams=${json2str(queryParams)}`);
+    //const response = await sendPostQuery(this.repositoryUrl, query, queryParams);
+    // console.debug(() => `sparqlSelect response=${json2str(response)}`);
+    let queryParamsInUrl = '';
+    if (Object.keys(queryParams).length > 0) {
+      queryParamsInUrl = `?${Object.keys(queryParams)
+        .map((param) => `${param}=${queryParams[param]}`)
+        .join('&')}`;
+    }
+    const url = this.repositoryUrl + queryParamsInUrl;
+    try {
+      const response = await axios.request<JsObject[]>({
+        method: 'post',
+        url,
+        //TODO: Not working 'application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"'
+        headers: {
+          'Content-Type': 'application/sparql-query;charset=UTF-8',
+          //Accept: 'application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"',
+          Accept: 'application/ld+json',
+        },
+        data: query,
+        //transformResponse: (r) => r.data
+      });
+      return response.data;
+    } catch (error) {
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        console.error('sendPostQuery: Response error', error);
+        //console.info('sendPostQuery: response=' + error.response);
+        console.info('sendPostQuery: response.data' + json2str(error.response.data));
+        console.info('sendPostQuery: response.status' + error.response.status);
+        console.info('sendPostQuery: response.headers' + json2str(error.response.headers));
+        //const data = error.request;
+        //const msg = 'sendPostQuery: request=';
+        //console.info('sendPostQuery: request.data=' + json2str(error.request.data));
+        console.info('sendPostQuery: request.uri' + error.request.uri);
+        console.info('sendPostQuery: request.data' + json2str(error.request.data));
+      } else if (error.request) {
+        // The request was made but no response was received
+        // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
+        // http.ClientRequest in node.js
+        console.error('sendPostQuery: Request error', error);
+        console.info('sendPostQuery: error.request=' + json2str(error.request));
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        console.error('sendPostQuery: Send error', error);
+        console.info('sendPostQuery: error.message=' + error.message);
+      }
+      console.info('sendPostQuery: error.config=' + json2str(error.config));
+      return Promise.reject(error);
+    }
+  }
+
+  async sparqlUpdate(query: string, queryParams: JsObject = {}) {
     //console.debug(() => `sparqlUpdate url=${this.repositoryUrl} queryParams=${json2str(queryParams)}`);
     return executeUpdate(this.statementsUrl, query, queryParams);
   }
@@ -170,14 +313,15 @@ export class SparqlClientImpl implements SparqlClient {
    * Удаляет все триплы в графе с заданным graph
    * @param graph
    */
-  async clearGraph(graph = 'null'): Promise<any> {
+  async clearGraph(graph = 'null') {
     const query = `CLEAR GRAPH <${graph}>`;
     //console.debug(() => `clearGraph url=${this.repositoryUrl} query=${query}`);
     //return sendPostQuery(this.repositoryUrl, query);
     return executeUpdate(this.statementsUrl, query);
   }
 
-  async deleteRepository(repId: string): Promise<void> {
+  //ok
+  async deleteRepository(repId: string) {
     const url = this.createRepositoryUrl(repId);
     const response = await axios.request({
       method: 'delete',
@@ -191,12 +335,13 @@ export class SparqlClientImpl implements SparqlClient {
     //console.debug(() => `deleteRepository url=${url}`);
   }
 
-  async createRepositoryAndSetCurrent(repParam: JsObject = {}, repType: string = 'native-rdfs'): Promise<void> {
+  async createRepositoryAndSetCurrent(repParam: JsObject = {}, repType: string = 'native-rdfs') {
     await this.createRepository(repParam, repType);
     this.setRepositoryId(repParam['Repository ID']);
   }
 
-  async createRepository(repParam: JsObject = {}, repType: string = 'native-rdfs'): Promise<void> {
+  //ok
+  async createRepository(repParam: JsObject = {}, repType: string = 'native-rdfs') {
     if (repType === 'virtuoso') {
       let repId = repParam['Repository ID'];
       repParam = {
@@ -207,13 +352,14 @@ export class SparqlClientImpl implements SparqlClient {
       };
     }
     const url = this.createRepositoryUrl(repParam['Repository ID']);
+    const data = createRepositoryConfig(repParam, repType);
     const response = await axios.request({
       method: 'put',
       url,
       headers: {
         'Content-Type': 'text/turtle',
       },
-      data: createRepositoryConfig(repParam, repType),
+      data,
     });
     if (response.status < 200 && response.status > 204) throw Error(`createRepository fault, url=${url}`);
     //console.debug(() => `createRepository url=${url}`);

@@ -1,6 +1,15 @@
+/********************************************************************************
+ * Copyright (c) 2020 Agentlab and others.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License v. 2.0 which is available at
+ * https://www.eclipse.org/legal/epl-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ ********************************************************************************/
 import axios, { AxiosResponse } from 'axios';
 import { Term } from 'rdf-js';
-import { JsObject, json2str } from './ObjectProvider';
+import { JsObject, json2str, JsStrObj } from './ObjectProvider';
 
 export interface ServerResponse {
   head: {
@@ -18,6 +27,7 @@ export interface Results {
 export interface FileUploadConfig {
   file: string;
   baseURI: string;
+  graph?: string;
 }
 
 /**
@@ -96,7 +106,7 @@ export async function sendPostQuery(
       url,
       headers: {
         Accept: 'application/sparql-results+json',
-        'Content-Type': 'application/sparql-query',
+        'Content-Type': 'application/sparql-query;charset=UTF-8',
       },
       data: query,
       //transformResponse: (r) => r.data
@@ -215,13 +225,14 @@ export interface SparqlClient {
   setServerUrl(url: string): void;
   setRepositoryId(repId: string): void;
 
-  getNamespaces(): Promise<{ [s: string]: string }>;
+  loadNs(): Promise<JsStrObj>;
 
   uploadStatements(statements: string, baseURI?: string, graph?: string): Promise<void>;
-  uploadFiles(files: FileUploadConfig[], rootFolder?: string): Promise<void[]>;
+  uploadFiles(files: FileUploadConfig[], rootFolder?: string): Promise<void>;
   //downloadStatements(graph?: string): Promise<string>;
 
   sparqlSelect(query: string, queryParams?: JsObject): Promise<Results>;
+  sparqlConstruct(query: string, queryParams?: JsObject): Promise<JsObject[]>;
   sparqlUpdate(query: string, queryParams?: JsObject): Promise<AxiosResponse>;
 
   clearGraph(graph?: string): Promise<any>;

@@ -1,9 +1,20 @@
+/********************************************************************************
+ * Copyright (c) 2020 Agentlab and others.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License v. 2.0 which is available at
+ * https://www.eclipse.org/legal/epl-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ ********************************************************************************/
 import { JSONSchema6forRdf } from '../ObjectProvider';
 
-export const NopSchema: JSONSchema6forRdf = {
+export const NopSchema: any/*JSONSchema6forRdf*/ = {
   $schema: 'http://json-schema.org/draft-07/schema#',
-  '@id': 'rdfs:Nop', // json-ld
-  '@type': 'rdfs:Nop', // json-ld
+  //$id: 'http://cpgu.kbpm.ru/ns/rm/rdf#NopSchema',
+  '@id': 'rm:NopSchema', // json-ld
+  '@type': 'sh:NodeShape', // json-ld
+  targetClass: 'rdfs:Nop',
   properties: {
     '@id': {
       type: 'string',
@@ -14,13 +25,19 @@ export const NopSchema: JSONSchema6forRdf = {
   required: ['@id'],
 };
 
-export const ResourceSchema: JSONSchema6forRdf = {
+export const ResourceSchema: any/*JSONSchema6forRdf*/ = {
   $schema: 'http://json-schema.org/draft-07/schema#',
-  '@id': 'rdfs:Resource', // json-ld
-  '@type': 'rdfs:Resource', // json-ld
+  //$id: 'http://cpgu.kbpm.ru/ns/rm/rdf#ResourceSchema',
+  '@id': 'rm:ResourceSchema', // json-ld
+  '@type': 'sh:NodeShape', // json-ld
   title: 'Resource Schema',
   description: 'Schema of RDF Resource',
+  targetClass: 'rdfs:Resource',
   type: 'object',
+  '@context': {
+    '@type': 'rdf:type',
+    'label': 'rdfs:label',
+  },
   properties: {
     '@id': {
       type: 'string',
@@ -28,13 +45,11 @@ export const ResourceSchema: JSONSchema6forRdf = {
       title: 'URI',
     },
     '@type': {
-      '@id': 'rdf:type',
       title: 'Тип',
       type: 'string',
       format: 'iri',
     },
     label: {
-      '@id': 'rdfs:label',
       title: 'Метка',
       type: 'string',
     },
@@ -42,13 +57,18 @@ export const ResourceSchema: JSONSchema6forRdf = {
   required: ['@id'],
 };
 
-export const ClassSchema: JSONSchema6forRdf = {
+export const ClassSchema: any/*JSONSchema6forRdf*/ = {
   $schema: 'http://json-schema.org/draft-07/schema#',
-  '@id': 'rdfs:Class', // json-ld
-  '@type': 'rdfs:Class', // json-ld
+  //$id: 'http://cpgu.kbpm.ru/ns/rm/rdf#Class',
+  '@id': 'rm:Class', // json-ld
+  '@type': 'sh:NodeShape', // json-ld
   title: 'Class Schema',
-  description: 'Schema of RDF Resource',
+  description: 'Schema of RDFS Class',
+  targetClass: 'rdfs:Class',
   type: 'object',
+  '@context': {
+    '@type': 'rdf:type',
+  },
   properties: {
     '@id': {
       type: 'string',
@@ -56,7 +76,6 @@ export const ClassSchema: JSONSchema6forRdf = {
       title: 'URI',
     },
     '@type': {
-      '@id': 'rdf:type',
       title: 'Тип',
       type: 'string',
       format: 'iri',
@@ -86,22 +105,24 @@ export const ClassSchema: JSONSchema6forRdf = {
   title: 'Типы данных',
   description: 'Типы данных',
   type: 'object',
+  '@context': {
+    '@type': 'rdf:type',
+    'label': 'rdfs:label',
+  },
   properties: {
     '@id': {
+      title: 'URI',
       type: 'string',
       format: 'iri',
-      title: 'URI',
     },
     '@type': {
-      '@id': 'rdf:type',
       title: 'Тип',
       type: 'string',
       format: 'iri',
     },
     label: {
-      '@id': 'rdfs:label',
-      type: 'string',
       title: 'Метка',
+      type: 'string',
     },
     // isDefinedBy: {
     //   type: 'string',

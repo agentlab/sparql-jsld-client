@@ -1,9 +1,21 @@
+/********************************************************************************
+ * Copyright (c) 2020 Agentlab and others.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License v. 2.0 which is available at
+ * https://www.eclipse.org/legal/epl-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ ********************************************************************************/
+import { JsStrObj } from '../src/ObjectProvider';
 import { FileUploadConfig } from '../src/SparqlClient';
 
-export const queryPrefixes: { [s: string]: string } = {
+export const testNs: JsStrObj = {
   rdfs: 'http://www.w3.org/2000/01/rdf-schema#',
   rdf: 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
   xsd: 'http://www.w3.org/2001/XMLSchema#',
+  sesame: 'http://www.openrdf.org/schema/sesame#',
+  
   dcterms: 'http://purl.org/dc/terms/',
   //dc: 'http://purl.org/dc/elements/1.1/',
   foaf: 'http://xmlns.com/foaf/0.1/',
@@ -34,6 +46,14 @@ export const rootFolder = '../rdf-data-expert/';
 
 export const vocabsFiles: FileUploadConfig[] = [
   {
+    file: 'vocabs/rdf.ttl',
+    baseURI: '<http://www.w3.org/1999/02/22-rdf-syntax-ns#>',
+  },
+  {
+    file: 'vocabs/rdfs.ttl',
+    baseURI: '<http://www.w3.org/2000/01/rdf-schema#>',
+  },
+  {
     file: 'vocabs/xsd.ttl',
     baseURI: '<http://www.w3.org/2001/XMLSchema#>',
   },
@@ -41,10 +61,11 @@ export const vocabsFiles: FileUploadConfig[] = [
     file: 'vocabs/xsd-ru.ttl',
     baseURI: '<http://cpgu.kbpm.ru/ns/xsd#>',
   },
-  {
-    file: 'vocabs/shacl.ttl',
-    baseURI: '<http://www.w3.org/ns/shacl#>',
-  },
+  // deadlocks rdfs+dt
+  //{
+  //  file: 'vocabs/shacl.ttl',
+  //  baseURI: '<http://www.w3.org/ns/shacl#>',
+  //},
   {
     file: 'vocabs/navigation.ttl',
     baseURI: '<http://cpgu.kbpm.ru/ns/rm/navigation#>',
@@ -77,20 +98,35 @@ export const vocabsFiles: FileUploadConfig[] = [
 
 export const shapesFiles: FileUploadConfig[] = [
   {
-    file: 'shapes/shacl/shacl-shacl.ttl',
-    baseURI: '<http://www.w3.org/ns/shacl-shacl#>',
+    file: 'shapes/shacl/ppo-roles-shapes.ttl',
+    baseURI: '<https://agentlab.ru/onto/ppo-roles#>',
+    graph: '<http://rdf4j.org/schema/rdf4j#SHACLShapeGraph>',
   },
+  // deadlocks rdfs+dt
+  //{
+  //  file: 'shapes/shacl/shacl-shacl.ttl',
+  //  baseURI: '<http://www.w3.org/ns/shacl-shacl#>',
+  //  graph: '<http://rdf4j.org/schema/rdf4j#SHACLShapeGraph>',
+  //},
   {
     file: 'shapes/shacl/xsd-shapes.ttl',
     baseURI: '<http://cpgu.kbpm.ru/ns/xsd-shapes#>',
+    graph: '<http://rdf4j.org/schema/rdf4j#SHACLShapeGraph>',
   },
   {
     file: 'shapes/shacl/rm/rm-shapes.ttl',
     baseURI: '<http://cpgu.kbpm.ru/ns/rm/rdf#>',
+    graph: '<http://rdf4j.org/schema/rdf4j#SHACLShapeGraph>',
+  },
+  {
+    file: 'shapes/shacl/rm/rm-user-types-shapes.ttl',
+    baseURI: '<http://cpgu.kbpm.ru/ns/rm/user-types#>',
+    graph: '<http://rdf4j.org/schema/rdf4j#SHACLShapeGraph>',
   },
   {
     file: 'shapes/shacl/cpgu/cpgu-shapes.ttl',
     baseURI: '<http://cpgu.kbpm.ru/ns/rm/cpgu#>',
+    graph: '<http://rdf4j.org/schema/rdf4j#SHACLShapeGraph>',
   },
 ];
 

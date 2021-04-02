@@ -11,7 +11,7 @@ import moment from 'moment';
 import { types, Instance, flow, getEnv, getRoot, getSnapshot, IAnyStateTreeNode, IAnyComplexType } from 'mobx-state-tree';
 
 import { JsObject } from '../ObjectProvider';
-import { CollConstr, constructObjects, constructObjectsSnapshot, ICollConstrSnapshotOut, JsObject2 } from './CollConstr';
+import { CollConstr, constructObjects, constructObjectsSnapshot, deleteObjectSnapshot, ICollConstrSnapshotOut, JsObject2 } from './CollConstr';
 
 
 export interface MstModels {
@@ -139,6 +139,7 @@ export const Coll = types
       }*/
     },
     loadColl: flow(function* loadColl() {
+      //console.log('loadColl START');
       let objects = [];
       if (self.collConstr) {
         const collConstr = getSnapshot<ICollConstrSnapshotOut>(self.collConstr);
@@ -147,9 +148,11 @@ export const Coll = types
         //schema: {},
         //selectQuery: '',
         self.lastSynced = moment.now();
+        //console.log('loadColl', objects.length);
       } else {
-        console.warn('self.collConstr is undifined');
+        console.warn('loadColl: self.collConstr is undifined');
       }
+      //console.log('loadColl END');
     }),
     
     changeCollConstr(constr: any) {
@@ -158,8 +161,37 @@ export const Coll = types
     addElem(elem: JsObject) {
       const existEl = self.dataIntrnl.find((e: any) => e['@id'] === elem['@id']);
       if (!existEl) {
-        self.dataIntrnl.push(elem );
+        self.dataIntrnl.push(elem);
       }
+    },
+
+    delElem: flow(function* delElem(elem: JsObject | string) {
+      if (!elem) return null;
+      if (self.collConstr) {
+        if (typeof elem !== 'string') elem = elem['@id'];
+        let collConstr: any = getSnapshot<ICollConstrSnapshotOut>(self.collConstr);
+        // filter-out query modifiers like orderBy, limit...
+        collConstr = {
+          '@id': collConstr['@id'],
+          '@type': collConstr['@type'],
+          entConstrs: collConstr.entConstrs,
+        };
+        yield deleteObjectSnapshot(rep.schemas, rep.ns.currentJs, client, collConstr, {'@_id': elem});
+        //@ts-ignore
+        return self.delElemInternal(elem);
+      }
+      return null;
+    }),
+
+    delAll() {
+    },
+
+    delElemInternal(elem: string) {
+      const i = self.dataIntrnl.findIndex((e) => e.get('@id') === elem);
+      if (i >= 0) {
+        return self.dataIntrnl.spliceWithArray(i, 1)
+      }
+      return null;
     },
   };
 });

@@ -9,9 +9,9 @@
  ********************************************************************************/
 import uuid62 from 'uuid62';
 import cloneDeep from 'lodash/cloneDeep';
-import { Quad, Term, NamedNode, Variable } from 'rdf-js';
-import { literal, namedNode, triple, variable } from '@rdfjs/data-model';
-import { ConstructQuery, Ordering, Pattern, SelectQuery } from 'sparqljs';
+import { Quad, Variable } from 'rdf-js';
+import { namedNode, triple, variable } from '@rdfjs/data-model';
+import { ConstructQuery, Ordering, SelectQuery } from 'sparqljs';
 import jsonld from 'jsonld';
 
 import { Bindings, Results, SparqlClient } from './SparqlClient';

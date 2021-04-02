@@ -685,7 +685,8 @@ describe('constructObjectsQuery', () => {
 
 
 describe('deleteObjectQuery', () => {
-  it('delete one schema with iri should generate correctly', async () =>
+  it('delete one by iri should generate correctly', async () =>
+    //TODO: if @_id is known, drop other conditions
     deleteTestHelper(
       {
         entConstrs: [{
@@ -704,7 +705,8 @@ describe('deleteObjectQuery', () => {
       }`
     ));
 
-  it('delete one schema with property should generate correctly', async () =>
+  it('delete one by property value should generate correctly', async () =>
+    // maximum constraints with type and properties
     deleteTestHelper(
       {
         entConstrs: [{
@@ -726,7 +728,7 @@ describe('deleteObjectQuery', () => {
       }`
     ));
 
-  it('delete all schemas by type should generate correctly', async () =>
+  it('delete all by type should generate correctly', async () =>
     deleteTestHelper(
       {
         entConstrs: [{
@@ -746,7 +748,7 @@ describe('deleteObjectQuery', () => {
 
 
 describe('insertObjectQuery', () => {
-  it('insert one schema with data should generate correctly', async () =>
+  it('insert one with data should generate correctly', async () =>
     insertTestHelper(
       {
         entConstrs: [{
@@ -774,7 +776,7 @@ describe('insertObjectQuery', () => {
 
 
 describe('updateObjectQuery', () => {
-  it('update one schema with property and no uri should generate correctly', async () =>
+  it('update one with property and no uri should generate correctly', async () =>
     updateTestHelper(
       {
         entConstrs: [{
@@ -815,7 +817,7 @@ describe('updateObjectQuery', () => {
       }`
     ));
   
-  it('update one schema with property and uri should generate correctly', async () => {
+  it('update one with property and uri should generate correctly', async () => {
     const id = 'rm:myid';
     await updateTestHelper(
       {

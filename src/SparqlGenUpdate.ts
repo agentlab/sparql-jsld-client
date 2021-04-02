@@ -40,8 +40,9 @@ export async function deleteObjectQuery(collConstrJs2: ICollConstrJsOpt, nsJs: a
   const entConstrs: EntConstrInternal[] = getInternalCollConstrs(collConstrJs, nsJs, conditions);
   const query = deleteObjectQueryFromEntConstrs(entConstrs);
   const queryStr = gen.stringify(query);
-  //console.debug('deleteObject query=', queryStr);
+  //console.debug('deleteObject', queryStr);
   const response: AxiosResponse<any> = await client.sparqlUpdate(queryStr, collConstrJs.options);
+  //console.debug('deleteObject', response);
 }
 
 export async function insertObjectQuery(collConstrJs2: ICollConstrJsOpt, nsJs: any, client: SparqlClient, data?: JsObject | JsObject[]) {

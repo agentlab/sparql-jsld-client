@@ -15,9 +15,10 @@ import { Repository } from '../src/models/Repository';
 import { SparqlClientImpl } from '../src/SparqlClientImpl';
 
 import { textFormatUri } from './schema/TestSchemas';
-import { vocabsFiles, shapesFiles, rootFolder, usersFiles, projectsFoldersFiles } from './configTests';
-import { JsObject, sleep } from '../src/ObjectProvider';
-import { genTimestampedName } from './TestHelpers';
+import { vocabsFiles, shapesFiles, usersFiles, projectsFoldersFiles, samplesFiles, rootFolder } from './configTests';
+import { JsObject } from '../src/ObjectProvider';
+import { genTimestampedName, sleep } from './TestHelpers';
+import { getSnapshot } from 'mobx-state-tree';
 
 // See https://stackoverflow.com/questions/49603939/async-callback-was-not-invoked-within-the-5000ms-timeout-specified-by-jest-setti
 jest.setTimeout(500000);
@@ -28,7 +29,7 @@ let rmRepositoryID: string;
 
 const assetFolder = 'folders:folder1';
 
-/*beforeAll(async () => {
+beforeAll(async () => {
   rmRepositoryID = genTimestampedName('test_Artifact');
   try {
     await client.createRepository(
@@ -43,6 +44,7 @@ const assetFolder = 'folders:folder1';
     await client.uploadFiles(usersFiles, rootFolder);
     await client.uploadFiles(projectsFoldersFiles, rootFolder);
     await client.uploadFiles(shapesFiles, rootFolder);
+    await client.uploadFiles(samplesFiles, rootFolder);
     //await sleep(5000); // give RDF classifier some time to classify resources after upload
 
     await repository.ns.reloadNs();
@@ -60,7 +62,7 @@ afterAll(async () => {
   }
 });
 
-async function createRandomTextArtifact(schema: any, artifactFormat: string, assetFolder: string): Promise<any> {
+/*async function createRandomTextArtifact(schema: any, artifactFormat: string, assetFolder: string): Promise<any> {
   const uuid = uuid62.v4();
   const newArtifact = {
     title: 'Требование ' + uuid,
@@ -73,44 +75,34 @@ async function createRandomTextArtifact(schema: any, artifactFormat: string, ass
     data: newArtifact,
   });
   return ret;
-}
-
-async function deleteAllArtifacts(schema: any): Promise<void> {
-  //TODO: Delete all class objects with empty conditions call
-  let emptyList = await repository.selectObjects(schema);
-  for (const element of emptyList) {
-    // eslint-disable-next-line no-await-in-loop
-    await repository.deleteObject({
-      schema,
-      conditions: { '@_id': element['@id'] },
-    });
-  }
-  //await Promise.all(
-  //  emptyList.map((element: JsObject) => {
-  //    provider.deleteObject(artifactSchema, { '@id': element['@id'] });
-  //  }),
-  //);
-  emptyList = await repository.selectObjects(schema);
-  if (emptyList.length > 0) {
-    console.log(emptyList[0]);
-  }
-  expect(emptyList.length).toBe(0);
-  // Fetch latest Id
-  const lastId = await repository.selectMaxObjectId(schema);
-  const newId = lastId + 1;
-  // Fetch previous list of artifacts
-  const previousList = await repository.selectObjects(schema);
-  expect(previousList.find((req: any) => req.identifier === newId)).toBeUndefined();
-}
+}*/
 
 describe('create-artifact-scenario', () => {
   it(`should persist artifact in the store`, async () => {
-    await repository.schemas.loadSchemaByClassIri('rm:Artifact');
-    const artifactSchema = repository.schemas.getOrLoadSchemaByClassIri('rm:Artifact');
-    await repository.schemas.loadSchemaByClassIri('cpgu:Группировка');
-    const classifierGroupSchema = repository.schemas.getOrLoadSchemaByClassIri('cpgu:Группировка');
+    //await repository.schemas.loadSchemaByClassIri('rm:Artifact');
+    //const artifactSchema = repository.schemas.getOrLoadSchemaByClassIri('rm:Artifact');
+    //await repository.schemas.loadSchemaByClassIri('cpgu:Группировка');
+    //const classifierGroupSchema = repository.schemas.getOrLoadSchemaByClassIri('cpgu:Группировка');
 
-    await deleteAllArtifacts(artifactSchema);
+    const coll = repository.addColl('rm:ArtifactShape');
+    await coll.loadColl();
+    expect(coll).not.toBeUndefined();
+    let data = coll && coll.data !== undefined ? getSnapshot(coll.data) : [];
+    expect(data.length).toBe(15);
+
+    //const element = data[1];
+    for (const element of data) {
+      // eslint-disable-next-line no-await-in-loop
+      await coll.delElem(element);
+    }
+    expect(coll.data.length).toBe(0);
+    //TODO: Async DELETE races! We need to use transactions
+    await sleep(data.length * 1500);
+    await coll.loadColl();
+    expect(coll.data.length).toBe(0);
+    repository.removeCollConstr(coll);
+
+    /*await deleteAllArtifacts(artifactSchema);
     expect(await repository.selectMaxObjectId(artifactSchema)).toBe(0);
     //console.log('+++ Create 1st artifact');
     const newArtifact1 = await createRandomTextArtifact(classifierGroupSchema, textFormatUri, assetFolder);
@@ -245,9 +237,9 @@ describe('create-artifact-scenario', () => {
     expect(currentList5[0].identifier).toBe(4);
 
     const currentList6 = await repository.selectObjectsWithTypeInfo(artifactSchema);
-    expect(currentList6.length).toBe(3);
+    expect(currentList6.length).toBe(3);*/
   });
-});*/
+});
 
 /*describe('Retrieve artifacts from folder', () => {
   it(`select should return artifacts with expected schema`, async () => {

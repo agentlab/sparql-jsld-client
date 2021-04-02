@@ -9,10 +9,6 @@
  ********************************************************************************/
 import { JSONSchema6 } from 'json-schema';
 
-export function sleep(ms: number): Promise<NodeJS.Timeout> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 export function json2str(data: any): string {
   if (data) return JSON.stringify(data, null, 2);
   return data;

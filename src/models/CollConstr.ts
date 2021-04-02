@@ -359,6 +359,13 @@ export async function deleteObject(collConstr: ICollConstr, conditions?: JsObjec
   if (loadIfNeeded && coll && !coll.lastSynced) await selectObjects(collConstr);
 }
 
+export async function deleteObjectSnapshot(schemas: ISchemas, nsJs: any, client: SparqlClient, data: ICollConstrSnapshotOut, conditions?: JsObject | JsObject[]) {
+  //TODO: performance
+  const collConstrJs = await resolveAndCloneSnapshot(data, schemas);
+  deleteObjectQuery(collConstrJs, nsJs, client, conditions);
+}
+
+
 export async function insertObject(collConstr: ICollConstr, data?: JsObject | JsObject[], loadIfNeeded = true) {
   //TODO: performance
   const collConstrJs = await resolveAndClone(collConstr);

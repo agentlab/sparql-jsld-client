@@ -188,8 +188,12 @@ export const Repository = types
         return collObs;
       },
 
-      removeCollConstr(query: string | any) {
-        const id = (typeof query === 'string') ? query : query['@id'];
+      /**
+       * Remove Coll by IRI or object with IRI
+       * @param coll -- Coll or CollConstr object or IRI
+       */
+      removeColl(coll: string | any) {
+        const id = (typeof coll === 'string') ? coll : coll['@id'];
         if (id) {
           self.colls.delete(id);
         }
@@ -264,7 +268,7 @@ export const Repository = types
         const collConstr = self.addCollConstr(data);
         const objects = yield collConstr.selectObjects();
         //@ts-ignore
-        self.removeCollConstr(collConstr);
+        self.removeColl(collConstr);
         return objects;
       }),*/
 
@@ -301,7 +305,7 @@ export const Repository = types
         const collConstr = self.addCollConstr(data);
         const response = yield collConstr.deleteObject();
         //@ts-ignore
-        self.removeCollConstr(collConstr);
+        self.removeColl(collConstr);
         return response;
       }),*/
 
@@ -355,7 +359,7 @@ export const Repository = types
           }
         });
         //@ts-ignore
-        self.removeCollConstr(collConstr2);     
+        self.removeColl(collConstr2);     
         return objects.length === 1 ? objects[0] : objects;
       }),*/
 
@@ -390,7 +394,7 @@ export const Repository = types
         const collConstr = self.addCollConstr(data);
         const response = yield collConstr.updateObject();
         //@ts-ignore
-        self.removeCollConstr(collConstr);
+        self.removeColl(collConstr);
         return response;
       }),*/
     };

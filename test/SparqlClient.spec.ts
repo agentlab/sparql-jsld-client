@@ -295,7 +295,7 @@ describe('SparqlClient', () => {
       valueModifiability: 'rm:valueModifiability',*/
     };
     const compacted = await jsonld.compact(results, context);
-    console.log(JSON.stringify(compacted, null, 2));
+    //console.log(JSON.stringify(compacted, null, 2));
     // replace native types
     // { @id: 'some-iri' } -> 'some-iri'
     // { @type: xsd:integer, value: '1' } -> 1
@@ -518,7 +518,7 @@ describe('SparqlClient', () => {
       valueModifiability: 'rm:valueModifiability',*/
     };
     const compacted = await jsonld.compact(results, context);
-    console.log(JSON.stringify(compacted, null, 2));
+    //console.log(JSON.stringify(compacted, null, 2));
     // replace native types
     // { @id: 'some-iri' } -> 'some-iri'
     // { @type: xsd:integer, value: '1' } -> 1

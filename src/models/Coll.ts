@@ -140,10 +140,9 @@ export const Coll = types
     },
     loadColl: flow(function* loadColl() {
       //console.log('loadColl START');
-      let objects = [];
       if (self.collConstr) {
         const collConstr = getSnapshot<ICollConstrSnapshotOut>(self.collConstr);
-        objects = yield constructObjectsSnapshot(collConstr, rep.schemas, rep.ns.currentJs, client);
+        const objects = yield constructObjectsSnapshot(collConstr, rep.schemas, rep.ns.currentJs, client);
         self.dataIntrnl = objects;
         //schema: {},
         //selectQuery: '',

@@ -35,7 +35,7 @@ export function genTimestampedName(name: string): string {
 
 beforeAll(async () => {
   rmRepositoryID = genTimestampedName('test_UiModel');
-  console.log(rmRepositoryID);
+  //console.log(rmRepositoryID);
   try {
     await client.createRepository(
       {

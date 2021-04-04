@@ -30,6 +30,7 @@ let rmRepositoryID: string;
 
 beforeAll(async () => {
   rmRepositoryID = genTimestampedName('test_SimpleRetrieve');
+  //console.log(rmRepositoryID);
   try {
     await client.createRepository(
       {
@@ -44,8 +45,8 @@ beforeAll(async () => {
     await client.uploadFiles(projectsFoldersFiles, rootFolder);
     await client.uploadFiles(samplesFiles, rootFolder);
     await client.uploadFiles(shapesFiles, rootFolder);
-    await repository.ns.reloadNs();
     //await sleep(5000); // give RDF classifier some time to classify resources after upload
+    await repository.ns.reloadNs();
   } catch (err) {
     fail(err);
   }

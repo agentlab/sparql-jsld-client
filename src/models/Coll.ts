@@ -82,6 +82,8 @@ export const Coll = types
    * Last synced with the server datetime
    */
   lastSynced: types.maybe(types.number),
+
+  pageSize: types.optional(types.number, 10),
 })
 /**
  * Views
@@ -152,6 +154,21 @@ export const Coll = types
         console.warn('loadColl: self.collConstr is undifined');
       }
       //console.log('loadColl END');
+    }),
+
+    loadMore: flow(function* loadMore() {
+      if (self.collConstr) {
+        let collConstr = {
+          ...getSnapshot<ICollConstrSnapshotOut>(self.collConstr),
+          limit: self.pageSize,
+          offset: self.dataIntrnl.length,
+        };
+        const objects = yield constructObjectsSnapshot(collConstr, rep.schemas, rep.ns.currentJs, client);
+        self.dataIntrnl.push(...objects);
+        if (self.collConstr.limit) {
+          self.collConstr.limit = self.dataIntrnl.length;
+        }
+      }
     }),
     
     changeCollConstr(constr: any) {

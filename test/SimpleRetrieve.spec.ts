@@ -389,3 +389,27 @@ describe('SimpleRetrieve', () => {
     );
   });
 });
+
+
+describe('LoadMore', () => {
+  it('should load incrementally additional data into Coll', async () => {
+    const coll = repository.addColl({
+      entConstrs: [{
+        schema: 'rm:ArtifactShape',
+      }],
+      limit: 10
+    });
+    await coll.loadColl();
+    expect(coll).not.toBeUndefined();
+    const data = coll && coll.data !== undefined ? getSnapshot(coll.data) : [];
+    expect(data.length).toBe(10);
+    
+    await coll.loadMore();
+    const data2 = coll && coll.data !== undefined ? getSnapshot(coll.data) : [];
+    expect(data2.length).toBe(15);
+    repository.removeColl(coll);
+
+    data.forEach((el, i) => expect(data2[i]).toEqual(el));
+    data2.slice(data.length).forEach((el) => expect(data).not.toContainEqual(el));
+  });
+});

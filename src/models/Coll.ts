@@ -11,7 +11,7 @@ import moment from 'moment';
 import { types, Instance, flow, getEnv, getRoot, getSnapshot, IAnyStateTreeNode, IAnyComplexType } from 'mobx-state-tree';
 
 import { JsObject } from '../ObjectProvider';
-import { CollConstr, constructObjects, constructObjectsSnapshot, deleteObjectSnapshot, ICollConstrSnapshotOut, JsObject2 } from './CollConstr';
+import { CollConstr, constructObjectsSnapshot, deleteObjectSnapshot, ICollConstrSnapshotOut, JsObject2 } from './CollConstr';
 
 
 export interface MstModels {

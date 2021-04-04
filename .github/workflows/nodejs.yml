@@ -20,7 +20,7 @@ jobs:
       with:
         node-version: 14
     - run: yarn install
-    - run: yarn build --if-present
+#    - run: yarn build --if-present # builds within yarn install
 #    - run: yarn test
 #      env:
 #        CI: true

@@ -10,8 +10,10 @@
 import uuid62 from 'uuid62';
 import isArray from 'lodash/isArray';
 
-import { JsObject, JsStrObj } from '../ObjectProvider';
-import { abbreviateIri, deAbbreviateIri } from '../SparqlGen';
+import { types, getEnv, Instance } from 'mobx-state-tree';
+
+import { JsObject } from '../ObjectProvider';
+import { abbreviateIri } from '../SparqlGen';
 import { SparqlClient } from '../SparqlClient';
 
 import { Coll } from './Coll';

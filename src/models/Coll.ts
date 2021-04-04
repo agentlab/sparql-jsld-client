@@ -11,7 +11,7 @@ import moment from 'moment';
 import { types, Instance, flow, getEnv, getRoot, getSnapshot, IAnyStateTreeNode, IAnyComplexType } from 'mobx-state-tree';
 
 import { JsObject } from '../ObjectProvider';
-import { CollConstr, constructObjects, constructObjectsSnapshot, deleteObjectSnapshot, ICollConstrSnapshotOut, JsObject2 } from './CollConstr';
+import { CollConstr, constructObjectsSnapshot, deleteObjectSnapshot, ICollConstrSnapshotOut, JsObject2 } from './CollConstr';
 
 
 export interface MstModels {
@@ -82,6 +82,8 @@ export const Coll = types
    * Last synced with the server datetime
    */
   lastSynced: types.maybe(types.number),
+
+  pageSize: types.optional(types.number, 10),
 })
 /**
  * Views
@@ -140,10 +142,9 @@ export const Coll = types
     },
     loadColl: flow(function* loadColl() {
       //console.log('loadColl START');
-      let objects = [];
       if (self.collConstr) {
         const collConstr = getSnapshot<ICollConstrSnapshotOut>(self.collConstr);
-        objects = yield constructObjectsSnapshot(collConstr, rep.schemas, rep.ns.currentJs, client);
+        const objects = yield constructObjectsSnapshot(collConstr, rep.schemas, rep.ns.currentJs, client);
         self.dataIntrnl = objects;
         //schema: {},
         //selectQuery: '',
@@ -153,6 +154,21 @@ export const Coll = types
         console.warn('loadColl: self.collConstr is undifined');
       }
       //console.log('loadColl END');
+    }),
+
+    loadMore: flow(function* loadMore() {
+      if (self.collConstr) {
+        let collConstr = {
+          ...getSnapshot<ICollConstrSnapshotOut>(self.collConstr),
+          limit: self.pageSize,
+          offset: self.dataIntrnl.length,
+        };
+        const objects = yield constructObjectsSnapshot(collConstr, rep.schemas, rep.ns.currentJs, client);
+        self.dataIntrnl.push(...objects);
+        if (self.collConstr.limit) {
+          self.collConstr.limit = self.dataIntrnl.length;
+        }
+      }
     }),
     
     changeCollConstr(constr: any) {

@@ -25,5 +25,5 @@ export async function selectHelper(repository: any, data: any, testerFn: (data: 
   //console.log('artifact30000', json2str(artifact30000));
   const loadedData = coll && coll.data !== undefined ? getSnapshot(coll.data) : [];
   testerFn(loadedData);
-  repository.removeCollConstr(coll);
+  repository.removeColl(coll);
 }

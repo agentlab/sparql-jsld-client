@@ -30,6 +30,7 @@ let rmRepositoryID: string;
 
 beforeAll(async () => {
   rmRepositoryID = genTimestampedName('test_ArtifactSchemaSchema');
+  //console.log(rmRepositoryID);
   try {
     await client.createRepository(
       {

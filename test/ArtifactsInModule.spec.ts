@@ -29,7 +29,7 @@ let rmRepositoryID: string;
 
 beforeAll(async () => {
   rmRepositoryID = genTimestampedName('test_ArtifactsInModule');
-  console.log(rmRepositoryID);
+  //console.log(rmRepositoryID);
   try {
     await client.createRepository(
       {
@@ -45,7 +45,6 @@ beforeAll(async () => {
     await client.uploadFiles(shapesFiles, rootFolder);
     await client.uploadFiles(samplesFiles, rootFolder);
     //await sleep(5000); // give RDF classifier some time to classify resources after upload
-
     await repository.ns.reloadNs();
   } catch (err) {
     fail(err);
@@ -173,7 +172,7 @@ describe('ArtifactsInModules query should return Module UsedInModules with assoc
             title: "ТН ВЭД ТС",
           }
         });
-        repository.removeCollConstr(coll);
+        repository.removeColl(coll);
         done();
       }
     );
@@ -227,7 +226,7 @@ describe('ArtifactsInModules query should return Module UsedInModules with assoc
             hasChild: true,
           },
         });
-        repository.removeCollConstr(coll);
+        repository.removeColl(coll);
         done();
       }
     );
@@ -293,7 +292,7 @@ describe('ArtifactsInModules query should return Module UsedInModules with assoc
           artifactFormat: 'rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Text',
           hasChild: false,
         });
-        repository.removeCollConstr(coll);
+        repository.removeColl(coll);
         done();
       }
     );
@@ -335,7 +334,7 @@ describe('ArtifactsInModules query should return Module UsedInModules with assoc
           bookOrder: 7,
           hasChild: false,
         });
-        repository.removeCollConstr(coll);
+        repository.removeColl(coll);
         done();
       }
     );

@@ -200,7 +200,7 @@ export const CollConstr = types
                       }
                     ]);
                     const subObjects: Results = yield collConstr.selectObjects()
-                    repository.removeCollConstr(collConstr);
+                    repository.removeColl(collConstr);
                     //console.debug('selectObjectsArrayProperties results=', json2str(subObjects));
                     object[key] = subObjects;
                   }

@@ -100,7 +100,7 @@ describe('create-artifact-scenario', () => {
     await sleep(data.length * 1500);
     await coll.loadColl();
     expect(coll.data.length).toBe(0);
-    repository.removeCollConstr(coll);
+    repository.removeColl(coll);
 
     /*await deleteAllArtifacts(artifactSchema);
     expect(await repository.selectMaxObjectId(artifactSchema)).toBe(0);

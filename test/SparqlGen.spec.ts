@@ -239,7 +239,7 @@ describe('SchemaWithArrayProperty', () => {
       },
     ]);
     const genQueryStr = collConstr.selectObjectsQueryStr();
-    repository.removeCollConstr(collConstr);
+    repository.removeColl(collConstr);
     console.log('Two Schemas WithArrayProperty', genQueryStr);
     const correctParsedQuery = parser.parse(`
       PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>

@@ -30,6 +30,7 @@ let rmRepositoryID: string;
 
 beforeAll(async () => {
   rmRepositoryID = genTimestampedName('test_SimpleRetrieve');
+  //console.log(rmRepositoryID);
   try {
     await client.createRepository(
       {
@@ -44,8 +45,8 @@ beforeAll(async () => {
     await client.uploadFiles(projectsFoldersFiles, rootFolder);
     await client.uploadFiles(samplesFiles, rootFolder);
     await client.uploadFiles(shapesFiles, rootFolder);
-    await repository.ns.reloadNs();
     //await sleep(5000); // give RDF classifier some time to classify resources after upload
+    await repository.ns.reloadNs();
   } catch (err) {
     fail(err);
   }
@@ -386,5 +387,29 @@ describe('SimpleRetrieve', () => {
       },
       (data) => expect(data.length).toBe(3)
     );
+  });
+});
+
+
+describe('LoadMore', () => {
+  it('should load incrementally additional data into Coll', async () => {
+    const coll = repository.addColl({
+      entConstrs: [{
+        schema: 'rm:ArtifactShape',
+      }],
+      limit: 10
+    });
+    await coll.loadColl();
+    expect(coll).not.toBeUndefined();
+    const data = coll && coll.data !== undefined ? getSnapshot(coll.data) : [];
+    expect(data.length).toBe(10);
+    
+    await coll.loadMore();
+    const data2 = coll && coll.data !== undefined ? getSnapshot(coll.data) : [];
+    expect(data2.length).toBe(15);
+    repository.removeColl(coll);
+
+    data.forEach((el, i) => expect(data2[i]).toEqual(el));
+    data2.slice(data.length).forEach((el) => expect(data).not.toContainEqual(el));
   });
 });

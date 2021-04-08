@@ -20,7 +20,7 @@ export interface MstModels {
 export const mstSchemas: MstModels = {};
 
 export const DataType = types.union(
-  { dispatcher: (snapshot) => {
+  { dispatcher: (snapshot: any) => {
     if (snapshot) {
       const mstModel = mstSchemas[snapshot['@type']];
       if (mstModel) {
@@ -88,7 +88,7 @@ export const Coll = types
 /**
  * Views
  */
-.views((self) => {
+.views((self: any) => {
   return {
     /**
      * Returns collection objects
@@ -110,14 +110,14 @@ export const Coll = types
       return getSnapshot(this.data);
     },
     dataByIri(iri: string) {
-      return self.dataIntrnl.find((e) => e['@id'] === iri);
+      return self.dataIntrnl.find((e: any) => e['@id'] === iri);
     },
   };
 })
 /**
  * Actions
  */
-.actions((self) => {
+.actions((self: any) => {
   const rep: IAnyStateTreeNode = getRoot(self);
   const client = getEnv(self).client;
   return {
@@ -144,7 +144,7 @@ export const Coll = types
       //console.log('loadColl START');
       if (self.collConstr) {
         const collConstr = getSnapshot<ICollConstrSnapshotOut>(self.collConstr);
-        const objects = yield constructObjectsSnapshot(collConstr, rep.schemas, rep.ns.currentJs, client);
+        const objects: any[] = yield constructObjectsSnapshot(collConstr, rep.schemas, rep.ns.currentJs, client);
         self.dataIntrnl = objects;
         //schema: {},
         //selectQuery: '',
@@ -163,10 +163,10 @@ export const Coll = types
           limit: self.pageSize,
           offset: self.dataIntrnl.length,
         };
-        const objects = yield constructObjectsSnapshot(collConstr, rep.schemas, rep.ns.currentJs, client);
+        const objects: any[] = yield constructObjectsSnapshot(collConstr, rep.schemas, rep.ns.currentJs, client);
         self.dataIntrnl.push(...objects);
         if (self.collConstr.limit) {
-          self.collConstr.limit = self.dataIntrnl.length;
+          self.collConstr.setLimit(self.dataIntrnl.length);
         }
       }
     }),
@@ -203,7 +203,7 @@ export const Coll = types
     },
 
     delElemInternal(elem: string) {
-      const i = self.dataIntrnl.findIndex((e) => e.get('@id') === elem);
+      const i = self.dataIntrnl.findIndex((e: any) => e.get('@id') === elem);
       if (i >= 0) {
         return self.dataIntrnl.spliceWithArray(i, 1)
       }

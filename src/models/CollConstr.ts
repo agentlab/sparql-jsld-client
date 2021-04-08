@@ -56,7 +56,7 @@ export const EntConstr = types
      */
     resolveType: types.maybe(types.boolean),
   })
-  .views((self) => {
+  .views((self: any) => {
     return {
       get schemaJs() {
         return self.schema ? getSnapshot(self.schema): undefined;
@@ -109,7 +109,7 @@ export const CollConstr = types
   /**
    * Views
    */
-  .views((self) => {
+  .views((self: any) => {
     const rep: IAnyStateTreeNode = getRoot(self);
     const client = getEnv(self).client;
     return {
@@ -134,12 +134,15 @@ export const CollConstr = types
   /**
    * Actions
    */
-  .actions((self) => {
+  .actions((self: any) => {
     return {
       afterAttach() {
       },
       beforeDetach() {
         console.log('CollConstr Detach');
+      },
+      setLimit(limit: number) {
+        self.limit = limit;
       },
       /**
        * SELECT

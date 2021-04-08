@@ -392,24 +392,51 @@ describe('SimpleRetrieve', () => {
 
 
 describe('LoadMore', () => {
-  it('should load incrementally additional data into Coll', async () => {
+  it('should sync load incrementally additional data into Coll', async () => {
     const coll = repository.addColl({
       entConstrs: [{
         schema: 'rm:ArtifactShape',
       }],
       limit: 10
     });
-    await coll.loadColl();
     expect(coll).not.toBeUndefined();
-    const data = coll && coll.data !== undefined ? getSnapshot(coll.data) : [];
+    await coll.loadColl();
+    const data: any = coll && coll.data !== undefined ? getSnapshot(coll.data) : [];
     expect(data.length).toBe(10);
     
     await coll.loadMore();
-    const data2 = coll && coll.data !== undefined ? getSnapshot(coll.data) : [];
+    const data2: any = coll && coll.data !== undefined ? getSnapshot(coll.data) : [];
     expect(data2.length).toBe(15);
     repository.removeColl(coll);
 
     data.forEach((el, i) => expect(data2[i]).toEqual(el));
     data2.slice(data.length).forEach((el) => expect(data).not.toContainEqual(el));
+  });
+
+  it('should async load incrementally additional data into Coll', (done) => {
+    const coll = repository.addColl({
+      entConstrs: [{
+        schema: 'rm:ArtifactShape',
+      }],
+      limit: 10
+    });
+    expect(coll).not.toBeUndefined();
+
+    const disp1 = when(
+      () => coll !== undefined && coll.data.length === 10,
+      () => {
+        disp1();
+        const disp2 = when(
+          () => coll !== undefined && coll.data.length === 15,
+          () => {
+            disp2();
+            repository.removeColl(coll);
+            done();
+          }
+        );
+        coll.loadMore();
+      }
+    );
+    coll.loadColl();
   });
 });

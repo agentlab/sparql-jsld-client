@@ -176,6 +176,10 @@ export const Repository = types
 
       addCollByConstrRef(constr: any, opt: JsObject = {}, data: JsObject[] = []) {
         let ccId = constr['@id'];
+        if (self.colls.has(ccId)) {
+          console.warn('Attempt to replace coll: ignored', constr);
+          return;
+        }
         //const schemas = getSnapshot(self.schemas);
         const collJs: any = {
           '@id': ccId,

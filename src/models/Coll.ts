@@ -84,6 +84,10 @@ export const Coll = types
   lastSynced: types.maybe(types.number),
 
   pageSize: types.optional(types.number, 10),
+  /**
+    * Add colls to the repository for the discovered in dataIntrnl CollConstrs.
+   */
+  resolveCollConstrs: types.optional(types.boolean, true),
 })
 /**
  * Views

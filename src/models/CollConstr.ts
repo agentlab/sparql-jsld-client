@@ -52,7 +52,7 @@ export const EntConstr = types
     variables: types.union(JsObject2, types.undefined),
     data: types.optional(JsObject2, {}),
     /**
-     * Дополнительно запрашивать конечный тип объекта (самый "нижний" / специфичный в иерархии наследования).
+     * Retrieve DirectType class (lowest in the class hierarchy).
      */
     resolveType: types.maybe(types.boolean),
   })

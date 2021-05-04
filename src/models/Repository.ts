@@ -20,17 +20,15 @@ import { Coll } from './Coll';
 import { Namespaces } from './Namespaces';
 import { Schemas } from './Schemas';
 
-export const User = types
-.model('User', {
+export const User = types.model('User', {
   login: types.identifier,
   name: types.string,
 });
 
 export function setPropertyIfExistsAndUnset(schema: any, propKey: string, data: any, value: any) {
   const schemaKey = propKey !== '@_id' ? propKey : '@id';
-  if (schema.properties[schemaKey] !== undefined && data[propKey] === undefined)
-    data[propKey] = value;
-  return  data[propKey];
+  if (schema.properties[schemaKey] !== undefined && data[propKey] === undefined) data[propKey] = value;
+  return data[propKey];
 }
 
 export const Repository = types
@@ -55,10 +53,10 @@ export const Repository = types
     return {
       /**
        * Returns collection
-       * @param iriOrCollConstr 
+       * @param iriOrCollConstr
        */
       getColl(iriOrCollConstr: string | any) {
-        const iri = (typeof iriOrCollConstr === 'string') ? iriOrCollConstr : iriOrCollConstr['@id'];
+        const iri = typeof iriOrCollConstr === 'string' ? iriOrCollConstr : iriOrCollConstr['@id'];
         const coll = self.colls.get(iri);
         return coll;
       },
@@ -76,21 +74,24 @@ export const Repository = types
       if (!data.entConstrs) {
         if (typeof data === 'string') {
           collConstr = {
-            entConstrs: [{
-              schema: abbreviateIri(data, self.ns.currentJs),
-            }]
+            entConstrs: [
+              {
+                schema: abbreviateIri(data, self.ns.currentJs),
+              },
+            ],
           };
-        }
-        else if (isArray(data)) {
+        } else if (isArray(data)) {
           collConstr = { entConstrs: [...data] }; // data as IEntityConstr[]
         } else {
           if (data.$schema === undefined) {
             collConstr = { entConstrs: [data as any] }; // data as IEntityConstr
           } else {
             collConstr = {
-              entConstrs: [{
-                schema: data,
-              }]
+              entConstrs: [
+                {
+                  schema: data,
+                },
+              ],
             };
           }
         }
@@ -121,7 +122,7 @@ export const Repository = types
         addMissingId(entConstr.data);
       });
       return collConstr;
-    }
+    };
 
     return {
       setId(repId: string) {
@@ -132,14 +133,14 @@ export const Repository = types
       /**
        * Call variants:
        *  addCollConstr('rm:ArtifactShape') // with shape IRI
-       * 
+       *
        * addCollConstr(schema object)
-       * 
+       *
        *  addCollConstr({
        *    schema: 'rm:ArtifactShape',
        *    conditions: {...},
        *  })
-       * 
+       *
        *  addCollConstr([
        *    {
        *      schema: 'rm:ArtifactShape',
@@ -199,12 +200,12 @@ export const Repository = types
        * @param coll -- Coll or CollConstr object or IRI
        */
       removeColl(coll: string | any) {
-        const id = (typeof coll === 'string') ? coll : coll['@id'];
+        const id = typeof coll === 'string' ? coll : coll['@id'];
         if (id) {
           self.colls.delete(id);
         }
       },
-      
+
       saveData(schemaUri: string) {},
       selectData(schemaUri: string, data: any) {},
       //////////  FORM  ///////////
@@ -250,14 +251,14 @@ export const Repository = types
       /**
        * Call variants:
        *  selectObjects('rm:ArtifactShape') // with shape IRI
-       * 
+       *
        * selectObjects(schema object)
-       * 
+       *
        *  selectObjects({
        *    schema: 'rm:ArtifactShape',
        *    conditions: {...},
        *  })
-       * 
+       *
        *  selectObjects([
        *    {
        *      schema: 'rm:ArtifactShape',
@@ -297,7 +298,6 @@ export const Repository = types
         });
         return lastIdObject.length === 0 ? 0 : lastIdObject[0].identifier as number;
       }),*/
-      
 
       /**
        * Удаляет ВСЕ триплы для заданного URI, соответствующего набору значений полей из conditions

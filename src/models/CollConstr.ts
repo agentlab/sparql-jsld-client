@@ -8,7 +8,17 @@
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
 import cloneDeep from 'lodash/cloneDeep';
-import { types, getSnapshot, getEnv, getParent, getRoot, isReferenceType, Instance, SnapshotOut, IAnyStateTreeNode } from 'mobx-state-tree';
+import {
+  types,
+  getSnapshot,
+  getEnv,
+  getParent,
+  getRoot,
+  isReferenceType,
+  Instance,
+  SnapshotOut,
+  IAnyStateTreeNode,
+} from 'mobx-state-tree';
 
 import { JsObject } from '../ObjectProvider';
 import { ISchemas, JSONSchema7forRdf, JSONSchema7forRdfReference } from './Schemas';
@@ -16,7 +26,6 @@ import { ICollConstrJs } from '../SparqlGen';
 import { constructObjectsQuery, selectObjectsQuery } from '../SparqlGenSelect';
 import { insertObjectQuery, deleteObjectQuery, updateObjectQuery } from '../SparqlGenUpdate';
 import { SparqlClient } from 'SparqlClient';
-
 
 export const JsObject2 = types.map(types.frozen<any>());
 //export interface IJsObject2 extends Instance<typeof JsObject2> {}
@@ -40,7 +49,7 @@ export const EntConstr = types
      */
     schema: types.union(JSONSchema7forRdfReference, JSONSchema7forRdf),
     /**
-     * 
+     *
      */
     conditions: types.optional(JsObject2, {}),
     /**
@@ -59,7 +68,7 @@ export const EntConstr = types
   .views((self: any) => {
     return {
       get schemaJs() {
-        return self.schema ? getSnapshot(self.schema): undefined;
+        return self.schema ? getSnapshot(self.schema) : undefined;
       },
       get conditionsJs() {
         return getSnapshot(self.conditions);
@@ -70,10 +79,10 @@ export const EntConstr = types
       get dataJs() {
         return getSnapshot(self.data);
       },
-    }
+    };
   });
 
-export interface IEntConstr extends Instance<typeof EntConstr> {};
+export interface IEntConstr extends Instance<typeof EntConstr> {}
 
 /**
  * Collection Constraint
@@ -128,7 +137,7 @@ export const CollConstr = types
       get coll() {
         return rep.getColl(self['@id']);
       },
-    }
+    };
   })
 
   /**
@@ -136,8 +145,7 @@ export const CollConstr = types
    */
   .actions((self: any) => {
     return {
-      afterAttach() {
-      },
+      afterAttach() {},
       beforeDetach() {
         console.log('CollConstr Detach');
       },
@@ -147,7 +155,7 @@ export const CollConstr = types
       /**
        * SELECT
        */
-      
+
       /**
        * Заменяет
        * @param obj
@@ -277,7 +285,7 @@ export const CollConstr = types
         return response;
       }),*/
 
-     /**
+      /**
        * UPDATE
        */
       /*updateObject: flow(function* updateObject(conditions?: JsObject | JsObject[], data?: JsObject | JsObject[], loadIfNeeded = true) {
@@ -299,13 +307,12 @@ export const CollConstr = types
 export interface ICollConstr extends Instance<typeof CollConstr> {}
 export interface ICollConstrSnapshotOut extends SnapshotOut<typeof CollConstr> {}
 
-
-async function resolveAndClone (self: ICollConstr) {
+async function resolveAndClone(self: ICollConstr) {
   const data = getSnapshot<ICollConstrSnapshotOut>(self);
   return resolveAndCloneSnapshot(data, self.rep.schemas);
-};
+}
 
-async function resolveAndCloneSnapshot (data: ICollConstrSnapshotOut, schemas: ISchemas) {
+async function resolveAndCloneSnapshot(data: ICollConstrSnapshotOut, schemas: ISchemas) {
   const collConstrJs: ICollConstrSnapshotOut = cloneDeep(data);
   // resolve schema by reference
   for (let index = 0; index < collConstrJs.entConstrs.length; index++) {
@@ -326,7 +333,6 @@ async function resolveAndCloneSnapshot (data: ICollConstrSnapshotOut, schemas: I
   return collConstrJs as ICollConstrJs;
 }
 
-
 export async function selectObjects(collConstr: ICollConstr) {
   //TODO: performance
   const collConstrJs = await resolveAndClone(collConstr);
@@ -342,7 +348,12 @@ export async function constructObjects(collConstr: ICollConstr) {
   return constructObjectsQuery(collConstrJs, collConstr.nsJs, collConstr.client);
 }
 
-export async function constructObjectsSnapshot(data: ICollConstrSnapshotOut, schemas: ISchemas, nsJs: any, client: SparqlClient) {
+export async function constructObjectsSnapshot(
+  data: ICollConstrSnapshotOut,
+  schemas: ISchemas,
+  nsJs: any,
+  client: SparqlClient,
+) {
   //TODO: performance
   const collConstrJs = await resolveAndCloneSnapshot(data, schemas);
   return constructObjectsQuery(collConstrJs, nsJs, client);
@@ -362,12 +373,17 @@ export async function deleteObject(collConstr: ICollConstr, conditions?: JsObjec
   if (loadIfNeeded && coll && !coll.lastSynced) await selectObjects(collConstr);
 }
 
-export async function deleteObjectSnapshot(schemas: ISchemas, nsJs: any, client: SparqlClient, data: ICollConstrSnapshotOut, conditions?: JsObject | JsObject[]) {
+export async function deleteObjectSnapshot(
+  schemas: ISchemas,
+  nsJs: any,
+  client: SparqlClient,
+  data: ICollConstrSnapshotOut,
+  conditions?: JsObject | JsObject[],
+) {
   //TODO: performance
   const collConstrJs = await resolveAndCloneSnapshot(data, schemas);
   deleteObjectQuery(collConstrJs, nsJs, client, conditions);
 }
-
 
 export async function insertObject(collConstr: ICollConstr, data?: JsObject | JsObject[], loadIfNeeded = true) {
   //TODO: performance
@@ -378,7 +394,12 @@ export async function insertObject(collConstr: ICollConstr, data?: JsObject | Js
   if (loadIfNeeded && coll && !coll.lastSynced) await selectObjects(collConstr);
 }
 
-export async function updateObject(collConstr: ICollConstr, conditions?: JsObject | JsObject[], data?: JsObject | JsObject[], loadIfNeeded = true) {
+export async function updateObject(
+  collConstr: ICollConstr,
+  conditions?: JsObject | JsObject[],
+  data?: JsObject | JsObject[],
+  loadIfNeeded = true,
+) {
   //TODO: performance
   const collConstrJs = await resolveAndClone(collConstr);
   updateObjectQuery(collConstrJs, collConstr.nsJs, collConstr.client, conditions, data);

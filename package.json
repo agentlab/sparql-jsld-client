@@ -43,6 +43,7 @@
     "start": "tsdx watch",
     "build": "tsdx build",
     "test": "tsdx test",
+    "format": "./node_modules/.bin/prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,less,scss,md}\" \"test/**/*.{js,jsx,ts,tsx,json,css,less,scss,md}\"",
     "lint": "tsdx lint src test",
     "lint-fix": "tsdx lint src test --fix",
     "prepare": "tsdx build"

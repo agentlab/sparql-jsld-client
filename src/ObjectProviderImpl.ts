@@ -9,7 +9,6 @@
  ********************************************************************************/
 import { variable } from '@rdfjs/data-model';
 
-
 import {
   JSONSchema6forRdf,
   JsObject,
@@ -17,7 +16,6 @@ import {
   copyObjectProps,
   copyUniqueArrayElements,
 } from './ObjectProvider';
-
 
 export const schemaNonPrimitivePropsKeys = ['@context', 'properties', 'required'];
 

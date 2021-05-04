@@ -11,7 +11,7 @@ import { getSnapshot } from 'mobx-state-tree';
 import moment from 'moment';
 
 export function genTimestampedName(name: string): string {
-  return  name + '_' + moment().format('YYYYMMDD_HHmmssSSSS');
+  return name + '_' + moment().format('YYYYMMDD_HHmmssSSSS');
 }
 
 export function sleep(ms: number): Promise<NodeJS.Timeout> {

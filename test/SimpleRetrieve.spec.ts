@@ -19,10 +19,8 @@ import { genTimestampedName, selectHelper } from './TestHelpers';
 import { when } from 'mobx';
 import { getSnapshot } from 'mobx-state-tree';
 
-
 // See https://stackoverflow.com/questions/49603939/async-callback-was-not-invoked-within-the-5000ms-timeout-specified-by-jest-setti
 jest.setTimeout(5000000);
-
 
 const client = new SparqlClientImpl(rdfServerUrl);
 const repository = Repository.create(rootModelInitialState, { client });
@@ -62,21 +60,13 @@ afterAll(async () => {
 
 describe('SimpleRetrieve', () => {
   it('should return Artifacts with expected schema', async () => {
-    await selectHelper(
-      repository,
-      'rm:ArtifactShape',
-      (data) => {
-        expect(data.length).toBe(15);
-      }
-    );
+    await selectHelper(repository, 'rm:ArtifactShape', (data) => {
+      expect(data.length).toBe(15);
+    });
     const schema = await repository.schemas.loadSchemaByClassIri('rm:Artifact');
-    await selectHelper(
-      repository,
-      schema,
-      (data) => {
-        expect(data.length).toBe(15);
-      }
-    );
+    await selectHelper(repository, schema, (data) => {
+      expect(data.length).toBe(15);
+    });
   });
 
   it('should return Specific Artifacts with id=30000 with expected schema', async () => {
@@ -94,13 +84,14 @@ describe('SimpleRetrieve', () => {
       title: 'ТН ВЭД ТС',
     };
     await repository.schemas.loadSchemaByClassIri('rm:Artifact');
-    let  origSchema: any = repository.schemas.getOrLoadSchemaByClassIri('rm:Artifact');
+    let origSchema: any = repository.schemas.getOrLoadSchemaByClassIri('rm:Artifact');
     origSchema = getSnapshot(origSchema);
     let schema = {
       ...origSchema,
       //required: [...origSchema.required, 'identifier'],
     };
-    await selectHelper(repository,
+    await selectHelper(
+      repository,
       {
         schema,
         conditions: { identifier: 30000 },
@@ -109,126 +100,138 @@ describe('SimpleRetrieve', () => {
       (data) => {
         expect(data.length).toBe(1);
         expect(data[0]).toMatchObject(artifact30000Orig);
-      }
+      },
     );
     schema = {
       ...origSchema,
       //required: [...origSchema.required, 'assetFolder'],
     };
-    await selectHelper(repository,
+    await selectHelper(
+      repository,
       {
         schema,
         conditions: { assetFolder: 'folders:samples_module' },
       },
-      (data) => expect(data.length).toBe(11)
+      (data) => expect(data.length).toBe(11),
     );
   });
 
   it('should return NO Artifacts with unexisted values', async () => {
     await repository.schemas.loadSchemaByClassIri('rm:Artifact');
     let schema: any = repository.schemas.getOrLoadSchemaByClassIri('rm:Artifact');
-    await selectHelper(repository,
+    await selectHelper(
+      repository,
       {
         schema,
         conditions: { identifier: 40000 },
       },
-      (data) => expect(data.length).toBe(0)
+      (data) => expect(data.length).toBe(0),
     );
-    await selectHelper(repository,
+    await selectHelper(
+      repository,
       {
         schema,
         conditions: { assetFolder: 'folders:folder2' },
       },
-      (data) => expect(data.length).toBe(0)
+      (data) => expect(data.length).toBe(0),
     );
   });
 
   it('should return Specific Artifacts with expected schema', async () => {
     await repository.schemas.loadSchemaByClassIri('cpgu:Группировка');
     const schema = repository.schemas.getOrLoadSchemaByClassIri('cpgu:Группировка');
-    await selectHelper(repository,
+    await selectHelper(
+      repository,
       {
         schema,
       },
-      (data) => expect(data.length).toBe(10)
+      (data) => expect(data.length).toBe(10),
     );
   });
 
   it('should return Specific Artifacts with id=30001 with expected schema', async () => {
     await repository.schemas.loadSchemaByClassIri('cpgu:Группировка');
     const schema = repository.schemas.getOrLoadSchemaByClassIri('cpgu:Группировка');
-    await selectHelper(repository,
-      {
-        schema, 
-        conditions: { identifier: 30001 },
-      },
-      (data) => expect(data.length).toBe(1)
-    );
-    await selectHelper(repository,
+    await selectHelper(
+      repository,
       {
         schema,
-        conditions: { assetFolder: 'folders:samples_module'},
+        conditions: { identifier: 30001 },
       },
-      (data) => expect(data.length).toBe(10)
+      (data) => expect(data.length).toBe(1),
+    );
+    await selectHelper(
+      repository,
+      {
+        schema,
+        conditions: { assetFolder: 'folders:samples_module' },
+      },
+      (data) => expect(data.length).toBe(10),
     );
   });
 
   it('should return NO Specific Artifacts with unexisted values', async () => {
     await repository.schemas.loadSchemaByClassIri('cpgu:Группировка');
     const schema = repository.schemas.getOrLoadSchemaByClassIri('cpgu:Группировка');
-    await selectHelper(repository,
+    await selectHelper(
+      repository,
       {
         schema,
         conditions: { identifier: 40001 },
       },
-      (data) => expect(data.length).toBe(0)
+      (data) => expect(data.length).toBe(0),
     );
-    await selectHelper(repository,
+    await selectHelper(
+      repository,
       {
         schema,
         conditions: { assetFolder: 'folders:samples_collection' },
       },
-      (data) => expect(data.length).toBe(0)
+      (data) => expect(data.length).toBe(0),
     );
   });
 
   it('should return Formats with expected schema', async () => {
     await repository.schemas.loadSchemaByClassIri('rmUserTypes:_YwcOsRmREemK5LEaKhoOow');
     const schema = repository.schemas.getOrLoadSchemaByClassIri('rmUserTypes:_YwcOsRmREemK5LEaKhoOow');
-    await selectHelper(repository,
+    await selectHelper(
+      repository,
       {
         schema,
       },
-      (data) => expect(data.length).toBe(3)
+      (data) => expect(data.length).toBe(3),
     );
   });
 
   it('should return DataType with expected schema', async () => {
     await repository.schemas.loadSchemaByClassIri('rdfs:Datatype');
     const schema = repository.schemas.getOrLoadSchemaByClassIri('rdfs:Datatype');
-    await selectHelper(repository,
+    await selectHelper(
+      repository,
       {
         schema,
       },
-      (data) => expect(data.length).toBe(39)
+      (data) => expect(data.length).toBe(39),
     );
   });
 
   it('should return Folders with expected schema', async () => {
     await repository.schemas.loadSchemaByClassIri('nav:folder');
     const schema = repository.schemas.getOrLoadSchemaByClassIri('nav:folder');
-    await selectHelper(repository,
+    await selectHelper(
+      repository,
       {
         schema,
       },
-      (data) => expect(data.length).toBe(8)
+      (data) => expect(data.length).toBe(8),
     );
   });
 
   it('should return ArtifactClasses with expected schema', async () => {
     //const schema2 = await repository.schemas.getSchemaByIri('rm:ArtifactClassesShape');
     let artifactClasses0: any[] = [];
-    await selectHelper(repository,
+    await selectHelper(
+      repository,
       {
         schema: 'rm:ArtifactClassesShape',
         resolveType: true,
@@ -244,11 +247,12 @@ describe('SimpleRetrieve', () => {
           description: 'Классификатор или справочник. Описывает структуру классификатора (не данные из него).',
           inCreationMenu: true,
         });
-      }
+      },
     );
     await repository.schemas.loadSchemaByClassIri('rm:ArtifactClasses');
-    const schema = repository.schemas.getOrLoadSchemaByClassIri('rm:ArtifactClasses');    
-    await selectHelper(repository,
+    const schema = repository.schemas.getOrLoadSchemaByClassIri('rm:ArtifactClasses');
+    await selectHelper(
+      repository,
       {
         schema,
       },
@@ -263,7 +267,7 @@ describe('SimpleRetrieve', () => {
           inCreationMenu: true,
         });
         expect(data).toEqual(expect.arrayContaining(artifactClasses0));
-      }
+      },
     );
   });
 
@@ -300,14 +304,10 @@ describe('SimpleRetrieve', () => {
       limit: 4,
     };
 
-    await selectHelper(
-      repository,
-      collConstr,
-      (data) => {
-        expect(data.length).toBe(4);
-        expect(data[0].identifier).toBe(20000);
-      }
-    );
+    await selectHelper(repository, collConstr, (data) => {
+      expect(data.length).toBe(4);
+      expect(data[0].identifier).toBe(20000);
+    });
 
     //TODO: sorting is not working
     /*await selectHelper(
@@ -323,21 +323,21 @@ describe('SimpleRetrieve', () => {
         expect(data[0].identifier).toBe(20003);
       }
     );*/
-    
+
     await selectHelper(
       repository,
       {
         '@id': 'rm:ProjectViewClass_Folders_Query',
-          '@type': 'rm:Query',
-          entConstrs: [
-            {
-              '@id': 'rm:ProjectViewClass_Folders_Query_Shape0',
-              '@type': 'rm:QueryShape',
-              schema: 'nav:folderShape',
-            },
-          ],
+        '@type': 'rm:Query',
+        entConstrs: [
+          {
+            '@id': 'rm:ProjectViewClass_Folders_Query_Shape0',
+            '@type': 'rm:QueryShape',
+            schema: 'nav:folderShape',
+          },
+        ],
       },
-      (data) => expect(data.length).toBe(8)
+      (data) => expect(data.length).toBe(8),
     );
 
     await selectHelper(
@@ -353,7 +353,7 @@ describe('SimpleRetrieve', () => {
           },
         ],
       },
-      (data) => expect(data.length).toBe(5)
+      (data) => expect(data.length).toBe(5),
     );
 
     await selectHelper(
@@ -369,7 +369,7 @@ describe('SimpleRetrieve', () => {
           },
         ],
       },
-      (data) => expect(data.length).toBe(56)
+      (data) => expect(data.length).toBe(56),
     );
 
     await selectHelper(
@@ -385,25 +385,26 @@ describe('SimpleRetrieve', () => {
           },
         ],
       },
-      (data) => expect(data.length).toBe(3)
+      (data) => expect(data.length).toBe(3),
     );
   });
 });
 
-
 describe('LoadMore', () => {
   it('should sync load incrementally additional data into Coll', async () => {
     const coll = repository.addColl({
-      entConstrs: [{
-        schema: 'rm:ArtifactShape',
-      }],
-      limit: 10
+      entConstrs: [
+        {
+          schema: 'rm:ArtifactShape',
+        },
+      ],
+      limit: 10,
     });
     expect(coll).not.toBeUndefined();
     await coll.loadColl();
     const data: any = coll && coll.data !== undefined ? getSnapshot(coll.data) : [];
     expect(data.length).toBe(10);
-    
+
     await coll.loadMore();
     const data2: any = coll && coll.data !== undefined ? getSnapshot(coll.data) : [];
     expect(data2.length).toBe(15);
@@ -415,10 +416,12 @@ describe('LoadMore', () => {
 
   it('should async load incrementally additional data into Coll', (done) => {
     const coll = repository.addColl({
-      entConstrs: [{
-        schema: 'rm:ArtifactShape',
-      }],
-      limit: 10
+      entConstrs: [
+        {
+          schema: 'rm:ArtifactShape',
+        },
+      ],
+      limit: 10,
     });
     expect(coll).not.toBeUndefined();
 
@@ -432,10 +435,10 @@ describe('LoadMore', () => {
             disp2();
             repository.removeColl(coll);
             done();
-          }
+          },
         );
         coll.loadMore();
-      }
+      },
     );
     coll.loadColl();
   });

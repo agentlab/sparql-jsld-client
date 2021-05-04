@@ -7,14 +7,9 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-import {
-  SparqlClient,
-  FileUploadConfig,
-  Results,
-} from '../src/SparqlClient';
+import { SparqlClient, FileUploadConfig, Results } from '../src/SparqlClient';
 import { JsObject, JsStrObj } from '../src/ObjectProvider';
 import { AxiosResponse } from 'axios';
-
 
 const HttpResponse200: AxiosResponse = {
   data: {},
@@ -23,7 +18,6 @@ const HttpResponse200: AxiosResponse = {
   headers: {},
   config: {},
 };
-
 
 /**
  * RDF4J REST API & SPARQL TEST Client
@@ -42,19 +36,19 @@ export class SparqlClientImplMock implements SparqlClient {
   uploadStatementsParams = {};
   uploadFilesParams = {};
 
-  sparqlSelectParams: {query: string, queryParams: JsObject} = {
+  sparqlSelectParams: { query: string; queryParams: JsObject } = {
     query: '',
     queryParams: {},
   };
   sparqlSelectReturn: Results = { bindings: [] };
 
-  sparqlConstructParams: {query: string, queryParams: JsObject} = {
+  sparqlConstructParams: { query: string; queryParams: JsObject } = {
     query: '',
     queryParams: {},
   };
   sparqlConstructReturn: JsObject[] = [];
 
-  sparqlUpdateParams: {query: string, queryParams: JsObject} = {
+  sparqlUpdateParams: { query: string; queryParams: JsObject } = {
     query: '',
     queryParams: {},
   };
@@ -157,7 +151,7 @@ export class SparqlClientImplMock implements SparqlClient {
 
   async createRepositoryAndSetCurrent(repParam: JsObject = {}, repType: string = 'native-rdfs') {
     this.createRepositoryAndSetCurrentParams = {
-      repParam, 
+      repParam,
       repType,
     };
   }
@@ -165,7 +159,7 @@ export class SparqlClientImplMock implements SparqlClient {
   //ok
   async createRepository(repParam: JsObject = {}, repType: string = 'native-rdfs') {
     this.createRepositoryParams = {
-      repParam, 
+      repParam,
       repType,
     };
   }

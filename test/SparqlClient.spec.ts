@@ -13,7 +13,15 @@ import { rootModelInitialState } from '../src/models/model';
 import { Repository } from '../src/models/Repository';
 import { SparqlClientImpl } from '../src/SparqlClientImpl';
 
-import { vocabsFiles, shapesFiles, rootFolder, testNs, projectsFoldersFiles, samplesFiles, usersFiles } from './configTests';
+import {
+  vocabsFiles,
+  shapesFiles,
+  rootFolder,
+  testNs,
+  projectsFoldersFiles,
+  samplesFiles,
+  usersFiles,
+} from './configTests';
 import { genTimestampedName } from './TestHelpers';
 import { json2str } from '../src/ObjectProvider';
 

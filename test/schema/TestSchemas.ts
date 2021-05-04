@@ -230,7 +230,7 @@ export const classifierSchema: JSONSchema6forRdf = {
   properties: {},
 };
 
-export const classifierCompleteSchema: JSONSchema6forRdf ={
+export const classifierCompleteSchema: JSONSchema6forRdf = {
   ...classifierSchema,
   '@context': {
     ...artifactSchema['@context'],
@@ -240,10 +240,7 @@ export const classifierCompleteSchema: JSONSchema6forRdf ={
     ...artifactSchema.properties,
     ...genericArtifactSchema.properties,
   },
-  required: [
-    ...artifactSchema.required || [],
-    ...genericArtifactSchema.required || [],
-  ],
+  required: [...(artifactSchema.required || []), ...(genericArtifactSchema.required || [])],
 };
 
 export const artifactShape: JsObject = {
@@ -438,7 +435,7 @@ export const linkSchema: JSONSchema6forRdf = {
     '@type': 'rdf:type',
     creator: {
       '@id': 'dcterms:creator',
-      '@type': 'pporoles:User'
+      '@type': 'pporoles:User',
     },
     created: {
       '@id': 'dcterms:created',
@@ -446,7 +443,7 @@ export const linkSchema: JSONSchema6forRdf = {
     },
     modifiedBy: {
       '@id': 'oslc:modifiedBy',
-      '@type': 'pporoles:User'
+      '@type': 'pporoles:User',
     },
     modified: {
       '@id': 'dcterms:modified',
@@ -454,7 +451,7 @@ export const linkSchema: JSONSchema6forRdf = {
     },
     processArea: {
       '@id': 'nav:processArea',
-      '@type': 'nav:ProjectArea'
+      '@type': 'nav:ProjectArea',
     },
     object: {
       '@id': 'rdf:object',
@@ -481,35 +478,35 @@ export const linkSchema: JSONSchema6forRdf = {
       format: 'iri',
       title: 'Кем создан',
       description: 'Пользователь, создавший требование',
-      shapeModifiability: 'system'
+      shapeModifiability: 'system',
     },
     created: {
       type: 'string',
       format: 'date-time',
       title: 'Когда создан',
       description: 'Когда требование было создано',
-      shapeModifiability: 'system'
+      shapeModifiability: 'system',
     },
     modifiedBy: {
       type: 'string',
       format: 'iri',
       title: 'Кем изменен',
       description: 'Пользователь, изменивший требование',
-      shapeModifiability: 'system'
+      shapeModifiability: 'system',
     },
     modified: {
       type: 'string',
       format: 'date-time',
       title: 'Когда изменен',
       description: 'Когда требование было изменено',
-      shapeModifiability: 'system'
+      shapeModifiability: 'system',
     },
     processArea: {
       type: 'string',
       format: 'iri',
       title: 'Проект',
       description: 'Связано с проектной областью',
-      shapeModifiability: 'system'
+      shapeModifiability: 'system',
     },
     object: {
       type: 'string',
@@ -592,19 +589,16 @@ export const usedInModuleSchema: JSONSchema6forRdf = {
       type: 'string',
       title: 'Номер раздела',
       description: 'Номер раздела',
-      shapeModifiability: 'system'
+      shapeModifiability: 'system',
     },
     isHeading: {
       type: 'boolean',
       title: 'Это заголовок',
       description: 'Это заголовок',
-      shapeModifiability: 'system'
+      shapeModifiability: 'system',
     },
   },
-  required: [
-    ...usedInSchema.required || [],
-    'parentBinding', 'depth', 'bookOrder', 'sectionNumber',
-  ],
+  required: [...(usedInSchema.required || []), 'parentBinding', 'depth', 'bookOrder', 'sectionNumber'],
 };
 
 export const ViewShapeSchema: JSONSchema6forRdf = {

@@ -22,8 +22,6 @@ import {
   JsStrObj,
 } from './ObjectProvider';
 
-
-
 export function isUrl(str: string): boolean {
   if (_isUrl(str) === true) return true;
   if (str.startsWith('cpgu:///')) return true;
@@ -126,9 +124,9 @@ export function addToBgp(triples: any[]): any[] {
 
 export function toBgp(data: any): BgpPattern {
   return {
-      type: 'bgp',
-      triples: Array.isArray(data) ? data : [data],
-    };
+    type: 'bgp',
+    triples: Array.isArray(data) ? data : [data],
+  };
 }
 
 export function toOptional(data: any): OptionalPattern {
@@ -167,22 +165,22 @@ export const gen = new Generator();
 // External API
 //
 export interface ICollConstrJsOpt {
-  '@id'?: string,
-  '@type'?: string,
+  '@id'?: string;
+  '@type'?: string;
   // properties could be changed by client-code only (GUI code, etc.), immutable within SPARQL generation
-  entConstrs: IEntConstrJsOpt[],
+  entConstrs: IEntConstrJsOpt[];
   // if last digit not specified, we assuming '0' (identifier0)
-  orderBy?: any[],
-  limit?: number,
-  offset?: number,
-  distinct?: boolean,
+  orderBy?: any[];
+  limit?: number;
+  offset?: number;
+  distinct?: boolean;
   //subqueries: types.optional(types.union(types.map(types.late(() => CollConstr)), types.undefined), undefined),
   // RDF4J REST API options
-  options?: JsStrObj,
-};
+  options?: JsStrObj;
+}
 export interface IEntConstrJsOpt {
-  '@id'?: string,
-  '@type'?: string,
+  '@id'?: string;
+  '@type'?: string;
   // external properties from Sparql EntConstr could be changed by client-code only (GUI code, etc.), immutable within SPARQL generation
   schema: JSONSchema6forRdf;
   conditions?: JsObject;
@@ -195,23 +193,23 @@ export interface IEntConstrJsOpt {
 // Internal
 //
 export interface ICollConstrJs {
-  '@id'?: string,
-  '@type'?: string,
+  '@id'?: string;
+  '@type'?: string;
   // properties could be changed by client-code only (GUI code, etc.), immutable within SPARQL generation
-  entConstrs: IEntConstrJs[],
+  entConstrs: IEntConstrJs[];
   // if last digit not specified, we assuming '0' (identifier0)
-  orderBy?: any[],
-  limit?: number,
-  offset?: number,
-  distinct?: boolean,
+  orderBy?: any[];
+  limit?: number;
+  offset?: number;
+  distinct?: boolean;
   //subqueries: types.optional(types.union(types.map(types.late(() => CollConstr)), types.undefined), undefined),
   // RDF4J REST API options
-  options?: JsStrObj,
-};
+  options?: JsStrObj;
+}
 
 export interface IEntConstrJs extends EntConstrData {
-  '@id'?: string,
-  '@type'?: string,
+  '@id'?: string;
+  '@type'?: string;
 }
 export interface EntConstrData {
   // external properties from Sparql EntConstr could be changed by client-code only (GUI code, etc.), immutable within SPARQL generation
@@ -227,7 +225,7 @@ export interface EntConstrData {
  */
 export interface EntConstrInternal extends EntConstrData {
   // internal properties, created and changed within SPARQL generation
-  prefixes: JsStrObj,
+  prefixes: JsStrObj;
   subj: NamedNode | Variable;
   props2vars: JsStrObj;
   vars2props: JsStrObj;
@@ -236,9 +234,9 @@ export interface EntConstrInternal extends EntConstrData {
   schemaPropsWithArrays: any;
   conditionsWithoutArrays: any;
   conditionsWithArrays: any;
-  relatedTo: { [s: string]: number },
-  relatedFrom: { [s: string]: number },
-  bindsVars: JsObject,
+  relatedTo: { [s: string]: number };
+  relatedFrom: { [s: string]: number };
+  bindsVars: JsObject;
 }
 
 export function unscreenIds(data: any | undefined) {
@@ -330,7 +328,11 @@ export function getFullIriNamedNode(uri: string | NamedNode, prefixes: JsStrObj)
  * @param uri
  * @param varName
  */
-export function genEntConstrSparqlSubject(uri: string | undefined, varName: string, prefixes: JsStrObj): NamedNode | Variable {
+export function genEntConstrSparqlSubject(
+  uri: string | undefined,
+  varName: string,
+  prefixes: JsStrObj,
+): NamedNode | Variable {
   if (uri === undefined) {
     return variable(varName);
   }
@@ -396,7 +398,11 @@ export function getWhereVarFromDataWithoutOptinals(entConstr: EntConstrInternal)
       // filter @id, @type,...
       const propUri = getSchemaPropUri(entConstr.schema, propertyKey);
       if (propUri) {
-        const option = triple(entConstr.subj, getFullIriNamedNode(propUri, entConstr.prefixes), variable(entConstr.props2vars[propertyKey]));
+        const option = triple(
+          entConstr.subj,
+          getFullIriNamedNode(propUri, entConstr.prefixes),
+          variable(entConstr.props2vars[propertyKey]),
+        );
         bgp.push(option);
       }
     }
@@ -450,7 +456,12 @@ export function conditionsValueToObject(obj: JsObject, propKey: string, entConst
   }
 }
 
-export function rdfStringValueToObject(obj: JsObject, propKey: string, entConstr: EntConstrInternal, bindings: Bindings): void {
+export function rdfStringValueToObject(
+  obj: JsObject,
+  propKey: string,
+  entConstr: EntConstrInternal,
+  bindings: Bindings,
+): void {
   const varKey = entConstr.props2vars[propKey];
   if (varKey !== undefined) {
     const prop = entConstr.schema.properties ? entConstr.schema.properties[propKey] : undefined;
@@ -474,7 +485,6 @@ export function rdfStringValueToObject(obj: JsObject, propKey: string, entConstr
     }
   }
 }
-
 
 /**
  * Former addToWhereSuperTypesFilter
@@ -555,7 +565,10 @@ export function genSuperTypesFilter(entConstr: EntConstrInternal, index: number)
                   expression: {
                     type: 'operation',
                     operator: '=',
-                    args: [variable('supertype' + index), getFullIriNamedNode(entConstr.schema.targetClass, entConstr.prefixes)],
+                    args: [
+                      variable('supertype' + index),
+                      getFullIriNamedNode(entConstr.schema.targetClass, entConstr.prefixes),
+                    ],
                   },
                 },
               ],
@@ -576,7 +589,7 @@ export function genTypeCondition(entConstr: EntConstrInternal) {
         entConstr.subj,
         namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
         getFullIriNamedNode(entConstr.schema.targetClass, entConstr.prefixes),
-      )
+      ),
     ];
   }
   return result;
@@ -638,8 +651,7 @@ export function getSimpleFilter(schemaProperty: any, filterProperty: any, variab
         filter.args = [variable, literal(filterProperty.toISOString(), getFullIriNamedNode('xsd:dateTime', prefixes))];
       else filter.args = [variable, literal(`${filterProperty}`)];
     } else {
-      if (typeof filterProperty === 'string')
-        filter.args = [variable, getFullIriNamedNode(filterProperty, prefixes)];
+      if (typeof filterProperty === 'string') filter.args = [variable, getFullIriNamedNode(filterProperty, prefixes)];
       else filter.args = [variable, literal(`${filterProperty}`)];
     }
   } else filter.args = [variable, literal(`${filterProperty}`)];
@@ -700,7 +712,8 @@ export function buildEnumFilter(
 export function getDataTriples(entConstr: EntConstrInternal): any[] {
   const triples: Quad[] = [];
   let subj = entConstr.subj;
-  if (entConstr.subj.termType && entConstr.subj.termType === 'NamedNode') subj = getFullIriNamedNode(entConstr.subj, entConstr.prefixes);
+  if (entConstr.subj.termType && entConstr.subj.termType === 'NamedNode')
+    subj = getFullIriNamedNode(entConstr.subj, entConstr.prefixes);
   /*triples.push(
     triple(
       subj,
@@ -794,30 +807,48 @@ export function getExtendedFilter(
       switch (filterProperty.relation) {
         case 'equal':
           filter.operator = '=';
-          filter.args = [variable, literal(filterProperty.value[0], getFullIriNamedNode('xsd:dateTime', entConstr.prefixes))];
+          filter.args = [
+            variable,
+            literal(filterProperty.value[0], getFullIriNamedNode('xsd:dateTime', entConstr.prefixes)),
+          ];
           break;
         case 'notEqual':
           filter.operator = '!=';
-          filter.args = [variable, literal(filterProperty.value[0], getFullIriNamedNode('xsd:dateTime', entConstr.prefixes))];
+          filter.args = [
+            variable,
+            literal(filterProperty.value[0], getFullIriNamedNode('xsd:dateTime', entConstr.prefixes)),
+          ];
           break;
         case 'after':
           filter.operator = '>=';
-          filter.args = [variable, literal(filterProperty.value[0], getFullIriNamedNode('xsd:dateTime', entConstr.prefixes))];
+          filter.args = [
+            variable,
+            literal(filterProperty.value[0], getFullIriNamedNode('xsd:dateTime', entConstr.prefixes)),
+          ];
           break;
         case 'before':
           filter.operator = '<=';
-          filter.args = [variable, literal(filterProperty.value[0], getFullIriNamedNode('xsd:dateTime', entConstr.prefixes))];
+          filter.args = [
+            variable,
+            literal(filterProperty.value[0], getFullIriNamedNode('xsd:dateTime', entConstr.prefixes)),
+          ];
           break;
         case 'between':
           filter.operator = '&&';
           filter.args = [
             {
-              args: [variable, literal(filterProperty.value[0], getFullIriNamedNode('xsd:dateTime', entConstr.prefixes))],
+              args: [
+                variable,
+                literal(filterProperty.value[0], getFullIriNamedNode('xsd:dateTime', entConstr.prefixes)),
+              ],
               operator: '>=',
               type: 'operation',
             },
             {
-              args: [variable, literal(filterProperty.value[1], getFullIriNamedNode('xsd:dateTime', entConstr.prefixes))],
+              args: [
+                variable,
+                literal(filterProperty.value[1], getFullIriNamedNode('xsd:dateTime', entConstr.prefixes)),
+              ],
               operator: '<',
               type: 'operation',
             },
@@ -866,7 +897,10 @@ export function getExtendedFilter(
     switch (filterProperty.relation) {
       case 'equal':
         filter.operator = '=';
-        filter.args = [variable, literal(`${filterProperty.value[0]}`, getFullIriNamedNode('xsd:integer', entConstr.prefixes))];
+        filter.args = [
+          variable,
+          literal(`${filterProperty.value[0]}`, getFullIriNamedNode('xsd:integer', entConstr.prefixes)),
+        ];
         break;
       case 'any':
         buildEnumFilter(filter, variable, entConstr.prefixes, filterProperty.value, 'integer');
@@ -913,11 +947,15 @@ export function getExtendedFilter(
 }
 
 /**
-  *
-  * @param schema
-  * @param conditions
-  */
- export function processConditions(entConstr: EntConstrInternal, conditions: any, requireOptional = false): { bgps: Quad[]; options: Quad[]; filters: any[]; binds: any[]; bindsVars: JsObject } {
+ *
+ * @param schema
+ * @param conditions
+ */
+export function processConditions(
+  entConstr: EntConstrInternal,
+  conditions: any,
+  requireOptional = false,
+): { bgps: Quad[]; options: Quad[]; filters: any[]; binds: any[]; bindsVars: JsObject } {
   const bgps: Quad[] = [];
   const options: Quad[] = [];
   const filters: any[] = [];
@@ -937,7 +975,14 @@ export function getExtendedFilter(
             if (filterProperty.value !== undefined && filterProperty.relation) {
               filters.push(getExtendedFilter(entConstr, key, schemaProperty, filterProperty, variable(varName)));
             } else {
-              filters.push(getSimpleFilter(schemaProperty, filterProperty, variable(entConstr.props2vars[key]), entConstr.prefixes));
+              filters.push(
+                getSimpleFilter(
+                  schemaProperty,
+                  filterProperty,
+                  variable(entConstr.props2vars[key]),
+                  entConstr.prefixes,
+                ),
+              );
             }
           } else {
             // add BIND statement
@@ -996,16 +1041,21 @@ export function getExtendedFilter(
   return { bgps, options, filters, binds, bindsVars };
 }
 
-export function getInternalCollConstrs(collConstr: ICollConstrJsOpt, prefixes: JsStrObj, addConditions?: JsObject | JsObject[], addData?: JsObject | JsObject[]) {
+export function getInternalCollConstrs(
+  collConstr: ICollConstrJsOpt,
+  prefixes: JsStrObj,
+  addConditions?: JsObject | JsObject[],
+  addData?: JsObject | JsObject[],
+) {
   const internalCollConstrs: EntConstrInternal[] = [];
   if (addConditions && !Array.isArray(addConditions)) addConditions = [addConditions];
   if (addData && !Array.isArray(addData)) addData = [addData];
 
   for (let index = 0; index < collConstr.entConstrs.length; index++) {
     const constr = collConstr.entConstrs[index] as EntConstrData;
-    let schema =  constr.schema;
+    let schema = constr.schema;
     if (schema.required === undefined) schema.required = [];
-    
+
     const uriVar = genUniqueVarName2('eIri', index, collConstr.entConstrs);
     let conditions = unscreenIds(constr.conditions) || {};
     if (addConditions && addConditions.length > index) {
@@ -1027,17 +1077,17 @@ export function getInternalCollConstrs(collConstr: ICollConstrJsOpt, prefixes: J
       Object.keys(variables).forEach((key) => {
         if (schema.required && !schema.required.includes(key)) schema.required.push(key);
       });
-    }
-    // make simple conditions mandatory
-    /*if (conditions) {
-      Object.keys(conditions).forEach((key) => {
-        const propSchema = schema.properties[key];
-        if (propSchema /*&& !(propSchema?.format === 'iri')*//*) {
+    } /*) {
           if (schema.required && !schema.required.includes(key)) schema.required.push(key);
         }
       });
     }*/
-    const uri = (conditions && conditions['@id']) || (data && data['@id']);
+    // make simple conditions mandatory
+    /*if (conditions) {
+      Object.keys(conditions).forEach((key) => {
+        const propSchema = schema.properties[key];
+        if (propSchema /*&& !(propSchema?.format === 'iri')*/ const uri =
+      (conditions && conditions['@id']) || (data && data['@id']);
     const entConstr: EntConstrInternal = {
       // TODO: partial schema!!!
       schema,
@@ -1073,28 +1123,25 @@ export function isReferencedAndOptional(entConstrs: EntConstrInternal[], index: 
   const key = Object.keys(entConstrTo.relatedFrom).find((key2) => {
     const index2 = entConstrTo.relatedFrom[key2];
     const entConstrFrom = entConstrs[index2];
-    return (!entConstrFrom.schema.required?.includes(key2));
+    return !entConstrFrom.schema.required?.includes(key2);
   });
   if (key) return true;
   return false;
 }
 
 /**
- * 
- * @param entConstrs 
- * @param index 
+ *
+ * @param entConstrs
+ * @param index
  */
 export function separateReferencedQuads(quads: Quad[]) {
-  let refs: { quad: Quad, index: number }[] = [];
+  let refs: { quad: Quad; index: number }[] = [];
   const nonRefs = quads.filter((quad) => {
     if (quad.object.termType === 'Variable') {
-      const match = quad.object.value.match(eIriVarNameRegEx)
+      const match = quad.object.value.match(eIriVarNameRegEx);
       if (match) {
         const index = parseInt(match[1]);
-        refs = [
-          ...refs,
-          { quad, index },
-        ];
+        refs = [...refs, { quad, index }];
         return false;
       }
     }
@@ -1103,14 +1150,13 @@ export function separateReferencedQuads(quads: Quad[]) {
   return { nonRefs, refs };
 }
 
-
 export function addRelatedToAndFrom(entConstrs: EntConstrInternal[]) {
   entConstrs.forEach((entConstr, index) => {
     const conditions = entConstr.conditions;
     Object.keys(conditions).forEach((key) => {
       const val = conditions[key];
       if (typeof val === 'string') {
-        const match = val.match(eIriRegEx)
+        const match = val.match(eIriRegEx);
         if (match) {
           const index2 = parseInt(match[1]);
           if (index2 >= 0 && index2 < entConstrs.length) {
@@ -1126,7 +1172,6 @@ export function addRelatedToAndFrom(entConstrs: EntConstrInternal[]) {
     });
   });
 }
-
 
 export function localUrn(name: string) {
   return `urn:sparqljsldclient:${name}`;

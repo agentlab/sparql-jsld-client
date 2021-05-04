@@ -96,10 +96,7 @@ const usedInModuleCollConstrJs: any = {
             shapeModifiability: 'system',
           },
         },
-        required: [
-          ...artifactSchema.required || [],
-          'hasChild',
-        ],
+        required: [...(artifactSchema.required || []), 'hasChild'],
       }, // it could be schema object or class IRI string
       // key-value {}:JsObject
       conditions: {
@@ -122,10 +119,12 @@ const usedInModuleCollConstrJs: any = {
       resolveType: true,
     },
   ],
-  orderBy: [{
-    expression: variable('bookOrder0'),
-    descending: false,
-  }],
+  orderBy: [
+    {
+      expression: variable('bookOrder0'),
+      descending: false,
+    },
+  ],
   limit: 3,
 };
 
@@ -137,7 +136,7 @@ describe('ArtifactsInModules query should return Module UsedInModules with assoc
     //provider.addSchema(usedInSchema);
     //provider.addSchema(usedInModuleSchema);
 
-    const coll = repository.addColl(usedInModuleCollConstrJs, /*{ lazy: false }*/);
+    const coll = repository.addColl(usedInModuleCollConstrJs /*{ lazy: false }*/);
     expect(coll).not.toBeUndefined();
     when(
       () => coll !== undefined && coll.data.length > 0,
@@ -158,23 +157,23 @@ describe('ArtifactsInModules query should return Module UsedInModules with assoc
           processArea: 'projects:gishbbProject',
           sectionNumber: '0-1',
           subject: {
-            "@id": "cpgu:_tHAikozUEeOiy8owVBW5pQ",
-            "@type": "cpgu:Группировка",
-            artifactFormat: "rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Text",
-            assetFolder: "folders:samples_module",
-            created: "2014-02-10T10:12:16.000Z",
-            creator: "users:amivanoff",
+            '@id': 'cpgu:_tHAikozUEeOiy8owVBW5pQ',
+            '@type': 'cpgu:Группировка',
+            artifactFormat: 'rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Text',
+            assetFolder: 'folders:samples_module',
+            created: '2014-02-10T10:12:16.000Z',
+            creator: 'users:amivanoff',
             hasChild: true,
             identifier: 30001,
-            modified: "2014-02-10T10:12:16.000Z",
-            modifiedBy: "users:amivanoff",
-            processArea: "projects:gishbbProject",
-            title: "ТН ВЭД ТС",
-          }
+            modified: '2014-02-10T10:12:16.000Z',
+            modifiedBy: 'users:amivanoff',
+            processArea: 'projects:gishbbProject',
+            title: 'ТН ВЭД ТС',
+          },
         });
         repository.removeColl(coll);
         done();
-      }
+      },
     );
   });
 
@@ -187,48 +186,50 @@ describe('ArtifactsInModules query should return Module UsedInModules with assoc
 
     const coll = repository.addColl({
       ...usedInModuleCollConstrJs,
-      orderBy: [{
-        expression: variable('bookOrder0'),
-        descending: false,
-      }],
+      orderBy: [
+        {
+          expression: variable('bookOrder0'),
+          descending: false,
+        },
+      ],
     });
     expect(coll).not.toBeUndefined();
     when(
       () => coll !== undefined && coll.data.length > 0,
       () => {
         const linksAndArtifacts: JsObject[] = getSnapshot(coll?.data);
-        expect(linksAndArtifacts.length).toBe(3);  
+        expect(linksAndArtifacts.length).toBe(3);
         expect(linksAndArtifacts[0]).toMatchObject({
-          "@id": "reqs:_M1HusThYEem2Z_XixsC3pQ",
-          "@type": "rmUserTypes:UsedInModule",
-          processArea: "projects:gishbbProject",
+          '@id': 'reqs:_M1HusThYEem2Z_XixsC3pQ',
+          '@type': 'rmUserTypes:UsedInModule',
+          processArea: 'projects:gishbbProject',
           bookOrder: 1,
           depth: 1,
-          parentBinding: "file:///urn-s2-iisvvt-infosystems-classifier-45950.xml",
-          sectionNumber: "0-1",
-          modifiedBy: "users:amivanoff",
-          created: "2014-02-10T10:12:16.000Z",
-          creator: "users:amivanoff",
-          modified: "2014-02-10T10:12:16.000Z",
-          object: "file:///urn-s2-iisvvt-infosystems-classifier-45950.xml",
+          parentBinding: 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml',
+          sectionNumber: '0-1',
+          modifiedBy: 'users:amivanoff',
+          created: '2014-02-10T10:12:16.000Z',
+          creator: 'users:amivanoff',
+          modified: '2014-02-10T10:12:16.000Z',
+          object: 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml',
           subject: {
-            "@id": "cpgu:_tHAikozUEeOiy8owVBW5pQ",
-            "@type": "cpgu:Группировка",
-            processArea: "projects:gishbbProject",
-            artifactFormat: "rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Text",
-            assetFolder: "folders:samples_module",
-            modifiedBy: "users:amivanoff",
-            created: "2014-02-10T10:12:16.000Z",
-            creator: "users:amivanoff",
+            '@id': 'cpgu:_tHAikozUEeOiy8owVBW5pQ',
+            '@type': 'cpgu:Группировка',
+            processArea: 'projects:gishbbProject',
+            artifactFormat: 'rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Text',
+            assetFolder: 'folders:samples_module',
+            modifiedBy: 'users:amivanoff',
+            created: '2014-02-10T10:12:16.000Z',
+            creator: 'users:amivanoff',
             identifier: 30001,
-            modified: "2014-02-10T10:12:16.000Z",
-            title: "ТН ВЭД ТС",
+            modified: '2014-02-10T10:12:16.000Z',
+            title: 'ТН ВЭД ТС',
             hasChild: true,
           },
         });
         repository.removeColl(coll);
         done();
-      }
+      },
     );
   });
 

@@ -9,7 +9,7 @@
  ********************************************************************************/
 import { JSONSchema6forRdf } from '../ObjectProvider';
 
-export const NopSchema: any/*JSONSchema6forRdf*/ = {
+export const NopSchema: any /*JSONSchema6forRdf*/ = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   //$id: 'http://cpgu.kbpm.ru/ns/rm/rdf#NopSchema',
   '@id': 'rm:NopSchema', // json-ld
@@ -25,7 +25,7 @@ export const NopSchema: any/*JSONSchema6forRdf*/ = {
   required: ['@id'],
 };
 
-export const ResourceSchema: any/*JSONSchema6forRdf*/ = {
+export const ResourceSchema: any /*JSONSchema6forRdf*/ = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   //$id: 'http://cpgu.kbpm.ru/ns/rm/rdf#ResourceSchema',
   '@id': 'rm:ResourceSchema', // json-ld
@@ -36,7 +36,7 @@ export const ResourceSchema: any/*JSONSchema6forRdf*/ = {
   type: 'object',
   '@context': {
     '@type': 'rdf:type',
-    'label': 'rdfs:label',
+    label: 'rdfs:label',
   },
   properties: {
     '@id': {
@@ -57,7 +57,7 @@ export const ResourceSchema: any/*JSONSchema6forRdf*/ = {
   required: ['@id'],
 };
 
-export const ClassSchema: any/*JSONSchema6forRdf*/ = {
+export const ClassSchema: any /*JSONSchema6forRdf*/ = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   //$id: 'http://cpgu.kbpm.ru/ns/rm/rdf#Class',
   '@id': 'rm:Class', // json-ld

@@ -13,7 +13,6 @@ import isEmpty from 'lodash/isEmpty';
 import { SparqlClient } from '../SparqlClient';
 import { JsStrObj } from '../ObjectProvider';
 
-
 export const Namespaces = types
   .model('Namespaces', {
     //default: types.map(types.string),
@@ -27,7 +26,7 @@ export const Namespaces = types
       get(id: string) {
         return self.current.get(id);
       },
-    }
+    };
   })
   .actions((self) => {
     const client: SparqlClient = getEnv(self).client;

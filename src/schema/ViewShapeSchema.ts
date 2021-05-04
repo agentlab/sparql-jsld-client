@@ -7,56 +7,56 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-import { JSONSchema6forRdf } from "../ObjectProvider";
+import { JSONSchema6forRdf } from '../ObjectProvider';
 
 export const ViewShapeSchema: JSONSchema6forRdf = {
-	$schema: 'http://json-schema.org/draft-07/schema#',
-	'@id': 'rm:ViewShape',
-	'@type': 'sh:NodeShape',
-	title: 'View Shape',
-	description: 'Artifact Shape',
-	targetClass: 'rm:View',
-	type: 'object',
-	'@context': {
-	  '@type': 'rdf:type',
-	},
-	properties: {
-	  '@id': {
-		title: 'URI',
-		type: 'string',
-		format: 'iri',
-	  },
-	  '@type': {
-		title: 'Тип',
-		type: 'string',
-		format: 'iri',
-	  },
-	},
-	required: ['@id', '@type'],
+  $schema: 'http://json-schema.org/draft-07/schema#',
+  '@id': 'rm:ViewShape',
+  '@type': 'sh:NodeShape',
+  title: 'View Shape',
+  description: 'Artifact Shape',
+  targetClass: 'rm:View',
+  type: 'object',
+  '@context': {
+    '@type': 'rdf:type',
+  },
+  properties: {
+    '@id': {
+      title: 'URI',
+      type: 'string',
+      format: 'iri',
+    },
+    '@type': {
+      title: 'Тип',
+      type: 'string',
+      format: 'iri',
+    },
+  },
+  required: ['@id', '@type'],
 };
 
 export const ViewKindShapeSchema: JSONSchema6forRdf = {
-	$schema: 'http://json-schema.org/draft-07/schema#',
-	'@id': 'rm:ViewShape',
-	'@type': 'sh:NodeShape',
-	title: 'View Shape',
-	description: 'Artifact Shape',
-	targetClass: 'rm:View',
-	type: 'object',
-	'@context': {
-	  '@type': 'rdf:type',
-	},
-	properties: {
-	  '@id': {
-		title: 'URI',
-		type: 'string',
-		format: 'iri',
-	  },
-	  '@type': {
-		title: 'Тип',
-		type: 'string',
-		format: 'iri',
-	  },
-	},
-	required: ['@id', '@type'],
+  $schema: 'http://json-schema.org/draft-07/schema#',
+  '@id': 'rm:ViewShape',
+  '@type': 'sh:NodeShape',
+  title: 'View Shape',
+  description: 'Artifact Shape',
+  targetClass: 'rm:View',
+  type: 'object',
+  '@context': {
+    '@type': 'rdf:type',
+  },
+  properties: {
+    '@id': {
+      title: 'URI',
+      type: 'string',
+      format: 'iri',
+    },
+    '@type': {
+      title: 'Тип',
+      type: 'string',
+      format: 'iri',
+    },
+  },
+  required: ['@id', '@type'],
 };

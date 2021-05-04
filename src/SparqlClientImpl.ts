@@ -115,7 +115,8 @@ export function createRepositoryConfig(repParam: JsObject = {}, repType: string 
               sail:sailType "openrdf:NativeStore" ;
               sail:iterationCacheSyncThreshold "${repParam['Query Iteration Cache size'] || 10000}";
               ns:tripleIndexes "${repParam['Triple indexes'] || 'spoc,posc'}";
-              sb:evaluationStrategyFactory "${repParam['EvaluationStrategyFactory'] || 'org.eclipse.rdf4j.query.algebra.evaluation.impl.StrictEvaluationStrategyFactory'}"
+              sb:evaluationStrategyFactory "${repParam['EvaluationStrategyFactory'] ||
+                'org.eclipse.rdf4j.query.algebra.evaluation.impl.StrictEvaluationStrategyFactory'}"
             ]
           ]
         ]
@@ -163,7 +164,7 @@ export class SparqlClientImpl implements SparqlClient {
   repId = '';
   repositoryUrl = '';
   statementsUrl = '';
-  
+
   constructor(url: string) {
     this.setServerUrl(url);
   }
@@ -223,7 +224,7 @@ export class SparqlClientImpl implements SparqlClient {
 
   async uploadFiles(files: FileUploadConfig[], rootFolder = '') {
     //console.debug('uploadFiles ', files);
-    let statements = "";
+    let statements = '';
     files.forEach((f) => {
       statements = statements + fs.readFileSync(rootFolder + f.file, 'utf8');
     });

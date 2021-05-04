@@ -36,18 +36,17 @@ import { abbreviateIri } from '../SparqlGen';
 import { constructObjectsQuery, selectObjectsQuery } from '../SparqlGenSelect';
 import { SparqlClient } from '../SparqlClient';
 
-
 export function createSchemaWithSubClassOf(schema: any, iri: string, classIri?: string) {
   return {
     ...schema,
     //'@id': iri,
     '@id': '_' + uuid62.v4(),
-    targetClass: classIri || schema.targetClass,//['@type'],
+    targetClass: classIri || schema.targetClass, //['@type'],
     title: 'Class With Parent Schema',
     description: 'Schema of RDF Class With Parent Schema',
     '@context': {
       ...schema['@context'],
-      subClassOf: 'sesame:directSubClassOf',//'rdfs:subClassOf',
+      subClassOf: 'sesame:directSubClassOf', //'rdfs:subClassOf',
     },
     properties: {
       ...schema.properties,
@@ -55,7 +54,7 @@ export function createSchemaWithSubClassOf(schema: any, iri: string, classIri?: 
         title: 'Подкласс класса',
         type: 'string',
         format: 'iri',
-      }
+      },
     },
     required: [...schema.required, 'subClassOf'],
   };
@@ -85,10 +84,9 @@ const JSONSchema7Array = types.array(types.late(() => JSONSchema7Type));
     | { [x: string]: JSONValue }
     | Array<JSONValue>;*/
 
-export const SchemaRef = types
-  .model('JSONSchema7forRdf', {
-    $ref: types.string
-  });
+export const SchemaRef = types.model('JSONSchema7forRdf', {
+  $ref: types.string,
+});
 
 export const JSONSchema7forRdf = types
   .model('JSONSchema7forRdf', {
@@ -103,7 +101,7 @@ export const JSONSchema7forRdf = types
     /**
      * Our custom extensions from SHACL
      */
-    'targetClass': types.maybe(types.string), // targetClass of a shape
+    targetClass: types.maybe(types.string), // targetClass of a shape
     //'path': types.maybe(types.string), // targetClass of a shape
 
     /**
@@ -138,7 +136,7 @@ export const JSONSchema7forRdf = types
       get requiredJs(): IKeyValueMap<any> {
         return getSnapshot(self.required);
       },
-    }
+    };
   });
 
 //export interface IJSONSchema7forRdf extends Instance<typeof JSONSchema7forRdf> {}
@@ -158,7 +156,7 @@ export const JSONSchema7PropertyForRdf = types.model('JSONSchema7PropertyForRdf'
 
   readOnly: types.maybe(types.boolean),
   writeOnly: types.maybe(types.boolean),
-  
+
   // extension
   valueModifiability: types.maybe(types.string), // user or non -- system
   shapeModifiability: types.maybe(types.string), // user or non -- system
@@ -179,8 +177,8 @@ export const JSONSchema7forRdfReference = types.maybe(
     },
     set(value) {
       return value['@id'];
-    }
-  })
+    },
+  }),
 );
 
 export const Schemas = types
@@ -309,8 +307,7 @@ export const Schemas = types
       let schemaOrUndefined: any | undefined;
       while (schemaQueue.length > 0) {
         schemaOrUndefined = schemaQueue.pop();
-        if (schemaOrUndefined.js !== undefined)
-          schemaOrUndefined = schemaOrUndefined.js;
+        if (schemaOrUndefined.js !== undefined) schemaOrUndefined = schemaOrUndefined.js;
         if (schemaOrUndefined) {
           addToSchemaParentSchema(schema, schemaOrUndefined);
         }
@@ -325,7 +322,7 @@ export const Schemas = types
       }
       //console.debug('getSchemaByUri END', { uri, schema });
       return schema;
-    }
+    };
 
     return {
       addSchema(schema: JSONSchema6forRdf): void {
@@ -371,7 +368,6 @@ export const Schemas = types
 
 export interface ISchemas extends Instance<typeof Schemas> {}
 
-
 /**
  * Retrieves element's SHACL Shape from server and converts it to 'JSON Schema + LD' and UI Schema
  * for this element.
@@ -396,7 +392,8 @@ export async function resolveSchemaFromServer(conditions: JsObject, nsJs: any, c
       ],
       orderBy: [{ expression: variable('order1'), descending: false }],
     },
-    nsJs, client
+    nsJs,
+    client,
   );
 
   if (!shapes || shapes.length === 0) {
@@ -443,24 +440,26 @@ export async function resolveSchemaFromServer(conditions: JsObject, nsJs: any, c
             targetClass: '?subClassOf0',
           },
           variables: {
-            'eIri1': null
+            eIri1: null,
           },
-        }
+        },
       ],
     },
-    nsJs, client
+    nsJs,
+    client,
   );
   //console.debug('resolveSchemaFromServer superClasses=', superClassesUris);
-  const superClassesSchemas = superClassesUris.filter((c: any) => c.subClassOf && c.subClassOf !== 'rdfs:Resource' &&  c['@id1'] && c['@id1'] !== shape['@id']);
+  const superClassesSchemas = superClassesUris.filter(
+    (c: any) => c.subClassOf && c.subClassOf !== 'rdfs:Resource' && c['@id1'] && c['@id1'] !== shape['@id'],
+  );
   if (superClassesSchemas.length > 0) {
     schema.allOf = [];
     superClassesSchemas.forEach((superClassesSchema: any) => {
       if (superClassesSchema['@id1'])
         schema.allOf?.push({
           $ref: superClassesSchema['@id1'],
-        })
-      }
-    );
+        });
+    });
   }
   const [props, contexts, reqs, uiSchemaTmp] = propertyShapesToSchemaProperties(shape.property);
   schema.properties = { ...schema.properties, ...props };

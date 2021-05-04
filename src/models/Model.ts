@@ -13,7 +13,6 @@ import { ArtifactShapeSchema, PropertyShapeSchema } from '../schema/ArtifactShap
 import { mstSchemas } from './Coll';
 import { ViewDescr } from './ViewDescr';
 
-
 export const rootModelInitialState = {
   repId: '',
   user: {
@@ -50,9 +49,7 @@ export const rootModelInitialState = {
   colls: {},
 };
 
-
 mstSchemas['rm:View'] = ViewDescr;
-
 
 /*onSnapshot(rootStore, (snapshot) => {
   console.debug('Snapshot: ', snapshot);

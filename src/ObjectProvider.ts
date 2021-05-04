@@ -72,7 +72,7 @@ export interface JSONSchema6forRdf extends JSONSchema6, JsObject {
   //'@reverse'
   //'@index'
 
-  targetClass: string,
+  targetClass: string;
 
   //inCreationMenu?: boolean;
   //defaultFormat?: string;
@@ -83,8 +83,8 @@ export interface JSONSchema6forRdf extends JSONSchema6, JsObject {
   };
 }
 export type JSONSchema6forRdf2 = JSONSchema6forRdf & {
-  '@id'?: string,
-}
+  '@id'?: string;
+};
 
 export function copyObjectProps(objTo: JsObject, objFrom: JsObject): void {
   Object.keys(objFrom).forEach((objFromKey) => {

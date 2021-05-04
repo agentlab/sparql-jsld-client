@@ -19,10 +19,8 @@ import { ClassSchema } from '../../src/schema/RdfsSchema';
 import { artifactSchema, classifierSchema, classifierCompleteSchema } from '../schema/TestSchemas';
 import { selectObjectsQuery } from '../../src/SparqlGenSelect';
 
-
 // See https://stackoverflow.com/questions/49603939/async-callback-was-not-invoked-within-the-5000ms-timeout-specified-by-jest-setti
 jest.setTimeout(5000000);
-
 
 const client = new SparqlClientImpl(rdfServerUrl);
 const repository = Repository.create(rootModelInitialState, { client });
@@ -60,26 +58,40 @@ describe('classshape-scenario', () => {
   it('should retrieve shape from server by select', async () => {
     expect(repository.ns.current.size).toBeGreaterThan(4);
     // Class Shape search by property
-    const { schema: artifactShapeSchema1 }  = await resolveSchemaFromServer({targetClass: 'rm:Artifact'}, testNs, client);
-    const { schema: artifactShapeSchema11 } = await resolveSchemaFromServer({targetClass: 'rm:Artifact'}, testNs, client);
+    const { schema: artifactShapeSchema1 } = await resolveSchemaFromServer(
+      { targetClass: 'rm:Artifact' },
+      testNs,
+      client,
+    );
+    const { schema: artifactShapeSchema11 } = await resolveSchemaFromServer(
+      { targetClass: 'rm:Artifact' },
+      testNs,
+      client,
+    );
 
     expect(artifactShapeSchema1).toMatchObject(artifactSchema);
     expect(artifactShapeSchema1).toMatchObject(artifactShapeSchema11);
 
     // search node shape by shape uri
-    const { schema: artifactShapeSchema2 } = await resolveSchemaFromServer({'@_id': 'rm:ArtifactShape'}, testNs, client);
+    const { schema: artifactShapeSchema2 } = await resolveSchemaFromServer(
+      { '@_id': 'rm:ArtifactShape' },
+      testNs,
+      client,
+    );
     expect(artifactShapeSchema2).toMatchObject(artifactSchema);
   });
 
   it('should retrieve 0 superclasses for root class from server', async () => {
-    const iri = 'rm:Artifact';//'cpgu:Document';
+    const iri = 'rm:Artifact'; //'cpgu:Document';
     const collConstr = {
-      entConstrs: [{
-        schema: createSchemaWithSubClassOf(ClassSchema, iri, 'rm:ArtifactClasses'),
-        conditions: {
-          '@_id': iri,
+      entConstrs: [
+        {
+          schema: createSchemaWithSubClassOf(ClassSchema, iri, 'rm:ArtifactClasses'),
+          conditions: {
+            '@_id': iri,
+          },
         },
-      }],
+      ],
       // RDF4J REST API options
       //options: {
       //  infer: 'false',
@@ -92,12 +104,14 @@ describe('classshape-scenario', () => {
   it('should retrieve 2 superclasses for sub-class from server', async () => {
     const iri = 'cpgu:Document';
     const collConstr = {
-      entConstrs: [{
-        schema: createSchemaWithSubClassOf(ClassSchema, iri, 'rm:ArtifactClasses'),
-        conditions: {
-          '@_id': iri,
+      entConstrs: [
+        {
+          schema: createSchemaWithSubClassOf(ClassSchema, iri, 'rm:ArtifactClasses'),
+          conditions: {
+            '@_id': iri,
+          },
         },
-      }],
+      ],
       // RDF4J REST API options
       //options: {
       //  infer: 'false',
@@ -149,7 +163,7 @@ describe('classshape-scenario', () => {
     const classifierSchema1Observ = repository.schemas.getOrLoadSchemaByClassIri(classifierSchema.targetClass);
     expect(classifierSchema1Observ).toEqual(expect.anything());
     const classifierSchema1 = classifierSchema1Observ?.js;
-    
+
     const ss = classifierCompleteSchema;
     expect(classifierSchema1).toMatchObject(ss);
     // check cached schema retrieving

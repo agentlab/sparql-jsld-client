@@ -33,7 +33,7 @@ export const ArtifactShapeSchema: JSONSchema6forRdf = {
     inCreationMenu: 'rm:inCreationMenu',
     defaultIndividNs: {
       '@id': 'rm:defaultIndividNs',
-      '@type': 'xsd:anyURI',//'@id',
+      '@type': 'xsd:anyURI', //'@id',
     },
     defaultFormat: {
       '@id': 'rm:defaultFormat',
@@ -84,7 +84,7 @@ export const ArtifactShapeSchema: JSONSchema6forRdf = {
       type: 'object',
     },
   },
-  required: ['@id', 'targetClass'/*, 'property'*/], // arrays should be required
+  required: ['@id', 'targetClass' /*, 'property'*/], // arrays should be required
 };
 
 export const PropertyShapeSchema: JSONSchema6forRdf = {
@@ -103,7 +103,8 @@ export const PropertyShapeSchema: JSONSchema6forRdf = {
       '@id': 'sh:datatype',
       '@type': '@id',
     },
-    path: { // object with unknown type should resolve in Resource URI
+    path: {
+      // object with unknown type should resolve in Resource URI
       '@id': 'sh:path',
       '@type': '@id',
     },

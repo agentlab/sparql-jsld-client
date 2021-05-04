@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
- import { Parser } from 'sparqljs';
+import { Parser } from 'sparqljs';
 import { triple, variable } from '@rdfjs/data-model';
 
 import { JsObject, JSONSchema6forRdf } from '../src/ObjectProvider';
@@ -19,7 +19,6 @@ import { getFullIriNamedNode, ICollConstrJsOpt } from '../src/SparqlGen';
 import { ArtifactShapeSchema, PropertyShapeSchema } from '../src/schema/ArtifactShapeSchema';
 import { constructObjectsQuery, selectObjectsQuery } from '../src/SparqlGenSelect';
 import { insertObjectQuery, deleteObjectQuery, updateObjectQuery } from '../src/SparqlGenUpdate';
-
 
 // See https://stackoverflow.com/questions/49603939/async-callback-was-not-invoked-within-the-5000ms-timeout-specified-by-jest-setti
 jest.setTimeout(500000);
@@ -57,16 +56,11 @@ const SchemaWithoutArrayProperties: JSONSchema6forRdf = {
   required: ['@id', 'path'],
 };
 
-
-
-
 describe('SchemaWithoutArrayProperties', () => {
   it('select by type without conditions should generate correctly', async () =>
     selectTestHelper(
       {
-        entConstrs: [
-          { schema: SchemaWithoutArrayProperties }
-        ]
+        entConstrs: [{ schema: SchemaWithoutArrayProperties }],
       },
       `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
       PREFIX sh:  <http://www.w3.org/ns/shacl#>
@@ -75,10 +69,10 @@ describe('SchemaWithoutArrayProperties', () => {
           sh:path ?path0.
         OPTIONAL { ?eIri0 sh:name ?name0. }
         OPTIONAL { ?eIri0 sh:minCount ?minCount0. }
-      }`
+      }`,
     ));
 
-  it('select by type and conditions should generate correctly', async () => 
+  it('select by type and conditions should generate correctly', async () =>
     selectTestHelper(
       {
         entConstrs: [
@@ -89,8 +83,8 @@ describe('SchemaWithoutArrayProperties', () => {
               name: 'Название',
               minCount: 1,
             },
-          }
-        ]
+          },
+        ],
       },
       `PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
       PREFIX sh:   <http://www.w3.org/ns/shacl#>
@@ -100,7 +94,7 @@ describe('SchemaWithoutArrayProperties', () => {
           sh:path cpgu:fileName;
           sh:name "Название";
           sh:minCount 1.
-      }`
+      }`,
     ));
 
   it('select by iri all schema props should generate correctly', async () =>
@@ -110,10 +104,10 @@ describe('SchemaWithoutArrayProperties', () => {
           {
             schema: SchemaWithoutArrayProperties,
             conditions: {
-              '@_id': 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml'
+              '@_id': 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml',
             },
-          }
-        ]
+          },
+        ],
       },
       `PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
       PREFIX sh:   <http://www.w3.org/ns/shacl#>
@@ -122,7 +116,7 @@ describe('SchemaWithoutArrayProperties', () => {
           sh:path ?path0.
         OPTIONAL { <file:///urn-s2-iisvvt-infosystems-classifier-45950.xml> sh:name ?name0. }
         OPTIONAL { <file:///urn-s2-iisvvt-infosystems-classifier-45950.xml> sh:minCount ?minCount0. }
-      }`
+      }`,
     ));
 
   it('select by iri only titles should generate correctly', async () =>
@@ -132,14 +126,14 @@ describe('SchemaWithoutArrayProperties', () => {
           {
             schema: SchemaWithoutArrayProperties,
             conditions: {
-              '@_id': 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml'
+              '@_id': 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml',
             },
             variables: {
               path: null,
               name: null,
             },
-          }
-        ]
+          },
+        ],
       },
       `PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
       PREFIX sh:   <http://www.w3.org/ns/shacl#>
@@ -147,7 +141,7 @@ describe('SchemaWithoutArrayProperties', () => {
         <file:///urn-s2-iisvvt-infosystems-classifier-45950.xml> rdf:type sh:PropertyShape;
           sh:path ?path0.
         <file:///urn-s2-iisvvt-infosystems-classifier-45950.xml> sh:name ?name0.
-      }`
+      }`,
     ));
 
   it('select max identifier should generate correctly', async () =>
@@ -159,7 +153,7 @@ describe('SchemaWithoutArrayProperties', () => {
             variables: {
               identifier: artifactSchema?.properties?.identifier,
             },
-          }
+          },
         ],
         orderBy: [{ expression: variable('identifier0'), descending: true }],
         limit: 1,
@@ -172,9 +166,9 @@ describe('SchemaWithoutArrayProperties', () => {
         ?eIri0 dcterms:identifier ?identifier0.
       }
       ORDER BY DESC (?identifier0)
-      LIMIT 1`
+      LIMIT 1`,
     ));
-  });
+});
 
 const SchemaWithArrayProperty: JSONSchema6forRdf = {
   $schema: 'http://json-schema.org/draft-07/schema#',
@@ -204,7 +198,6 @@ const SchemaWithArrayProperty: JSONSchema6forRdf = {
   required: ['@id', 'path'],
 };
 
-
 describe('SchemaWithArrayProperty', () => {
   it('select one schema should generate correctly', async () =>
     selectTestHelper(
@@ -212,15 +205,15 @@ describe('SchemaWithArrayProperty', () => {
         entConstrs: [
           {
             schema: SchemaWithArrayProperty,
-          }
-        ]
+          },
+        ],
       },
       `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
       PREFIX sh:  <http://www.w3.org/ns/shacl#>
       SELECT ?eIri0 ?property0 WHERE {
         ?eIri0 rdf:type sh:NodeShape.
         OPTIONAL { ?eIri0 sh:property ?property0. }
-      }`
+      }`,
     ));
 
   // In case of API modification check ObjectProviderImpl.selectObjectsArrayProperties
@@ -264,7 +257,8 @@ const usedInModuleCollConstrJs: any = {
         object: 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml',
         subject: '?eIri1',
       },
-    },{
+    },
+    {
       schema: {
         ...artifactSchema,
         '@id': 'rm:ArtifactInUsedInModuleLink',
@@ -284,27 +278,20 @@ const usedInModuleCollConstrJs: any = {
             shapeModifiability: 'system',
           },
         },
-        required: [
-          ...artifactSchema.required || [],
-          'hasChild',
-        ],
+        required: [...(artifactSchema.required || []), 'hasChild'],
       },
       conditions: {
         hasChild: {
           bind: {
             relation: 'exists',
             triples: [
-              triple(
-                variable('eIri2'),
-                getFullIriNamedNode('rmUserTypes:parentBinding', testNs),
-                variable('eIri1'),
-              ),
+              triple(variable('eIri2'), getFullIriNamedNode('rmUserTypes:parentBinding', testNs), variable('eIri1')),
             ],
           },
         },
       },
       resolveType: true,
-    }
+    },
   ],
   orderBy: [{ expression: variable('bookOrder0'), descending: false }],
   limit: 10,
@@ -359,19 +346,20 @@ describe('ArtifactsInModules', () => {
         OPTIONAL { ?eIri1 nav:processArea ?processArea1. }
         OPTIONAL { ?eIri1 rm:assetFolder ?assetFolder1. }
         OPTIONAL { ?eIri1 rm:artifactFormat ?artifactFormat1. }
-      } ORDER BY (?bookOrder0) LIMIT 10`
+      } ORDER BY (?bookOrder0) LIMIT 10`,
     ));
 });
-
 
 describe('ArtifactSchema', () => {
   it('select Artifact with type info should generate correctly', async () =>
     selectTestHelper(
       {
-        entConstrs: [{
-          schema: artifactSchema,
-          resolveType: true,
-        }],
+        entConstrs: [
+          {
+            schema: artifactSchema,
+            resolveType: true,
+          },
+        ],
         distinct: true,
       },
       `PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -401,24 +389,28 @@ describe('ArtifactSchema', () => {
         OPTIONAL { ?eIri0 nav:processArea ?processArea0. }
         OPTIONAL { ?eIri0 rm:assetFolder ?assetFolder0. }
         OPTIONAL { ?eIri0 rm:artifactFormat ?artifactFormat0. }
-      }`
+      }`,
     ));
 
   it('select selectMaxObjectId should generate correctly', async () =>
     selectTestHelper(
       {
-        entConstrs: [{
-          schema: artifactSchema,
-          variables: {
-            identifier: artifactSchema.properties.identifier,
+        entConstrs: [
+          {
+            schema: artifactSchema,
+            variables: {
+              identifier: artifactSchema.properties.identifier,
+            },
+            resolveType: true,
           },
-          resolveType: true,
-        }],
+        ],
         limit: 1,
-        orderBy: [{
-          expression: variable('identifier0'),
-          descending: true,
-        }],
+        orderBy: [
+          {
+            expression: variable('identifier0'),
+            descending: true,
+          },
+        ],
         distinct: true,
       },
       `PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
@@ -439,10 +431,9 @@ describe('ArtifactSchema', () => {
         })
       }
       ORDER BY DESC (?identifier0)
-      LIMIT 1`
+      LIMIT 1`,
     ));
-  });
-
+});
 
 describe('constructObjectsQuery', () => {
   it('construct one Artifact schema should generate correctly', async () => {
@@ -518,7 +509,7 @@ describe('constructObjectsQuery', () => {
           OPTIONAL { ?eIri1 rm:valueModifiability ?valueModifiability1. }
         }
       }
-      ORDER BY (?order1)`
+      ORDER BY (?order1)`,
     );
   });
 
@@ -597,7 +588,7 @@ describe('constructObjectsQuery', () => {
           OPTIONAL { ?eIri1 rm:valueModifiability ?valueModifiability1. }
         }
       }
-      ORDER BY (?order1)`
+      ORDER BY (?order1)`,
     );
   });
 
@@ -679,19 +670,20 @@ describe('constructObjectsQuery', () => {
         OPTIONAL { ?eIri1 rm:assetFolder ?assetFolder1. }
         OPTIONAL { ?eIri1 rm:artifactFormat ?artifactFormat1. }
       }
-      ORDER BY (?bookOrder0) LIMIT 10`
+      ORDER BY (?bookOrder0) LIMIT 10`,
     ));
 });
-
 
 describe('deleteObjectQuery', () => {
   it('delete one by iri should generate correctly', async () =>
     //TODO: if @_id is known, drop other conditions
     deleteTestHelper(
       {
-        entConstrs: [{
-          schema: artifactSchema,
-        }],
+        entConstrs: [
+          {
+            schema: artifactSchema,
+          },
+        ],
       },
       {
         '@_id': 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml',
@@ -702,16 +694,18 @@ describe('deleteObjectQuery', () => {
       WHERE {
         <file:///urn-s2-iisvvt-infosystems-classifier-45950.xml> rdf:type rm:Artifact;
           ?p0 ?o0.
-      }`
+      }`,
     ));
 
   it('delete one by property value should generate correctly', async () =>
     // maximum constraints with type and properties
     deleteTestHelper(
       {
-        entConstrs: [{
-          schema: artifactSchema,
-        }],
+        entConstrs: [
+          {
+            schema: artifactSchema,
+          },
+        ],
       },
       {
         identifier: 3,
@@ -725,15 +719,17 @@ describe('deleteObjectQuery', () => {
           ?p0 ?o0;
           dcterms:identifier ?identifier0.
         FILTER(?identifier0 = 3 )
-      }`
+      }`,
     ));
 
   it('delete all by type should generate correctly', async () =>
     deleteTestHelper(
       {
-        entConstrs: [{
-          schema: artifactSchema,
-        }],
+        entConstrs: [
+          {
+            schema: artifactSchema,
+          },
+        ],
       },
       undefined,
       `PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -742,18 +738,19 @@ describe('deleteObjectQuery', () => {
       WHERE {
         ?eIri0 rdf:type rm:Artifact;
           ?p0 ?o0.
-      }`
+      }`,
     ));
-  });
-
+});
 
 describe('insertObjectQuery', () => {
   it('insert one with data should generate correctly', async () =>
     insertTestHelper(
       {
-        entConstrs: [{
-          schema: artifactSchema,
-        }],
+        entConstrs: [
+          {
+            schema: artifactSchema,
+          },
+        ],
       },
       {
         // screened with '_' to distinguish from Condition object @id
@@ -770,18 +767,19 @@ describe('insertObjectQuery', () => {
         <file:///urn-45952.xml> rdf:type rm:Artifact;
           dcterms:creator users:amivanoff;
           dcterms:created "1970-01-01T00:00:00-02:00"^^xsd:dateTime.
-      }`
+      }`,
     ));
-  });
-
+});
 
 describe('updateObjectQuery', () => {
   it('update one with property and no uri should generate correctly', async () =>
     updateTestHelper(
       {
-        entConstrs: [{
-          schema: artifactSchema,
-        }],
+        entConstrs: [
+          {
+            schema: artifactSchema,
+          },
+        ],
       },
       {
         identifier: 1,
@@ -814,16 +812,18 @@ describe('updateObjectQuery', () => {
         OPTIONAL { ?eIri0 dcterms:modified ?modified0. }
         OPTIONAL { ?eIri0 oslc:modifiedBy ?modifiedBy0. }
         FILTER(?identifier0 = 1 )
-      }`
+      }`,
     ));
-  
+
   it('update one with property and uri should generate correctly', async () => {
     const id = 'rm:myid';
     await updateTestHelper(
       {
-        entConstrs: [{
-          schema: artifactSchema,
-        }],
+        entConstrs: [
+          {
+            schema: artifactSchema,
+          },
+        ],
       },
       {
         '@_id': id,
@@ -856,19 +856,19 @@ describe('updateObjectQuery', () => {
         OPTIONAL { ${id} dcterms:identifier ?identifier0. }
         OPTIONAL { ${id} dcterms:modified ?modified0. }
         OPTIONAL { ${id} oslc:modifiedBy ?modifiedBy0. }
-      }`
+      }`,
     );
   });
 });
 
-async function selectTestHelper(collConstrJs: ICollConstrJsOpt, correctQuery: string,) {
+async function selectTestHelper(collConstrJs: ICollConstrJsOpt, correctQuery: string) {
   const client = new SparqlClientImplMock();
   const coll = await selectObjectsQuery(collConstrJs, testNs, client);
   expect(coll).not.toBeUndefined();
   //expect(coll.length).toBe(0);
   const genQueryStr = client.sparqlSelectParams.query;
   //console.log(genQueryStr);
-  
+
   const parser = new Parser();
   const correctParsedQuery = parser.parse(correctQuery);
   expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery);
@@ -881,13 +881,17 @@ async function constructTestHelper(collConstrJs: ICollConstrJsOpt, correctQuery:
   //expect(coll.length).toBe(0);
   const genQueryStr = client.sparqlConstructParams.query;
   //console.log(genQueryStr);
-  
+
   const parser = new Parser();
   const correctParsedQuery = parser.parse(correctQuery);
   expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery);
 }
 
-async function deleteTestHelper(collConstrJs: ICollConstrJsOpt, conditions: JsObject | JsObject[] | undefined, correctQuery: string) {
+async function deleteTestHelper(
+  collConstrJs: ICollConstrJsOpt,
+  conditions: JsObject | JsObject[] | undefined,
+  correctQuery: string,
+) {
   const client = new SparqlClientImplMock();
   await deleteObjectQuery(collConstrJs, testNs, client, conditions);
   const genQueryStr = client.sparqlUpdateParams.query;
@@ -898,24 +902,32 @@ async function deleteTestHelper(collConstrJs: ICollConstrJsOpt, conditions: JsOb
   expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery);
 }
 
-async function insertTestHelper(collConstrJs: ICollConstrJsOpt, data: JsObject | JsObject[] | undefined, correctQuery: string) {
+async function insertTestHelper(
+  collConstrJs: ICollConstrJsOpt,
+  data: JsObject | JsObject[] | undefined,
+  correctQuery: string,
+) {
   const client = new SparqlClientImplMock();
   await insertObjectQuery(collConstrJs, testNs, client, data);
   const genQueryStr = client.sparqlUpdateParams.query;
   //console.log(genQueryStr);
-  
+
   const parser = new Parser();
   const correctParsedQuery = parser.parse(correctQuery);
   expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery);
 }
 
-async function updateTestHelper(collConstrJs: ICollConstrJsOpt, conditions: JsObject | JsObject[] | undefined,
-  data: JsObject | JsObject[] | undefined, correctQuery: string) {
+async function updateTestHelper(
+  collConstrJs: ICollConstrJsOpt,
+  conditions: JsObject | JsObject[] | undefined,
+  data: JsObject | JsObject[] | undefined,
+  correctQuery: string,
+) {
   const client = new SparqlClientImplMock();
   await updateObjectQuery(collConstrJs, testNs, client, conditions, data);
   const genQueryStr = client.sparqlUpdateParams.query;
   //console.log(genQueryStr);
-  
+
   const parser = new Parser();
   const correctParsedQuery = parser.parse(correctQuery);
   expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery);

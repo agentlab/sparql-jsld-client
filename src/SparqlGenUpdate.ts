@@ -30,11 +30,15 @@ import {
   getWhereVarFromDataWithoutOptinals,
   ICollConstrJsOpt,
   processConditions,
-  renumerateEntConstrVariables
+  renumerateEntConstrVariables,
 } from './SparqlGen';
 
-
-export async function deleteObjectQuery(collConstrJs2: ICollConstrJsOpt, nsJs: any, client: SparqlClient, conditions?: JsObject | JsObject[]) {
+export async function deleteObjectQuery(
+  collConstrJs2: ICollConstrJsOpt,
+  nsJs: any,
+  client: SparqlClient,
+  conditions?: JsObject | JsObject[],
+) {
   //TODO: performance
   const collConstrJs: ICollConstrJsOpt = cloneDeep(collConstrJs2);
   const entConstrs: EntConstrInternal[] = getInternalCollConstrs(collConstrJs, nsJs, conditions);
@@ -45,7 +49,12 @@ export async function deleteObjectQuery(collConstrJs2: ICollConstrJsOpt, nsJs: a
   //console.debug('deleteObject', response);
 }
 
-export async function insertObjectQuery(collConstrJs2: ICollConstrJsOpt, nsJs: any, client: SparqlClient, data?: JsObject | JsObject[]) {
+export async function insertObjectQuery(
+  collConstrJs2: ICollConstrJsOpt,
+  nsJs: any,
+  client: SparqlClient,
+  data?: JsObject | JsObject[],
+) {
   //TODO: performance
   const collConstrJs: ICollConstrJsOpt = cloneDeep(collConstrJs2);
   const entConstrs: EntConstrInternal[] = getInternalCollConstrs(collConstrJs, nsJs, undefined, data);
@@ -55,7 +64,13 @@ export async function insertObjectQuery(collConstrJs2: ICollConstrJsOpt, nsJs: a
   const response: AxiosResponse<any> = await client.sparqlUpdate(queryStr, collConstrJs.options);
 }
 
-export async function updateObjectQuery(collConstrJs2: ICollConstrJsOpt, nsJs: any, client: SparqlClient, conditions?: JsObject | JsObject[], data?: JsObject | JsObject[]) {
+export async function updateObjectQuery(
+  collConstrJs2: ICollConstrJsOpt,
+  nsJs: any,
+  client: SparqlClient,
+  conditions?: JsObject | JsObject[],
+  data?: JsObject | JsObject[],
+) {
   //TODO: performance
   const collConstrJs: ICollConstrJsOpt = cloneDeep(collConstrJs2);
   const entConstrs: EntConstrInternal[] = getInternalCollConstrs(collConstrJs, nsJs, conditions, data);
@@ -67,9 +82,9 @@ export async function updateObjectQuery(collConstrJs2: ICollConstrJsOpt, nsJs: a
 
 /**
  * DELETE
- * 
- * @param entConstrs 
- * @param prefixes 
+ *
+ * @param entConstrs
+ * @param prefixes
  */
 function deleteObjectQueryFromEntConstrs(entConstrs: EntConstrInternal[]) {
   const query: Update = {
@@ -98,11 +113,7 @@ function deleteObjectQueryFromEntConstrs(entConstrs: EntConstrInternal[]) {
     let { bgps, options } = getWhereVar(entConstr, true);
     let filters: any[] = [];
     let binds: any[] = [];
-    bgps = [
-      ...getTypeCondition(entConstr),
-      triple(entConstr.subj, variable(pVarName), variable(oVarName)),
-      ...bgps
-    ];
+    bgps = [...getTypeCondition(entConstr), triple(entConstr.subj, variable(pVarName), variable(oVarName)), ...bgps];
     // if element has URI -- its enough otherwise we need to add other conditions
     if (!entConstr.conditions['@id']) {
       const whereConditions = processConditions(entConstr, entConstr.conditions, true);
@@ -137,8 +148,7 @@ function insertObjectQueryFromEntConstrs(entConstrs: EntConstrInternal[]) {
     ],
   };
   entConstrs.forEach((entConstr) => {
-    const triples = getTypeCondition(entConstr)
-      .concat(getDataTriples(entConstr));
+    const triples = getTypeCondition(entConstr).concat(getDataTriples(entConstr));
     addTo(query.updates[0], 'insert', addToBgp(triples));
   });
   return query;
@@ -171,10 +181,7 @@ function updateObjectQueryFromEntConstrs(entConstrs: EntConstrInternal[]) {
     let { bgps, options } = getWhereVar(entConstr);
     let filters: any[] = [];
     let binds: any[] = [];
-    bgps = [
-      ...getTypeCondition(entConstr),
-      ...bgps
-    ];
+    bgps = [...getTypeCondition(entConstr), ...bgps];
     // if element has URI -- its enough otherwise we need to add other conditions
     if (!entConstr.conditions['@id']) {
       const whereConditions = processConditions(entConstr, entConstr.conditions, true);

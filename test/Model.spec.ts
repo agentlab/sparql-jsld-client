@@ -7,15 +7,16 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-import { triple, variable, namedNode } from '@rdfjs/data-model';
 import moment from 'moment';
+import { triple, variable, namedNode } from '@rdfjs/data-model';
 import { reaction, values, when } from 'mobx';
 import { applySnapshot, getSnapshot } from 'mobx-state-tree';
 
-import { JSONSchema6forRdf } from '../src/ObjectProvider';
-import { SparqlClientImpl } from '../src/SparqlClientImpl';
 import { rootModelInitialState } from '../src/models/Model';
 import { Repository } from '../src/models/Repository';
+import { SparqlClientImpl } from '../src/SparqlClientImpl';
+import { JSONSchema6forRdf } from '../src/ObjectProvider';
+import { uploadFiles } from '../src/FileUpload';
 
 import { rdfServerUrl, rmRepositoryParam, rmRepositoryType } from './config';
 import { vocabsFiles, shapesFiles, usersFiles, projectsFoldersFiles, samplesFiles, rootFolder } from './configTests';
@@ -45,11 +46,11 @@ beforeAll(async () => {
       rmRepositoryType,
     );
     repository.setId(rmRepositoryID);
-    await client.uploadFiles(vocabsFiles, rootFolder);
-    await client.uploadFiles(usersFiles, rootFolder);
-    await client.uploadFiles(projectsFoldersFiles, rootFolder);
-    await client.uploadFiles(shapesFiles, rootFolder);
-    await client.uploadFiles(samplesFiles, rootFolder);
+    await uploadFiles(client, vocabsFiles, rootFolder);
+    await uploadFiles(client, usersFiles, rootFolder);
+    await uploadFiles(client, projectsFoldersFiles, rootFolder);
+    await uploadFiles(client, shapesFiles, rootFolder);
+    await uploadFiles(client, samplesFiles, rootFolder);
     //await sleep(5000); // give RDF classifier some time to classify resources after upload
 
     await repository.ns.reloadNs();
@@ -450,7 +451,7 @@ describe('UiModel', () => {
           const colls = repository.colls;
           const collsSS = getSnapshot(colls);
           const cfv = colls.get(vcc['@id']);
-          const data = cfv?.dataJs;
+          const data: any = cfv?.dataJs;
           if (r && (!data || data.length === 0)) r = false;
         });
         return r;

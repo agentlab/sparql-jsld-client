@@ -22,7 +22,7 @@ provider.setUser('users:guest');
 const client = provider.getClient();
 client.setServerUrl('<url to ref4j rest api server>');
 await client.createRepositoryAndSetCurrent( {'Repository ID': 'myrepo'} );
-await client.uploadFiles(files, rootFolder);
+await uploadFiles(client, files, rootFolder);
 
 //select all objects by schema (by rdfs class)
 const artifacts = await provider.selectObjects('rm:Artifact');

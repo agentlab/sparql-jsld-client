@@ -7,17 +7,19 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-import { rdfServerUrl, rmRepositoryParam, rmRepositoryType } from '../config';
-import { rootModelInitialState } from '../../src/models/model';
+
+import { rootModelInitialState } from '../../src/models/Model';
 import { Repository } from '../../src/models/Repository';
 import { createSchemaWithSubClassOf, resolveSchemaFromServer } from '../../src/models/Schemas';
 import { SparqlClientImpl } from '../../src/SparqlClientImpl';
-
-import { vocabsFiles, shapesFiles, rootFolder, testNs } from '../configTests';
-import { genTimestampedName } from '../TestHelpers';
-import { ClassSchema } from '../../src/schema/RdfsSchema';
-import { artifactSchema, classifierSchema, classifierCompleteSchema } from '../schema/TestSchemas';
 import { selectObjectsQuery } from '../../src/SparqlGenSelect';
+import { ClassSchema } from '../../src/schema/RdfsSchema';
+import { uploadFiles } from '../../src/FileUpload';
+
+import { rdfServerUrl, rmRepositoryParam, rmRepositoryType } from '../config';
+import { vocabsFiles, shapesFiles, rootFolder, testNs } from '../configTests';
+import { artifactSchema, classifierSchema, classifierCompleteSchema } from '../schema/TestSchemas';
+import { genTimestampedName } from '../TestHelpers';
 
 // See https://stackoverflow.com/questions/49603939/async-callback-was-not-invoked-within-the-5000ms-timeout-specified-by-jest-setti
 jest.setTimeout(5000000);
@@ -39,7 +41,7 @@ beforeAll(async () => {
     );
     repository.setId(rmRepositoryID);
     const files = vocabsFiles.concat(shapesFiles);
-    await client.uploadFiles(files, rootFolder);
+    await uploadFiles(client, files, rootFolder);
     await repository.ns.reloadNs();
   } catch (err) {
     fail(err);

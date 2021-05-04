@@ -7,14 +7,12 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-import fs from 'fs';
 import {
   SparqlClient,
   sendGet,
   sendPostQuery,
   sendPostStatements,
   executeUpdate,
-  FileUploadConfig,
   Results,
   ServerResponse,
 } from './SparqlClient';
@@ -220,18 +218,6 @@ export class SparqlClientImpl implements SparqlClient {
     if (graph) params['context'] = graph;
     const response = await sendPostStatements(this.statementsUrl, statements, params);
     if (response.status < 200 && response.status > 204) return Promise.reject('Cannot upload statements');
-  }
-
-  async uploadFiles(files: FileUploadConfig[], rootFolder = '') {
-    //console.debug('uploadFiles ', files);
-    let statements = '';
-    files.forEach((f) => {
-      statements = statements + fs.readFileSync(rootFolder + f.file, 'utf8');
-    });
-
-    if (statements.length > 0 && files.length > 0) {
-      await this.uploadStatements(statements, files[0].baseURI);
-    }
   }
 
   //async downloadStatements(graph?: string): Promise<string> {

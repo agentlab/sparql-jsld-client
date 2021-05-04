@@ -228,7 +228,6 @@ export interface SparqlClient {
   loadNs(): Promise<JsStrObj>;
 
   uploadStatements(statements: string, baseURI?: string, graph?: string): Promise<void>;
-  uploadFiles(files: FileUploadConfig[], rootFolder?: string): Promise<void>;
   //downloadStatements(graph?: string): Promise<string>;
 
   sparqlSelect(query: string, queryParams?: JsObject): Promise<Results>;

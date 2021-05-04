@@ -7,11 +7,13 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-import { rdfServerUrl, rmRepositoryParam, rmRepositoryType } from './config';
-import { rootModelInitialState } from '../src/models/model';
+
+import { rootModelInitialState } from '../src/models/Model';
 import { Repository } from '../src/models/Repository';
 import { SparqlClientImpl } from '../src/SparqlClientImpl';
+import { uploadFiles } from '../src/FileUpload';
 
+import { rdfServerUrl, rmRepositoryParam, rmRepositoryType } from './config';
 import { vocabsFiles, shapesFiles, usersFiles, projectsFoldersFiles, samplesFiles, rootFolder } from './configTests';
 import { genTimestampedName } from './TestHelpers';
 
@@ -47,7 +49,7 @@ describe('SparqlClientUpload', () => {
       rmRepositoryType,
     );
     repository.setId(rmRepositoryID);
-    await client.uploadFiles([vocabsFiles[0]], rootFolder);
+    await uploadFiles(client, [vocabsFiles[0]], rootFolder);
     await client.deleteRepository(rmRepositoryID);
   });
   it(`SparqlClient should upload 1 cpgu vocab`, async () => {
@@ -59,7 +61,7 @@ describe('SparqlClientUpload', () => {
       rmRepositoryType,
     );
     repository.setId(rmRepositoryID);
-    await client.uploadFiles([vocabsFiles[6]], rootFolder);
+    await uploadFiles(client, [vocabsFiles[6]], rootFolder);
     await client.deleteRepository(rmRepositoryID);
   });
   it(`SparqlClient should upload 7 vocab files`, async () => {
@@ -71,7 +73,8 @@ describe('SparqlClientUpload', () => {
       rmRepositoryType,
     );
     repository.setId(rmRepositoryID);
-    await client.uploadFiles(
+    await uploadFiles(
+      client,
       [vocabsFiles[0], vocabsFiles[1], vocabsFiles[2], vocabsFiles[3], vocabsFiles[4], vocabsFiles[5], vocabsFiles[6]],
       rootFolder,
     );
@@ -86,7 +89,7 @@ describe('SparqlClientUpload', () => {
       rmRepositoryType,
     );
     repository.setId(rmRepositoryID);
-    await client.uploadFiles(vocabsFiles, rootFolder);
+    await uploadFiles(client, vocabsFiles, rootFolder);
     await client.deleteRepository(rmRepositoryID);
   });
   it(`SparqlClient should upload all vocabs and shapes files`, async () => {
@@ -98,8 +101,8 @@ describe('SparqlClientUpload', () => {
       rmRepositoryType,
     );
     repository.setId(rmRepositoryID);
-    await client.uploadFiles(vocabsFiles, rootFolder);
-    await client.uploadFiles(shapesFiles, rootFolder);
+    await uploadFiles(client, vocabsFiles, rootFolder);
+    await uploadFiles(client, shapesFiles, rootFolder);
     await client.deleteRepository(rmRepositoryID);
   });
   //TODO: Did not work
@@ -112,8 +115,8 @@ describe('SparqlClientUpload', () => {
       rmRepositoryType,
     );
     repository.setId(rmRepositoryID);
-    await client.uploadFiles(shapesFiles, rootFolder);
-    await client.uploadFiles(vocabsFiles, rootFolder);
+    await uploadFiles(client, shapesFiles, rootFolder);
+    await uploadFiles(client, vocabsFiles, rootFolder);
     await client.deleteRepository(rmRepositoryID);
   });*/
   it(`SparqlClient should upload all vocabs, shapes and data files`, async () => {
@@ -126,11 +129,11 @@ describe('SparqlClientUpload', () => {
     );
     repository.setId(rmRepositoryID);
     //TODO: Did not work if shapes not last one
-    await client.uploadFiles(vocabsFiles, rootFolder);
-    await client.uploadFiles(usersFiles, rootFolder);
-    await client.uploadFiles(projectsFoldersFiles, rootFolder);
-    await client.uploadFiles(samplesFiles, rootFolder);
-    await client.uploadFiles(shapesFiles, rootFolder);
+    await uploadFiles(client, vocabsFiles, rootFolder);
+    await uploadFiles(client, usersFiles, rootFolder);
+    await uploadFiles(client, projectsFoldersFiles, rootFolder);
+    await uploadFiles(client, samplesFiles, rootFolder);
+    await uploadFiles(client, shapesFiles, rootFolder);
     await client.deleteRepository(rmRepositoryID);
   });
 });

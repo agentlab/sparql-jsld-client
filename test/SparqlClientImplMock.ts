@@ -7,9 +7,9 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
+import { AxiosResponse } from 'axios';
 import { SparqlClient, FileUploadConfig, Results } from '../src/SparqlClient';
 import { JsObject, JsStrObj } from '../src/ObjectProvider';
-import { AxiosResponse } from 'axios';
 
 const HttpResponse200: AxiosResponse = {
   data: {},
@@ -34,7 +34,6 @@ export class SparqlClientImplMock implements SparqlClient {
   nsReturn: JsStrObj = {};
 
   uploadStatementsParams = {};
-  uploadFilesParams = {};
 
   sparqlSelectParams: { query: string; queryParams: JsObject } = {
     query: '',
@@ -92,13 +91,6 @@ export class SparqlClientImplMock implements SparqlClient {
       statements: statements.replace(/^#.*$/gm, ''),
       baseURI,
       graph,
-    };
-  }
-
-  async uploadFiles(files: FileUploadConfig[], rootFolder = '') {
-    this.uploadFilesParams = {
-      files,
-      rootFolder,
     };
   }
 

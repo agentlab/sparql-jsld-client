@@ -8,17 +8,19 @@
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
 import uuid62 from 'uuid62';
+import { getSnapshot } from 'mobx-state-tree';
 
-import { rdfServerUrl, rmRepositoryParam, rmRepositoryType } from './config';
-import { rootModelInitialState } from '../src/models/model';
+import { rootModelInitialState } from '../src/models/Model';
 import { Repository } from '../src/models/Repository';
 import { SparqlClientImpl } from '../src/SparqlClientImpl';
-
-import { textFormatUri } from './schema/TestSchemas';
-import { vocabsFiles, shapesFiles, usersFiles, projectsFoldersFiles, samplesFiles, rootFolder } from './configTests';
 import { JsObject } from '../src/ObjectProvider';
+import { uploadFiles } from '../src/FileUpload';
+
+import { rdfServerUrl, rmRepositoryParam, rmRepositoryType } from './config';
+import { vocabsFiles, shapesFiles, usersFiles, projectsFoldersFiles, samplesFiles, rootFolder } from './configTests';
+import { textFormatUri } from './schema/TestSchemas';
+
 import { genTimestampedName, sleep } from './TestHelpers';
-import { getSnapshot } from 'mobx-state-tree';
 
 // See https://stackoverflow.com/questions/49603939/async-callback-was-not-invoked-within-the-5000ms-timeout-specified-by-jest-setti
 jest.setTimeout(500000);
@@ -40,11 +42,11 @@ beforeAll(async () => {
       rmRepositoryType,
     );
     repository.setId(rmRepositoryID);
-    await client.uploadFiles(vocabsFiles, rootFolder);
-    await client.uploadFiles(usersFiles, rootFolder);
-    await client.uploadFiles(projectsFoldersFiles, rootFolder);
-    await client.uploadFiles(shapesFiles, rootFolder);
-    await client.uploadFiles(samplesFiles, rootFolder);
+    await uploadFiles(client, vocabsFiles, rootFolder);
+    await uploadFiles(client, usersFiles, rootFolder);
+    await uploadFiles(client, projectsFoldersFiles, rootFolder);
+    await uploadFiles(client, shapesFiles, rootFolder);
+    await uploadFiles(client, samplesFiles, rootFolder);
     //await sleep(5000); // give RDF classifier some time to classify resources after upload
 
     await repository.ns.reloadNs();
@@ -87,7 +89,7 @@ describe('create-artifact-scenario', () => {
     const coll = repository.addColl('rm:ArtifactShape');
     await coll.loadColl();
     expect(coll).not.toBeUndefined();
-    let data = coll && coll.data !== undefined ? getSnapshot(coll.data) : [];
+    let data: any[] = coll && coll.data !== undefined ? getSnapshot(coll.data) : [];
     expect(data.length).toBe(15);
 
     //const element = data[1];

@@ -7,18 +7,20 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-import { rdfServerUrl, rmRepositoryParam, rmRepositoryType } from './config';
-import { rootModelInitialState } from '../src/models/model';
-import { Repository } from '../src/models/Repository';
-import { SparqlClientImpl } from '../src/SparqlClientImpl';
-
-import { vocabsFiles, shapesFiles, usersFiles, projectsFoldersFiles, samplesFiles, rootFolder } from './configTests';
-import { artifactSchema, usedInModuleSchema, usedInSchema } from './schema/TestSchemas';
 import { triple, variable, namedNode } from '@rdfjs/data-model';
-import { genTimestampedName } from './TestHelpers';
 import { when } from 'mobx';
 import { getSnapshot } from 'mobx-state-tree';
+
+import { rootModelInitialState } from '../src/models/Model';
+import { Repository } from '../src/models/Repository';
+import { SparqlClientImpl } from '../src/SparqlClientImpl';
 import { JsObject } from '../src/ObjectProvider';
+import { uploadFiles } from '../src/FileUpload';
+
+import { rdfServerUrl, rmRepositoryParam, rmRepositoryType } from './config';
+import { vocabsFiles, shapesFiles, usersFiles, projectsFoldersFiles, samplesFiles, rootFolder } from './configTests';
+import { artifactSchema, usedInModuleSchema, usedInSchema } from './schema/TestSchemas';
+import { genTimestampedName } from './TestHelpers';
 
 // See https://stackoverflow.com/questions/49603939/async-callback-was-not-invoked-within-the-5000ms-timeout-specified-by-jest-setti
 jest.setTimeout(50000);
@@ -39,11 +41,11 @@ beforeAll(async () => {
       rmRepositoryType,
     );
     repository.setId(rmRepositoryID);
-    await client.uploadFiles(vocabsFiles, rootFolder);
-    await client.uploadFiles(usersFiles, rootFolder);
-    await client.uploadFiles(projectsFoldersFiles, rootFolder);
-    await client.uploadFiles(shapesFiles, rootFolder);
-    await client.uploadFiles(samplesFiles, rootFolder);
+    await uploadFiles(client, vocabsFiles, rootFolder);
+    await uploadFiles(client, usersFiles, rootFolder);
+    await uploadFiles(client, projectsFoldersFiles, rootFolder);
+    await uploadFiles(client, shapesFiles, rootFolder);
+    await uploadFiles(client, samplesFiles, rootFolder);
     //await sleep(5000); // give RDF classifier some time to classify resources after upload
     await repository.ns.reloadNs();
   } catch (err) {

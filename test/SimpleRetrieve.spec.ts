@@ -8,16 +8,17 @@
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
 import { variable } from '@rdfjs/data-model';
-
-import { rdfServerUrl, rmRepositoryParam, rmRepositoryType } from './config';
-import { rootModelInitialState } from '../src/models/model';
-import { Repository } from '../src/models/Repository';
-import { SparqlClientImpl } from '../src/SparqlClientImpl';
-
-import { vocabsFiles, shapesFiles, usersFiles, projectsFoldersFiles, samplesFiles, rootFolder } from './configTests';
-import { genTimestampedName, selectHelper } from './TestHelpers';
 import { when } from 'mobx';
 import { getSnapshot } from 'mobx-state-tree';
+
+import { rootModelInitialState } from '../src/models/Model';
+import { Repository } from '../src/models/Repository';
+import { SparqlClientImpl } from '../src/SparqlClientImpl';
+import { uploadFiles } from '../src/FileUpload';
+
+import { rdfServerUrl, rmRepositoryParam, rmRepositoryType } from './config';
+import { vocabsFiles, shapesFiles, usersFiles, projectsFoldersFiles, samplesFiles, rootFolder } from './configTests';
+import { genTimestampedName, selectHelper } from './TestHelpers';
 
 // See https://stackoverflow.com/questions/49603939/async-callback-was-not-invoked-within-the-5000ms-timeout-specified-by-jest-setti
 jest.setTimeout(5000000);
@@ -38,11 +39,11 @@ beforeAll(async () => {
       rmRepositoryType,
     );
     repository.setId(rmRepositoryID);
-    await client.uploadFiles(vocabsFiles, rootFolder);
-    await client.uploadFiles(usersFiles, rootFolder);
-    await client.uploadFiles(projectsFoldersFiles, rootFolder);
-    await client.uploadFiles(samplesFiles, rootFolder);
-    await client.uploadFiles(shapesFiles, rootFolder);
+    await uploadFiles(client, vocabsFiles, rootFolder);
+    await uploadFiles(client, usersFiles, rootFolder);
+    await uploadFiles(client, projectsFoldersFiles, rootFolder);
+    await uploadFiles(client, samplesFiles, rootFolder);
+    await uploadFiles(client, shapesFiles, rootFolder);
     //await sleep(5000); // give RDF classifier some time to classify resources after upload
     await repository.ns.reloadNs();
   } catch (err) {
@@ -410,8 +411,8 @@ describe('LoadMore', () => {
     expect(data2.length).toBe(15);
     repository.removeColl(coll);
 
-    data.forEach((el, i) => expect(data2[i]).toEqual(el));
-    data2.slice(data.length).forEach((el) => expect(data).not.toContainEqual(el));
+    data.forEach((el: any, i: any) => expect(data2[i]).toEqual(el));
+    data2.slice(data.length).forEach((el: any) => expect(data).not.toContainEqual(el));
   });
 
   it('should async load incrementally additional data into Coll', (done) => {

@@ -8,11 +8,14 @@
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
 import jsonld from 'jsonld';
-import { rdfServerUrl, rmRepositoryParam, rmRepositoryType } from './config';
-import { rootModelInitialState } from '../src/models/model';
+
+import { rootModelInitialState } from '../src/models/Model';
 import { Repository } from '../src/models/Repository';
 import { SparqlClientImpl } from '../src/SparqlClientImpl';
+import { json2str } from '../src/ObjectProvider';
+import { uploadFiles } from '../src/FileUpload';
 
+import { rdfServerUrl, rmRepositoryParam, rmRepositoryType } from './config';
 import {
   vocabsFiles,
   shapesFiles,
@@ -23,7 +26,6 @@ import {
   usersFiles,
 } from './configTests';
 import { genTimestampedName } from './TestHelpers';
-import { json2str } from '../src/ObjectProvider';
 
 // See https://stackoverflow.com/questions/49603939/async-callback-was-not-invoked-within-the-5000ms-timeout-specified-by-jest-setti
 jest.setTimeout(50000);
@@ -43,11 +45,11 @@ beforeAll(async () => {
       rmRepositoryType,
     );
     repository.setId(rmRepositoryID);
-    await client.uploadFiles(vocabsFiles, rootFolder);
-    await client.uploadFiles(usersFiles, rootFolder);
-    await client.uploadFiles(projectsFoldersFiles, rootFolder);
-    await client.uploadFiles(samplesFiles, rootFolder);
-    await client.uploadFiles(shapesFiles, rootFolder);
+    await uploadFiles(client, vocabsFiles, rootFolder);
+    await uploadFiles(client, usersFiles, rootFolder);
+    await uploadFiles(client, projectsFoldersFiles, rootFolder);
+    await uploadFiles(client, samplesFiles, rootFolder);
+    await uploadFiles(client, shapesFiles, rootFolder);
   } catch (error) {
     if (error.response) {
       // Request made and server responded

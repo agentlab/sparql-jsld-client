@@ -1,6 +1,6 @@
 {
   "name": "@agentlab/sparql-jsld-client",
-  "version": "5.0.0",
+  "version": "5.0.0-rc.1",
   "description": "SPARQL JSON Schema Linked Data Client",
   "keywords": [
     "sparql",
@@ -69,20 +69,20 @@
     "@types/jest": "^26.0.23",
     "@types/json-schema": "^7.0.7",
     "@types/lodash": "^4.14.168",
-    "@types/node": "^14.14.43",
+    "@types/node": "^14.14.44",
     "@types/rdf-js": "4.0.1",
     "@types/sparqljs": "^3.1.1",
     "custom-env": "^2.0.1",
-    "@typescript-eslint/eslint-plugin": "^4.22.0",
-    "@typescript-eslint/parser": "^4.22.0",
+    "@typescript-eslint/eslint-plugin": "^4.22.1",
+    "@typescript-eslint/parser": "^4.22.1",
     "jest-extended": "^0.11.5",
     "tsdx": "^0.14.1",
     "tslib": "^2.2.0",
     "typescript": "^4.2.4"
   },
   "resolutions": {
-    "**/@typescript-eslint/eslint-plugin": "^4.22.0",
-    "**/@typescript-eslint/parser": "^4.22.0"
+    "**/@typescript-eslint/eslint-plugin": "^4.22.1",
+    "**/@typescript-eslint/parser": "^4.22.1"
   },
   "browser": {
     "_process": false,

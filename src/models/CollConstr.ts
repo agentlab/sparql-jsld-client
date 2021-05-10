@@ -44,6 +44,10 @@ export const EntConstr = types
      */
     '@type': types.maybe(types.string),
     /**
+     * IRI of a parent entity constraint
+     */
+    '@parent': types.maybe(types.string),
+    /**
      * could be class IRI, resolved from local schema reposiory (local cache) or from server
      * or could be 'private' schema (full qualified JS object)
      */
@@ -97,6 +101,10 @@ export const CollConstr = types
      * IRI of a type of collection constraint. Should be 'rm:CollConstr'
      */
     '@type': types.maybe(types.string),
+    /**
+     * IRI of a parent entity constraint
+     */
+    '@parent': types.maybe(types.string),
     /**
      * Ordered array of entity constraints. Could be linked by conditions fields
      */

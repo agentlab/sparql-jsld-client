@@ -676,13 +676,30 @@ function getPropFromCtxs(key: string, ctxs?: JsStrObjObj[]) {
 
 function convertSimpleTypes(val: string, type?: string) {
   if (type) {
-    if (type === 'xsd:integer' || type === 'xsd:int') {
+    if (
+      type === 'xsd:integer' ||
+      type === 'xsd:int' ||
+      type === 'xsd:long' ||
+      type === 'xsd:byte' ||
+      type === 'xsd:short'
+    ) {
       return parseInt(val, 10);
     } else if (type === 'xsd:boolean') {
       if (val === 'true') return true;
       if (val === 'false') return false;
-    } else if (type === 'xsd:double' || type === 'xsd:float') {
+    } else if (type === 'xsd:double' || type === 'xsd:float' || type === 'xsd:decimal') {
       return parseFloat(val);
+    } else if (
+      type === 'xsd:unsignedByte' ||
+      type === 'xsd:unsignedShort' ||
+      type === 'xsd:unsignedInt' ||
+      type === 'xsd:unsignedLong' ||
+      type === 'xsd:positiveInteger' ||
+      type === 'xsd:nonNegativeInteger' ||
+      type === 'xsd:negativeInteger' ||
+      type === 'xsd:nonPositiveInteger'
+    ) {
+      return parseInt(val, 10);
     }
   }
   return val;

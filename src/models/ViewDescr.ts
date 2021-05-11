@@ -15,8 +15,8 @@ import { arrDiff } from './Utils';
 import { CollConstr } from './CollConstr';
 
 export const ViewElement = types.model('ViewElement', {
-  //'@id': types.identifier, // JSON-LD object id of a view
-  //'@type': types.string, // JSON-LD class id of a View
+  '@id': types.maybe(types.string), // JSON-LD object id of a view
+  '@type': types.maybe(types.string), // JSON-LD class id of a View
   title: types.maybe(types.string),
   description: types.maybe(types.string),
   viewKind: types.maybe(types.string),
@@ -37,7 +37,7 @@ export const ViewDescr = types
   .model('ViewDescr', {
     '@id': types.identifier, // JSON-LD object id of a view
     '@type': types.string, // JSON-LD class id of a View
-    //'viewKind': types.string,
+    viewKind: types.maybe(types.string),
 
     title: types.maybe(types.string), // mandatory title
     description: types.maybe(types.string),

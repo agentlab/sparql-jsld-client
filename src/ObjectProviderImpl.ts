@@ -101,14 +101,35 @@ function propertyShapeToJsonSchemaProperty(
         schemaProp.contentMediaType = 'text/html';
         //schemaProp.format = 'date-time';
       } else if (shapeProp.datatype === 'xsd:string') schemaProp.type = 'string';
-      else if (shapeProp.datatype === 'xsd:integer') schemaProp.type = 'integer';
-      else if (shapeProp.datatype === 'xsd:positiveInteger') schemaProp.type = 'integer';
-      else if (shapeProp.datatype === 'xsd:decimal') schemaProp.type = 'integer';
+      else if (
+        shapeProp.datatype === 'xsd:integer' ||
+        shapeProp.datatype === 'xsd:int' ||
+        shapeProp.datatype === 'xsd:long' ||
+        shapeProp.datatype === 'xsd:byte' ||
+        shapeProp.datatype === 'xsd:short'
+      )
+        schemaProp.type = 'integer';
+      else if (
+        shapeProp.datatype === 'xsd:double' ||
+        shapeProp.datatype === 'xsd:float' ||
+        shapeProp.datatype === 'xsd:decimal'
+      )
+        schemaProp.type = 'number';
       else if (shapeProp.datatype === 'xsd:boolean') schemaProp.type = 'boolean';
       else if (shapeProp.datatype === 'xsd:base64Binary') {
         schemaProp.type = 'string';
         schemaProp.contentEncoding = 'base64';
-      }
+      } else if (
+        shapeProp.datatype === 'xsd:unsignedByte' ||
+        shapeProp.datatype === 'xsd:unsignedShort' ||
+        shapeProp.datatype === 'xsd:unsignedInt' ||
+        shapeProp.datatype === 'xsd:unsignedLong' ||
+        shapeProp.datatype === 'xsd:positiveInteger' ||
+        shapeProp.datatype === 'xsd:nonNegativeInteger' ||
+        shapeProp.datatype === 'xsd:negativeInteger' ||
+        shapeProp.datatype === 'xsd:nonPositiveInteger'
+      )
+        schemaProp.type = 'integer';
       schemaContexts[shapePropKey] = {
         '@id': shapePropUri,
         '@type': shapeProp.datatype,

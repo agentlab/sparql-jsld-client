@@ -130,7 +130,14 @@ export const Coll = types
         return getSnapshot(this.data);
       },
       dataByIri(iri: string) {
-        return self.dataIntrnl.find((e: any) => e['@id'] === iri);
+        return self.dataIntrnl.find((e: any) => {
+          // should take care of different element type API differences
+          const eType = getType(e);
+          if (isMapType(eType)) return e.get('@id') === iri; // [] returns undef in MST Map
+          if (isModelType(eType)) return e['@id'] === iri; // .get() returns exception in MST Model
+          const eSnp: any = getSnapshot(e); // MST Frozen???
+          return eSnp['@id'] === iri;
+        });
       },
     };
   })

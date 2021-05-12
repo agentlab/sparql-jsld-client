@@ -17,6 +17,9 @@ import {
   getSnapshot,
   IAnyStateTreeNode,
   IAnyComplexType,
+  isMapType,
+  getType,
+  isModelType,
 } from 'mobx-state-tree';
 
 import { JsObject } from '../ObjectProvider';

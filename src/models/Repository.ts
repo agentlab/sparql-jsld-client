@@ -175,8 +175,9 @@ export const Repository = types
         return collObs;
       },
 
+      //TODO: Is it possible to unify it with addColl?
       addCollByConstrRef(constr: any, opt: JsObject = {}, data: JsObject[] = []) {
-        let ccId = constr['@id'];
+        let ccId = typeof constr === 'object' ? constr['@id'] : constr;
         if (self.colls.has(ccId)) {
           console.warn('Attempt to replace coll: ignored', constr);
           return;

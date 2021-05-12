@@ -7,11 +7,16 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
+import { when } from 'mobx';
+
 import { ResourceSchema, ClassSchema } from '../schema/RdfsSchema';
 import { ArtifactShapeSchema, PropertyShapeSchema } from '../schema/ArtifactShapeSchema';
+import { JsObject } from '../ObjectProvider';
+import { SparqlClient } from '../SparqlClient';
 
 import { mstSchemas } from './Coll';
 import { ViewDescr } from './ViewDescr';
+import { Repository } from './Repository';
 
 export const rootModelInitialState = {
   repId: '',
@@ -59,3 +64,56 @@ mstSchemas['rm:View'] = ViewDescr;
 onPatch(rootStore, (snapshot) => {
   console.debug('Snapshot Patch: ', snapshot);
 });*/
+
+/**
+ * Collections Configs
+ */
+export interface CollState {
+  constr: any;
+  data: JsObject[];
+  opt?: JsObject;
+}
+
+export const createModelFromState = (
+  repId: string,
+  client: SparqlClient,
+  initialState: any,
+  additionalColls: CollState[] | undefined = undefined,
+): any => {
+  //@ts-ignore
+  const model = Repository.create(initialState, { client });
+  model.setId(repId);
+  model.ns.reloadNs();
+  if (additionalColls && additionalColls.length > 0) {
+    // wait until namespaces loads then add additionalState
+    when(
+      () => Object.keys(model.ns.currentJs).length > 5,
+      () => {
+        additionalColls.forEach((collState) => {
+          if (typeof collState.constr === 'object' && model.getColl(collState.constr['@id']) === undefined) {
+            try {
+              const coll = model.addColl(collState.constr, collState.opt, collState.data);
+              if (!coll) {
+                console.warn(`Warn: Coll insertion failed! Coll ${collState.constr['@id']} is undefined`);
+              }
+            } catch (err) {
+              console.error(`Err: Coll insertion failed! Coll ${collState.constr['@id']} is undefined`);
+              console.error(err);
+            }
+          } else if (typeof collState.constr === 'string' && model.getColl(collState.constr) === undefined) {
+            try {
+              const coll = model.addCollByConstrRef(collState.constr, collState.opt, collState.data);
+              if (!coll) {
+                console.warn(`Warn: Coll insertion failed! Coll ${collState.constr} is undefined`);
+              }
+            } catch (err) {
+              console.error(`Err: Coll insertion failed! Coll ${collState.constr} is undefined`);
+              console.error(err);
+            }
+          }
+        });
+      },
+    );
+  }
+  return model;
+};

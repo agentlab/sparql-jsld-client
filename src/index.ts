@@ -7,6 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
+export * from './FileUpload';
 export * from './ObjectProvider';
 export * from './ObjectProviderImpl';
 export * from './SparqlClient';

@@ -203,11 +203,14 @@ export const Coll = types
 
       changeCollConstr(constr: any) {},
 
-      addElem(elem: JsObject) {
-        const existEl = self.dataIntrnl.find((e: any) => e['@id'] === elem['@id']);
-        if (!existEl) {
-          self.dataIntrnl.push(elem);
-        }
+      /**
+       * Adds single element or elements array into the dataInternal
+       * @param elem -- element or element array
+       */
+      addElems(elems: JsObject | JsObject[]) {
+        if (!Array.isArray(elems)) elems = [elems];
+        elems = elems.filter((elem: any) => !self.dataIntrnl.find((e: any) => e['@id'] === elem['@id']));
+        self.dataIntrnl.push(elems);
       },
 
       delElem: flow(function* delElem(elem: JsObject | string) {

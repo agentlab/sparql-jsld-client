@@ -1,5 +1,5 @@
 {
-  "include": ["src", "types", "test/Model.spec.ts"],
+  "include": ["src"],
   "compilerOptions": {
     "target": "esnext",
     "module": "esnext",
@@ -10,9 +10,9 @@
     "rootDir": "./src",
     "strict": true,
     "alwaysStrict": true,
-//    "strictPropertyInitialization": true,
-//    "noUnusedLocals": true,
-//    "noUnusedParameters": true,
+    //"strictPropertyInitialization": true,
+    //"noUnusedLocals": true,
+    //"noUnusedParameters": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "moduleResolution": "node",

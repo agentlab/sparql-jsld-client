@@ -74,6 +74,15 @@ export interface CollState {
   opt?: JsObject;
 }
 
+/**
+ * Adds new Coll with CollConstr and dataIntrnl to the model
+ * If CollConstr with '@id' existed, adds data to the Coll's dataIntrnl
+ * @param repId
+ * @param client
+ * @param initialState
+ * @param additionalColls
+ * @returns
+ */
 export const createModelFromState = (
   repId: string,
   client: SparqlClient,
@@ -90,26 +99,38 @@ export const createModelFromState = (
       () => Object.keys(model.ns.currentJs).length > 5,
       () => {
         additionalColls.forEach((collState) => {
-          if (typeof collState.constr === 'object' && model.getColl(collState.constr['@id']) === undefined) {
-            try {
-              const coll = model.addColl(collState.constr, collState.opt, collState.data);
-              if (!coll) {
-                console.warn(`Warn: Coll insertion failed! Coll ${collState.constr['@id']} is undefined`);
+          let existedColl;
+          // Add new Coll with CollConstr and dataIntrnl to the model
+          if (typeof collState.constr === 'object') {
+            existedColl = model.getColl(collState.constr['@id']);
+            if (existedColl === undefined) {
+              try {
+                const coll = model.addColl(collState.constr, collState.opt, collState.data);
+                if (!coll) {
+                  console.warn(`Warn: Coll insertion failed! Coll ${collState.constr['@id']} is undefined`);
+                }
+              } catch (err) {
+                console.error(`Err: Coll insertion failed! Coll ${collState.constr['@id']} is undefined`);
+                console.error(err);
               }
-            } catch (err) {
-              console.error(`Err: Coll insertion failed! Coll ${collState.constr['@id']} is undefined`);
-              console.error(err);
             }
-          } else if (typeof collState.constr === 'string' && model.getColl(collState.constr) === undefined) {
-            try {
-              const coll = model.addCollByConstrRef(collState.constr, collState.opt, collState.data);
-              if (!coll) {
-                console.warn(`Warn: Coll insertion failed! Coll ${collState.constr} is undefined`);
+          } else if (typeof collState.constr === 'string') {
+            existedColl = model.getColl(collState.constr);
+            if (existedColl === undefined) {
+              try {
+                const coll = model.addCollByConstrRef(collState.constr, collState.opt, collState.data);
+                if (!coll) {
+                  console.warn(`Warn: Coll insertion failed! Coll ${collState.constr} is undefined`);
+                }
+              } catch (err) {
+                console.error(`Err: Coll insertion failed! Coll ${collState.constr} is undefined`);
+                console.error(err);
               }
-            } catch (err) {
-              console.error(`Err: Coll insertion failed! Coll ${collState.constr} is undefined`);
-              console.error(err);
             }
+          }
+          // If CollConstr with '@id' existed, adds data to the Coll's dataIntrnl
+          if (existedColl !== undefined && collState.data && Array.isArray(collState.data)) {
+            existedColl.addElems(collState.data);
           }
         });
       },

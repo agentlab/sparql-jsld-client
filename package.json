@@ -2,6 +2,12 @@
   "name": "@agentlab/sparql-jsld-client",
   "version": "5.0.0-rc.5",
   "description": "SPARQL JSON Schema Linked Data Client",
+  "license": "GPL-3.0",
+  "author": "Alexey Ivanov <amivanoff@gmail.com>",
+  "contributors": [
+    "Alexey Ivanov <amivanoff@gmail.com>",
+    "Ivan Shport"
+  ],
   "keywords": [
     "sparql",
     "json-ld",
@@ -13,12 +19,6 @@
     "trig",
     "semantic web",
     "linked data"
-  ],
-  "license": "EPL-2.0",
-  "author": "Alexey Ivanov <amivanoff@gmail.com>",
-  "contributors": [
-    "Alexey Ivanov <amivanoff@gmail.com>",
-    "Ivan Shport"
   ],
   "homepage": "https://github.com/agentlab/sparql-jsld-client#README.md",
   "repository": {

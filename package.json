@@ -1,6 +1,6 @@
 {
   "name": "@agentlab/sparql-jsld-client",
-  "version": "5.0.0-rc.7",
+  "version": "5.0.0-rc.8",
   "description": "SPARQL JSON Schema Linked Data Client",
   "license": "GPL-3.0",
   "author": "Alexey Ivanov <amivanoff@gmail.com>",
@@ -67,6 +67,10 @@
     "uuid62": ">=1.0.1"
   },
   "dependencies": {
+    "@types/json-schema": "^7.0.7",
+    "@types/lodash-es": "^4.17.4",
+    "@types/rdf-js": "^4.0.2",
+    "@types/sparqljs": "^3.1.2",
     "@rdfjs/data-model": "^1.2.0",
     "axios": "^0.21.1",
     "is-url": "^1.2.4",
@@ -89,11 +93,7 @@
     "@rollup/plugin-typescript": "^8.2.1",
     "@types/is-url": "^1.2.29",
     "@types/jest": "^26.0.23",
-    "@types/json-schema": "^7.0.7",
-    "@types/lodash-es": "^4.17.4",
     "@types/node": "^15.12.4",
-    "@types/rdf-js": "^4.0.2",
-    "@types/sparqljs": "^3.1.2",
     "@typescript-eslint/eslint-plugin": "^4.28.0",
     "@typescript-eslint/parser": "^4.28.0",
     "custom-env": "^2.0.1",

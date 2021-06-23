@@ -9,6 +9,7 @@
  ********************************************************************************/
 import uuid62 from 'uuid62';
 import { isArray } from 'lodash-es';
+import { types, getEnv, Instance } from 'mobx-state-tree';
 
 import { JsObject } from '../ObjectProvider';
 import { abbreviateIri } from '../SparqlGen';
@@ -407,6 +408,4 @@ export const Repository = types
 
 export type IRepository = Instance<typeof Repository>;
 
-function addMissingId(data: any | undefined) {
-  if (data && typeof data === 'object' && !data['@id']) data['@id'] = '_' + uuid62.v4();
-}
+function addMissingId(data: any | undefined) {}

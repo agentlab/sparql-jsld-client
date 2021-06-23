@@ -22,6 +22,7 @@ import { rdfServerUrl, rmRepositoryParam, rmRepositoryType } from './config';
 import { vocabsFiles, shapesFiles, usersFiles, projectsFoldersFiles, samplesFiles, rootFolder } from './configTests';
 import { ViewShapeSchema } from './schema/TestSchemas';
 import { ArtifactShapeSchema, PropertyShapeSchema } from '../src/schema/ArtifactShapeSchema';
+import { genTimestampedName } from './TestHelpers';
 
 jest.setTimeout(50000);
 
@@ -29,10 +30,6 @@ const client = new SparqlClientImpl(rdfServerUrl);
 
 const repository = Repository.create(rootModelInitialState, { client });
 let rmRepositoryID: string;
-
-export function genTimestampedName(name: string): string {
-  return name + '_' + moment().format('YYYYMMDD_HHmmssSSSS');
-}
 
 beforeAll(async () => {
   rmRepositoryID = genTimestampedName('test_UiModel');
@@ -55,6 +52,7 @@ beforeAll(async () => {
 
     await repository.ns.reloadNs();
   } catch (err) {
+    // eslint-disable-next-line no-undef
     fail(err);
   }
 });
@@ -63,6 +61,7 @@ afterAll(async () => {
   try {
     await client.deleteRepository(rmRepositoryID);
   } catch (err) {
+    // eslint-disable-next-line no-undef
     fail(err);
   }
 });
@@ -359,7 +358,7 @@ const viewCollConstr = {
   ],
 };
 
-export const completeViewDescr2 = {
+const completeViewDescr2 = {
   '@id': 'rm:DataModelView',
   '@type': 'rm:View',
   title: 'Модель данных',
@@ -393,73 +392,77 @@ export const completeViewDescr2 = {
 };
 
 describe('UiModel', () => {
-  it('UiModel loads all colls initially from collConstrs in ViewDescr', (done) => {
-    const coll0 = repository.addColl(viewCollConstr, { updPeriod: undefined }, [completeViewDescr]);
-    expect(coll0).not.toBeNull();
-    // somewere in the GUI far far away... we'll get coll by it's iri or collConstr object
-    const coll = repository.getColl(viewCollConstr['@id']);
-    expect(coll).not.toBeNull();
-    //const ss = getSnapshot(coll as any);
-    expect(coll?.data.length).toBe(1);
-    const view: any = coll?.dataByIri('rm:projectView');
-    //const ss = getSnapshot(view);
-    const viewCollsConstrs = view.collsConstrs;
-    expect(viewCollsConstrs.length).toBe(completeViewDescr.collsConstrs.length);
-    const collsFromView = viewCollsConstrs.map((vcc: any) => {
-      const c = repository.getColl(vcc);
-      const client = c?.collConstr?.client;
-      return c;
+  it('UiModel loads all colls initially from collConstrs in ViewDescr', () => {
+    return new Promise<void>((done) => {
+      const coll0 = repository.addColl(viewCollConstr, { updPeriod: undefined }, [completeViewDescr]);
+      expect(coll0).not.toBeNull();
+      // somewere in the GUI far far away... we'll get coll by it's iri or collConstr object
+      const coll = repository.getColl(viewCollConstr['@id']);
+      expect(coll).not.toBeNull();
+      //const ss = getSnapshot(coll as any);
+      expect(coll?.data.length).toBe(1);
+      const view: any = coll?.dataByIri('rm:projectView');
+      //const ss = getSnapshot(view);
+      const viewCollsConstrs = view.collsConstrs;
+      expect(viewCollsConstrs.length).toBe(completeViewDescr.collsConstrs.length);
+      const collsFromView = viewCollsConstrs.map((vcc: any) => {
+        const c = repository.getColl(vcc);
+        const client = c?.collConstr?.client;
+        return c;
+      });
+      when(
+        () => {
+          if (collsFromView.length === completeViewDescr.collsConstrs.length) {
+            let r = true;
+            collsFromView.forEach((cfv: any) => {
+              //const ss = getSnapshot(cfv);
+              const data = cfv.data;
+              if (r && data.length === 0) r = false;
+            });
+            return r;
+          }
+          return false;
+        },
+        () => {
+          //let ss: any = getSnapshot(view.viewDescr.collsConstrs);
+          //console.log(ss);
+          //ss = getSnapshot(view.colls);
+          //console.log(ss);
+          done();
+        },
+      );
     });
-    when(
-      () => {
-        if (collsFromView.length === completeViewDescr.collsConstrs.length) {
-          let r = true;
-          collsFromView.forEach((cfv: any) => {
-            //const ss = getSnapshot(cfv);
-            const data = cfv.data;
-            if (r && data.length === 0) r = false;
-          });
-          return r;
-        }
-        return false;
-      },
-      () => {
-        //let ss: any = getSnapshot(view.viewDescr.collsConstrs);
-        //console.log(ss);
-        //ss = getSnapshot(view.colls);
-        //console.log(ss);
-        done();
-      },
-    );
   });
 
-  it('UiModel loads all colls in ViewDescr', (done) => {
-    const coll0 = repository.addColl(viewCollConstr, { updPeriod: undefined, lastSynced: moment.now() }, [
-      completeViewDescr2,
-    ]);
-    expect(coll0).not.toBeNull();
-    // somewere in the GUI far far away... we'll get coll by it's iri or collConstr object
-    const coll = repository.getColl(viewCollConstr['@id']);
-    //expect(coll).not.toBeNull();
-    //const ss = getSnapshot(coll as any);
-    //expect(coll?.data.length).toBe(1);
-    const view: any = coll?.dataByIri('rm:DataModelView');
-    when(
-      () => {
-        let r = true;
-        completeViewDescr2.collsConstrs.forEach((vcc: any) => {
-          const colls = repository.colls;
-          const collsSS = getSnapshot(colls);
-          const cfv = colls.get(vcc['@id']);
-          const data: any = cfv?.dataJs;
-          if (r && (!data || data.length === 0)) r = false;
-        });
-        return r;
-      },
-      () => {
-        done();
-      },
-    );
+  it('UiModel loads all colls in ViewDescr', () => {
+    return new Promise<void>((done) => {
+      const coll0 = repository.addColl(viewCollConstr, { updPeriod: undefined, lastSynced: moment.now() }, [
+        completeViewDescr2,
+      ]);
+      expect(coll0).not.toBeNull();
+      // somewere in the GUI far far away... we'll get coll by it's iri or collConstr object
+      const coll = repository.getColl(viewCollConstr['@id']);
+      //expect(coll).not.toBeNull();
+      //const ss = getSnapshot(coll as any);
+      //expect(coll?.data.length).toBe(1);
+      const view: any = coll?.dataByIri('rm:DataModelView');
+      when(
+        () => {
+          let r = true;
+          completeViewDescr2.collsConstrs.forEach((vcc: any) => {
+            const colls = repository.colls;
+            const collsSS = getSnapshot(colls);
+            const cfv = colls.get(vcc['@id']);
+            const data: any = cfv?.dataJs;
+            if (r && (!data || data.length === 0)) r = false;
+          });
+          return r;
+        },
+        () => {
+          done();
+        },
+      );
+    });
   });
 
   /*it('UiModel loads all colls from collConstrs added to ViewDescr', (done) => {

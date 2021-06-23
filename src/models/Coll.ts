@@ -188,7 +188,7 @@ export const Coll = types
 
       loadMore: flow(function* loadMore() {
         if (self.collConstr) {
-          let collConstr = {
+          const collConstr = {
             ...getSnapshot<ICollConstrSnapshotOut>(self.collConstr),
             limit: self.pageSize,
             offset: self.dataIntrnl.length,
@@ -204,42 +204,68 @@ export const Coll = types
       changeCollConstr(constr: any) {},
 
       /**
-       * Adds single element or elements array into the dataInternal
+       * Adds single element or elements array into Coll's dataInternal
        * @param elem -- element or element array
        */
       addElems(elems: JsObject | JsObject[]) {
+        if (!elems) return;
         if (!Array.isArray(elems)) elems = [elems];
         elems = elems.filter((elem: any) => !self.dataIntrnl.find((e: any) => e['@id'] === elem['@id']));
         self.dataIntrnl.push(elems);
       },
 
+      /**
+       * Delete element from Coll by string @id or @id property in object
+       * @param elem -- object with @id or string id
+       * @returns deleted object or null if no deletion occured
+       */
       delElem: flow(function* delElem(elem: JsObject | string) {
-        if (!elem) return null;
-        if (self.collConstr) {
-          if (typeof elem !== 'string') elem = elem['@id'];
-          let collConstr: any = getSnapshot<ICollConstrSnapshotOut>(self.collConstr);
-          // filter-out query modifiers like orderBy, limit...
-          collConstr = {
-            '@id': collConstr['@id'],
-            '@type': collConstr['@type'],
-            entConstrs: collConstr.entConstrs,
-          };
-          yield deleteObjectSnapshot(rep.schemas, rep.ns.currentJs, client, collConstr, { '@_id': elem });
-          //@ts-ignore
-          return self.delElemInternal(elem);
+        if (!elem || !self.collConstr) return null;
+        if (typeof elem !== 'string') {
+          elem = elem['@id'];
+          if (!elem) return null;
         }
-        return null;
+        let collConstr: any = getSnapshot<ICollConstrSnapshotOut>(self.collConstr);
+        // filter-out query modifiers like orderBy, limit...
+        collConstr = {
+          '@id': collConstr['@id'],
+          '@type': collConstr['@type'],
+          entConstrs: collConstr.entConstrs,
+        };
+        yield deleteObjectSnapshot(rep.schemas, rep.ns.currentJs, client, collConstr, { '@_id': elem });
+        //@ts-ignore
+        return self.delElemInternal(elem);
       }),
 
-      delAll() {},
+      /**
+       * Delete all elements from Coll
+       */
+      delAll() {
+        self.dataIntrnl.clear();
+      },
 
       delElemInternal(elem: string) {
+        if (!elem) return null;
         const i = self.dataIntrnl.findIndex((e: any) => e.get('@id') === elem);
         if (i >= 0) {
           return self.dataIntrnl.spliceWithArray(i, 1);
         }
         return null;
       },
+
+      /**
+       * Update element in Coll with the same @id property as in elem object
+       * @param elem -- object with @id property and other porperties for update
+       * @returns original object before modification or null if no update occured
+       */
+      updElem(elem: JsObject) {
+        if (!elem || !elem['@id']) return null;
+        const i = self.dataIntrnl.findIndex((e: any) => e.get('@id') === elem);
+        if (i >= 0) {
+          return self.dataIntrnl.spliceWithArray(i, 1, elem);
+        }
+        return null;
+      },
     };
   });
-export interface IColl extends Instance<typeof Coll> {}
+export type IColl = Instance<typeof Coll>;

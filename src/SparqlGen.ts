@@ -13,7 +13,7 @@ import { Quad, NamedNode, Variable } from 'rdf-js';
 import { literal, namedNode, triple, variable } from '@rdfjs/data-model';
 import { BgpPattern, Generator, OptionalPattern } from 'sparqljs';
 
-import { Bindings } from 'SparqlClient';
+import { Bindings } from './SparqlClient';
 import {
   JSONSchema6forRdf,
   JSONSchema6forRdfProperty,
@@ -273,7 +273,7 @@ export function abbreviateIri(fullIri: string, prefixes: JsStrObj): string {
   let nsEntries: { prefix: string; ns: string }[] = [];
   if (fullIri && !fullIri.startsWith('urn:')) {
     Object.keys(prefixes).forEach((prefix) => {
-      let ns = prefixes[prefix];
+      const ns = prefixes[prefix];
       if (ns && fullIri.startsWith(ns)) nsEntries.push({ prefix, ns });
     });
     if (nsEntries.length > 1) {
@@ -908,8 +908,8 @@ export function getExtendedFilter(
       default:
         break;
     }
-  } else if (schemaProperty.type === 'array') {
-  }
+  } /*else if (schemaProperty.type === 'array') {
+  }*/
 
   const propUri = getSchemaPropUri(entConstr.schema, filterKey);
   switch (filterProperty.relation) {
@@ -1053,7 +1053,7 @@ export function getInternalCollConstrs(
 
   for (let index = 0; index < collConstr.entConstrs.length; index++) {
     const constr = collConstr.entConstrs[index] as EntConstrData;
-    let schema = constr.schema;
+    const schema = constr.schema;
     if (schema.required === undefined) schema.required = [];
 
     const uriVar = genUniqueVarName2('eIri', index, collConstr.entConstrs);

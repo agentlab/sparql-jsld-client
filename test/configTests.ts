@@ -22,7 +22,6 @@ export const testNs: JsStrObj = {
   schema: 'http://schema.org/',
   oslc: 'http://open-services.net/ns/core#',
   //oslc_rm: 'http://open-services.net/ns/rm#',
-  // eslint-disable-next-line @typescript-eslint/camelcase
   oslc_asset: 'http://open-services.net/ns/asset#',
   sh: 'http://www.w3.org/ns/shacl#',
 

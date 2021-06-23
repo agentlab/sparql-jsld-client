@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
 import fs from 'fs';
-import { FileUploadConfig, SparqlClient } from 'SparqlClient';
+import { FileUploadConfig, SparqlClient } from './SparqlClient';
 
 export async function uploadFiles(client: SparqlClient, files: FileUploadConfig[], rootFolder = ''): Promise<void> {
   //console.debug('uploadFiles ', files);

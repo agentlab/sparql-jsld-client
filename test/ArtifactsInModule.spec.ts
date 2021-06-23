@@ -49,6 +49,7 @@ beforeAll(async () => {
     //await sleep(5000); // give RDF classifier some time to classify resources after upload
     await repository.ns.reloadNs();
   } catch (err) {
+    // eslint-disable-next-line no-undef
     fail(err);
   }
 });
@@ -57,6 +58,7 @@ afterAll(async () => {
   try {
     await client.deleteRepository(rmRepositoryID);
   } catch (err) {
+    // eslint-disable-next-line no-undef
     fail(err);
   }
 });
@@ -131,108 +133,112 @@ const usedInModuleCollConstrJs: any = {
 };
 
 describe('ArtifactsInModules query should return Module UsedInModules with associated Artifact', () => {
-  it('sorted by bookOrder', (done) => {
-    // not nessesary to add, it could be retrieved from server by type IRI
-    // used here to increase predictability
-    //provider.addSchema(artifactSchema);
-    //provider.addSchema(usedInSchema);
-    //provider.addSchema(usedInModuleSchema);
+  it('sorted by bookOrder', () => {
+    return new Promise<void>((done) => {
+      // not nessesary to add, it could be retrieved from server by type IRI
+      // used here to increase predictability
+      //provider.addSchema(artifactSchema);
+      //provider.addSchema(usedInSchema);
+      //provider.addSchema(usedInModuleSchema);
 
-    const coll = repository.addColl(usedInModuleCollConstrJs /*{ lazy: false }*/);
-    expect(coll).not.toBeUndefined();
-    when(
-      () => coll !== undefined && coll.data.length > 0,
-      () => {
-        const linksAndArtifacts: JsObject[] = getSnapshot(coll?.data);
-        expect(linksAndArtifacts.length).toBe(3);
-        expect(linksAndArtifacts[0]).toMatchObject({
-          '@id': 'reqs:_M1HusThYEem2Z_XixsC3pQ',
-          '@type': 'rmUserTypes:UsedInModule',
-          bookOrder: 1,
-          created: '2014-02-10T10:12:16.000Z',
-          creator: 'users:amivanoff',
-          depth: 1,
-          modified: '2014-02-10T10:12:16.000Z',
-          modifiedBy: 'users:amivanoff',
-          object: 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml',
-          parentBinding: 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml',
-          processArea: 'projects:gishbbProject',
-          sectionNumber: '0-1',
-          subject: {
-            '@id': 'cpgu:_tHAikozUEeOiy8owVBW5pQ',
-            '@type': 'cpgu:Группировка',
-            artifactFormat: 'rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Text',
-            assetFolder: 'folders:samples_module',
+      const coll = repository.addColl(usedInModuleCollConstrJs /*{ lazy: false }*/);
+      expect(coll).not.toBeUndefined();
+      when(
+        () => coll !== undefined && coll.data.length > 0,
+        () => {
+          const linksAndArtifacts: JsObject[] = getSnapshot(coll?.data);
+          expect(linksAndArtifacts.length).toBe(3);
+          expect(linksAndArtifacts[0]).toMatchObject({
+            '@id': 'reqs:_M1HusThYEem2Z_XixsC3pQ',
+            '@type': 'rmUserTypes:UsedInModule',
+            bookOrder: 1,
             created: '2014-02-10T10:12:16.000Z',
             creator: 'users:amivanoff',
-            hasChild: true,
-            identifier: 30001,
+            depth: 1,
             modified: '2014-02-10T10:12:16.000Z',
             modifiedBy: 'users:amivanoff',
+            object: 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml',
+            parentBinding: 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml',
             processArea: 'projects:gishbbProject',
-            title: 'ТН ВЭД ТС',
-          },
-        });
-        repository.removeColl(coll);
-        done();
-      },
-    );
+            sectionNumber: '0-1',
+            subject: {
+              '@id': 'cpgu:_tHAikozUEeOiy8owVBW5pQ',
+              '@type': 'cpgu:Группировка',
+              artifactFormat: 'rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Text',
+              assetFolder: 'folders:samples_module',
+              created: '2014-02-10T10:12:16.000Z',
+              creator: 'users:amivanoff',
+              hasChild: true,
+              identifier: 30001,
+              modified: '2014-02-10T10:12:16.000Z',
+              modifiedBy: 'users:amivanoff',
+              processArea: 'projects:gishbbProject',
+              title: 'ТН ВЭД ТС',
+            },
+          });
+          repository.removeColl(coll);
+          done();
+        },
+      );
+    });
   });
 
-  it('sorted by ASC bookOrder', (done) => {
-    // not nessesary to add, it could be retrieved from server by type IRI
-    // used here to increase predictability
-    //provider.addSchema(artifactSchema);
-    //provider.addSchema(usedInSchema);
-    //provider.addSchema(usedInModuleSchema);
+  it('sorted by ASC bookOrder', () => {
+    return new Promise<void>((done) => {
+      // not nessesary to add, it could be retrieved from server by type IRI
+      // used here to increase predictability
+      //provider.addSchema(artifactSchema);
+      //provider.addSchema(usedInSchema);
+      //provider.addSchema(usedInModuleSchema);
 
-    const coll = repository.addColl({
-      ...usedInModuleCollConstrJs,
-      orderBy: [
-        {
-          expression: variable('bookOrder0'),
-          descending: false,
-        },
-      ],
-    });
-    expect(coll).not.toBeUndefined();
-    when(
-      () => coll !== undefined && coll.data.length > 0,
-      () => {
-        const linksAndArtifacts: JsObject[] = getSnapshot(coll?.data);
-        expect(linksAndArtifacts.length).toBe(3);
-        expect(linksAndArtifacts[0]).toMatchObject({
-          '@id': 'reqs:_M1HusThYEem2Z_XixsC3pQ',
-          '@type': 'rmUserTypes:UsedInModule',
-          processArea: 'projects:gishbbProject',
-          bookOrder: 1,
-          depth: 1,
-          parentBinding: 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml',
-          sectionNumber: '0-1',
-          modifiedBy: 'users:amivanoff',
-          created: '2014-02-10T10:12:16.000Z',
-          creator: 'users:amivanoff',
-          modified: '2014-02-10T10:12:16.000Z',
-          object: 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml',
-          subject: {
-            '@id': 'cpgu:_tHAikozUEeOiy8owVBW5pQ',
-            '@type': 'cpgu:Группировка',
+      const coll = repository.addColl({
+        ...usedInModuleCollConstrJs,
+        orderBy: [
+          {
+            expression: variable('bookOrder0'),
+            descending: false,
+          },
+        ],
+      });
+      expect(coll).not.toBeUndefined();
+      when(
+        () => coll !== undefined && coll.data.length > 0,
+        () => {
+          const linksAndArtifacts: JsObject[] = getSnapshot(coll?.data);
+          expect(linksAndArtifacts.length).toBe(3);
+          expect(linksAndArtifacts[0]).toMatchObject({
+            '@id': 'reqs:_M1HusThYEem2Z_XixsC3pQ',
+            '@type': 'rmUserTypes:UsedInModule',
             processArea: 'projects:gishbbProject',
-            artifactFormat: 'rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Text',
-            assetFolder: 'folders:samples_module',
+            bookOrder: 1,
+            depth: 1,
+            parentBinding: 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml',
+            sectionNumber: '0-1',
             modifiedBy: 'users:amivanoff',
             created: '2014-02-10T10:12:16.000Z',
             creator: 'users:amivanoff',
-            identifier: 30001,
             modified: '2014-02-10T10:12:16.000Z',
-            title: 'ТН ВЭД ТС',
-            hasChild: true,
-          },
-        });
-        repository.removeColl(coll);
-        done();
-      },
-    );
+            object: 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml',
+            subject: {
+              '@id': 'cpgu:_tHAikozUEeOiy8owVBW5pQ',
+              '@type': 'cpgu:Группировка',
+              processArea: 'projects:gishbbProject',
+              artifactFormat: 'rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Text',
+              assetFolder: 'folders:samples_module',
+              modifiedBy: 'users:amivanoff',
+              created: '2014-02-10T10:12:16.000Z',
+              creator: 'users:amivanoff',
+              identifier: 30001,
+              modified: '2014-02-10T10:12:16.000Z',
+              title: 'ТН ВЭД ТС',
+              hasChild: true,
+            },
+          });
+          repository.removeColl(coll);
+          done();
+        },
+      );
+    });
   });
 
   //TODO: sorting is not working

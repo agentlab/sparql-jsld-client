@@ -7,14 +7,14 @@
  *
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
-import cloneDeep from 'lodash/cloneDeep';
+import { cloneDeep } from 'lodash-es';
 import { AxiosResponse } from 'axios';
 
 import { triple, variable } from '@rdfjs/data-model';
 import { Update } from 'sparqljs';
 
-import { JsObject } from 'ObjectProvider';
-import { SparqlClient } from 'SparqlClient';
+import { JsObject } from './ObjectProvider';
+import { SparqlClient } from './SparqlClient';
 import {
   addprops2vars2props,
   addTo,

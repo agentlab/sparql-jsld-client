@@ -8,9 +8,7 @@
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
 import uuid62 from 'uuid62';
-import isArray from 'lodash/isArray';
-
-import { types, getEnv, Instance } from 'mobx-state-tree';
+import { isArray } from 'lodash-es';
 
 import { JsObject } from '../ObjectProvider';
 import { abbreviateIri } from '../SparqlGen';
@@ -160,7 +158,7 @@ export const Repository = types
             yield self.schemas.getSchemaByIri(constr.schema);
           }
         };*/
-        let ccId = collConstr['@id'];
+        const ccId = collConstr['@id'];
         //const schemas = getSnapshot(self.schemas);
         const collJs: any = {
           '@id': ccId,
@@ -177,7 +175,7 @@ export const Repository = types
 
       //TODO: Is it possible to unify it with addColl?
       addCollByConstrRef(constr: any, opt: JsObject = {}, data: JsObject[] = []) {
-        let ccId = typeof constr === 'object' ? constr['@id'] : constr;
+        const ccId = typeof constr === 'object' ? constr['@id'] : constr;
         if (self.colls.has(ccId)) {
           console.warn('Attempt to replace coll: ignored', constr);
           return;
@@ -212,7 +210,7 @@ export const Repository = types
       //////////  FORM  ///////////
       onSaveFormData(formId: string) {},
       onCancelForm(id: string) {},
-      setEditing(schemaUri: string, state: boolean, reset: boolean = false) {
+      setEditing(schemaUri: string, state: boolean, reset = false) {
         if (self.editingData.get(schemaUri) !== state) {
           self.editingData.set(schemaUri, state);
           //if (schemaUri === 'root' && this.setParentEditing) {
@@ -407,7 +405,7 @@ export const Repository = types
     };
   });
 
-export interface IRepository extends Instance<typeof Repository> {}
+export type IRepository = Instance<typeof Repository>;
 
 function addMissingId(data: any | undefined) {
   if (data && typeof data === 'object' && !data['@id']) data['@id'] = '_' + uuid62.v4();

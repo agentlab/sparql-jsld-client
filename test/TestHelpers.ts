@@ -14,6 +14,7 @@ export function genTimestampedName(name: string): string {
   return name + '_' + moment().format('YYYYMMDD_HHmmssSSSS');
 }
 
+// eslint-disable-next-line no-undef
 export function sleep(ms: number): Promise<NodeJS.Timeout> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }

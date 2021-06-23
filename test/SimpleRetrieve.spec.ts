@@ -47,6 +47,7 @@ beforeAll(async () => {
     //await sleep(5000); // give RDF classifier some time to classify resources after upload
     await repository.ns.reloadNs();
   } catch (err) {
+    // eslint-disable-next-line no-undef
     fail(err);
   }
 });
@@ -55,6 +56,7 @@ afterAll(async () => {
   try {
     await client.deleteRepository(rmRepositoryID);
   } catch (err) {
+    // eslint-disable-next-line no-undef
     fail(err);
   }
 });
@@ -119,7 +121,7 @@ describe('SimpleRetrieve', () => {
 
   it('should return NO Artifacts with unexisted values', async () => {
     await repository.schemas.loadSchemaByClassIri('rm:Artifact');
-    let schema: any = repository.schemas.getOrLoadSchemaByClassIri('rm:Artifact');
+    const schema: any = repository.schemas.getOrLoadSchemaByClassIri('rm:Artifact');
     await selectHelper(
       repository,
       {
@@ -273,7 +275,7 @@ describe('SimpleRetrieve', () => {
   });
 
   it('should return ProjectView queries', async () => {
-    let collConstr: any = {
+    const collConstr: any = {
       // globally unique ID of this Query object, could be used for references in mobx JSON-LD storage or server storage, not processed by query generator
       '@id': 'rm:ProjectViewClass_Artifacts_Query',
       '@type': 'rm:Query',
@@ -415,32 +417,34 @@ describe('LoadMore', () => {
     data2.slice(data.length).forEach((el: any) => expect(data).not.toContainEqual(el));
   });
 
-  it('should async load incrementally additional data into Coll', (done) => {
-    const coll = repository.addColl({
-      entConstrs: [
-        {
-          schema: 'rm:ArtifactShape',
-        },
-      ],
-      limit: 10,
-    });
-    expect(coll).not.toBeUndefined();
-
-    const disp1 = when(
-      () => coll !== undefined && coll.data.length === 10,
-      () => {
-        disp1();
-        const disp2 = when(
-          () => coll !== undefined && coll.data.length === 15,
-          () => {
-            disp2();
-            repository.removeColl(coll);
-            done();
+  it('should async load incrementally additional data into Coll', () => {
+    return new Promise<void>((done) => {
+      const coll = repository.addColl({
+        entConstrs: [
+          {
+            schema: 'rm:ArtifactShape',
           },
-        );
-        coll.loadMore();
-      },
-    );
-    coll.loadColl();
+        ],
+        limit: 10,
+      });
+      expect(coll).not.toBeUndefined();
+
+      const disp1 = when(
+        () => coll !== undefined && coll.data.length === 10,
+        () => {
+          disp1();
+          const disp2 = when(
+            () => coll !== undefined && coll.data.length === 15,
+            () => {
+              disp2();
+              repository.removeColl(coll);
+              done();
+            },
+          );
+          coll.loadMore();
+        },
+      );
+      coll.loadColl();
+    });
   });
 });

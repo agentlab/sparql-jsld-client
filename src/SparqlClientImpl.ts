@@ -7,19 +7,11 @@
  *
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
-import {
-  SparqlClient,
-  sendGet,
-  sendPostQuery,
-  sendPostStatements,
-  executeUpdate,
-  Results,
-  ServerResponse,
-} from './SparqlClient';
+import axios from 'axios';
+import { SparqlClient, sendGet, sendPostQuery, sendPostStatements, executeUpdate, Results } from './SparqlClient';
 import { JsObject, json2str, JsStrObj } from './ObjectProvider';
-import axios, { AxiosResponse } from 'axios';
 
-export function createRepositoryConfig(repParam: JsObject = {}, repType: string = 'native-rdfs'): string {
+export function createRepositoryConfig(repParam: JsObject = {}, repType = 'native-rdfs'): string {
   if (repType === 'native-rdfs')
     return `
   #
@@ -44,8 +36,10 @@ export function createRepositoryConfig(repParam: JsObject = {}, repType: string 
             sail:sailType "openrdf:NativeStore" ;
             sail:iterationCacheSyncThreshold "${repParam['Query Iteration Cache size'] || 10000}";
             ns:tripleIndexes "${repParam['Triple indexes'] || 'spoc,posc'}";
-            sb:evaluationStrategyFactory "${repParam['EvaluationStrategyFactory'] ||
-              'org.eclipse.rdf4j.query.algebra.evaluation.impl.StrictEvaluationStrategyFactory'}"
+            sb:evaluationStrategyFactory "${
+              repParam['EvaluationStrategyFactory'] ||
+              'org.eclipse.rdf4j.query.algebra.evaluation.impl.StrictEvaluationStrategyFactory'
+            }"
           ]
         ]
     ].
@@ -76,8 +70,10 @@ export function createRepositoryConfig(repParam: JsObject = {}, repType: string 
             sail:sailType "openrdf:NativeStore" ;
             sail:iterationCacheSyncThreshold "${repParam['Query Iteration Cache size'] || 10000}";
             ns:tripleIndexes "${repParam['Triple indexes'] || 'spoc,posc'}";
-            sb:evaluationStrategyFactory "${repParam['EvaluationStrategyFactory'] ||
-              'org.eclipse.rdf4j.query.algebra.evaluation.impl.StrictEvaluationStrategyFactory'}"
+            sb:evaluationStrategyFactory "${
+              repParam['EvaluationStrategyFactory'] ||
+              'org.eclipse.rdf4j.query.algebra.evaluation.impl.StrictEvaluationStrategyFactory'
+            }"
           ]
         ]
       ]
@@ -113,8 +109,10 @@ export function createRepositoryConfig(repParam: JsObject = {}, repType: string 
               sail:sailType "openrdf:NativeStore" ;
               sail:iterationCacheSyncThreshold "${repParam['Query Iteration Cache size'] || 10000}";
               ns:tripleIndexes "${repParam['Triple indexes'] || 'spoc,posc'}";
-              sb:evaluationStrategyFactory "${repParam['EvaluationStrategyFactory'] ||
-                'org.eclipse.rdf4j.query.algebra.evaluation.impl.StrictEvaluationStrategyFactory'}"
+              sb:evaluationStrategyFactory "${
+                repParam['EvaluationStrategyFactory'] ||
+                'org.eclipse.rdf4j.query.algebra.evaluation.impl.StrictEvaluationStrategyFactory'
+              }"
             ]
           ]
         ]
@@ -147,8 +145,9 @@ export function createRepositoryConfig(repParam: JsObject = {}, repType: string 
       vr:ruleSet "${repParam['Inference RuleSet name'] || null}";
       vr:macroLib "${repParam['Inference MacroLib name'] || null}";
       vr:concurrency ${repParam['ConcurrencyMode'] || 0} ;
-      vr:useDefGraphForQueries ${repParam["Use defGraph with SPARQL queries, if query default graph wasn't set"] ||
-        true}
+      vr:useDefGraphForQueries ${
+        repParam["Use defGraph with SPARQL queries, if query default graph wasn't set"] || true
+      }
     ].
   `;
   return '';
@@ -190,10 +189,10 @@ export class SparqlClientImpl implements SparqlClient {
   }
 
   async loadNs() {
-    let url = this.repositoryUrl + '/namespaces';
-    let response = await sendGet(url);
+    const url = this.repositoryUrl + '/namespaces';
+    const response = await sendGet(url);
     if (response.status < 200 && response.status > 204) return Promise.reject('Cannot get namespaces');
-    let ns: JsStrObj = {};
+    const ns: JsStrObj = {};
     //console.debug('response.data', response.data);
     if (response.data && response.data.results) {
       let results: Results = { bindings: [] };
@@ -322,15 +321,15 @@ export class SparqlClientImpl implements SparqlClient {
     //console.debug(() => `deleteRepository url=${url}`);
   }
 
-  async createRepositoryAndSetCurrent(repParam: JsObject = {}, repType: string = 'native-rdfs') {
+  async createRepositoryAndSetCurrent(repParam: JsObject = {}, repType = 'native-rdfs') {
     await this.createRepository(repParam, repType);
     this.setRepositoryId(repParam['Repository ID']);
   }
 
   //ok
-  async createRepository(repParam: JsObject = {}, repType: string = 'native-rdfs') {
+  async createRepository(repParam: JsObject = {}, repType = 'native-rdfs') {
     if (repType === 'virtuoso') {
-      let repId = repParam['Repository ID'];
+      const repId = repParam['Repository ID'];
       repParam = {
         ...repParam,
         'Default graph name': `http://cpgu.kbpm.ru/ns/rm/${repId}`,

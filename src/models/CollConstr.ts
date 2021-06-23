@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
-import cloneDeep from 'lodash/cloneDeep';
+import { cloneDeep } from 'lodash-es';
 import {
   types,
   getSnapshot,
@@ -25,7 +25,7 @@ import { ISchemas, JSONSchema7forRdf, JSONSchema7forRdfReference } from './Schem
 import { ICollConstrJs } from '../SparqlGen';
 import { constructObjectsQuery, selectObjectsQuery } from '../SparqlGenSelect';
 import { insertObjectQuery, deleteObjectQuery, updateObjectQuery } from '../SparqlGenUpdate';
-import { SparqlClient } from 'SparqlClient';
+import { SparqlClient } from '../SparqlClient';
 
 export const JsObject2 = types.map(types.frozen<any>());
 //export interface IJsObject2 extends Instance<typeof JsObject2> {}
@@ -86,7 +86,7 @@ export const EntConstr = types
     };
   });
 
-export interface IEntConstr extends Instance<typeof EntConstr> {}
+export type IEntConstr = Instance<typeof EntConstr>;
 
 /**
  * Collection Constraint
@@ -312,8 +312,8 @@ export const CollConstr = types
     };
   });
 
-export interface ICollConstr extends Instance<typeof CollConstr> {}
-export interface ICollConstrSnapshotOut extends SnapshotOut<typeof CollConstr> {}
+export type ICollConstr = Instance<typeof CollConstr>;
+export type ICollConstrSnapshotOut = SnapshotOut<typeof CollConstr>;
 
 async function resolveAndClone(self: ICollConstr) {
   const data = getSnapshot<ICollConstrSnapshotOut>(self);

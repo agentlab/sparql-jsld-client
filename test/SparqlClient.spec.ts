@@ -12,7 +12,7 @@ import jsonld from 'jsonld';
 import { rootModelInitialState } from '../src/models/Model';
 import { Repository } from '../src/models/Repository';
 import { SparqlClientImpl } from '../src/SparqlClientImpl';
-import { json2str } from '../src/ObjectProvider';
+//import { json2str } from '../src/ObjectProvider';
 import { uploadFiles } from '../src/FileUpload';
 
 import { rdfServerUrl, rmRepositoryParam, rmRepositoryType } from './config';
@@ -64,6 +64,7 @@ beforeAll(async () => {
       // Something happened in setting up the request that triggered an Error
       console.log('Error', error.message);
     }
+    // eslint-disable-next-line no-undef
     fail(error);
   }
 });
@@ -72,6 +73,7 @@ afterAll(async () => {
   try {
     await client.deleteRepository(rmRepositoryID);
   } catch (err) {
+    // eslint-disable-next-line no-undef
     fail(err);
   }
 });

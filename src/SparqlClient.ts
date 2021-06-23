@@ -9,6 +9,7 @@
  ********************************************************************************/
 import axios, { AxiosResponse } from 'axios';
 import { Term } from 'rdf-js';
+
 import { JsObject, json2str, JsStrObj } from './ObjectProvider';
 
 export interface ServerResponse {

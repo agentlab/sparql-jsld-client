@@ -33,33 +33,29 @@ const assetFolder = 'folders:folder1';
 
 beforeAll(async () => {
   rmRepositoryID = genTimestampedName('test_Artifact');
-  try {
-    await client.createRepository(
-      {
-        ...rmRepositoryParam,
-        'Repository ID': rmRepositoryID,
-      },
-      rmRepositoryType,
-    );
-    repository.setId(rmRepositoryID);
-    await uploadFiles(client, vocabsFiles, rootFolder);
-    await uploadFiles(client, usersFiles, rootFolder);
-    await uploadFiles(client, projectsFoldersFiles, rootFolder);
-    await uploadFiles(client, shapesFiles, rootFolder);
-    await uploadFiles(client, samplesFiles, rootFolder);
-    //await sleep(5000); // give RDF classifier some time to classify resources after upload
+  await client.createRepository(
+    {
+      ...rmRepositoryParam,
+      'Repository ID': rmRepositoryID,
+    },
+    rmRepositoryType,
+  );
+  repository.setId(rmRepositoryID);
+  await uploadFiles(client, vocabsFiles, rootFolder);
+  await uploadFiles(client, usersFiles, rootFolder);
+  await uploadFiles(client, projectsFoldersFiles, rootFolder);
+  await uploadFiles(client, shapesFiles, rootFolder);
+  await uploadFiles(client, samplesFiles, rootFolder);
+  //await sleep(5000); // give RDF classifier some time to classify resources after upload
 
-    await repository.ns.reloadNs();
-  } catch (err) {
-    throw err;
-    //fail(err);
-  }
+  await repository.ns.reloadNs();
 });
 
 afterAll(async () => {
   try {
     await client.deleteRepository(rmRepositoryID);
   } catch (err) {
+    // eslint-disable-next-line no-undef
     fail(err);
   }
 });
@@ -89,7 +85,7 @@ describe('create-artifact-scenario', () => {
     const coll = repository.addColl('rm:ArtifactShape');
     await coll.loadColl();
     expect(coll).not.toBeUndefined();
-    let data: any[] = coll && coll.data !== undefined ? getSnapshot(coll.data) : [];
+    const data: any[] = coll && coll.data !== undefined ? getSnapshot(coll.data) : [];
     expect(data.length).toBe(15);
 
     //const element = data[1];

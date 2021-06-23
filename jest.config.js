@@ -1,16 +1,16 @@
-const esModules = ['lodash-es'].join('|');
-
 module.exports = {
-  collectCoverageFrom: ['**/*.{js,jsx,ts,tsx}', '!**/node_modules/**', '!**/vendor/**'],
-  //roots: ['<rootDir>/src'],
-  //transform: {
-  //  '^.+\\.tsx?$': 'ts-jest',
-  //},
-  //testRegex: '(/__tests__/.*|(\\.|/)(test|spec))\\.tsx?$',
-  //moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
-  //transformIgnorePatterns: [
-  //  '/node_modules/(?!lodash-es/.*)'
-  //],
-  //transformIgnorePatterns: [`/node_modules/(?!${esModules})`],
+  verbose: true,
+  preset: 'ts-jest/presets/js-with-ts-esm',
+  testEnvironment: 'jsdom',
+  testPathIgnorePatterns: ['/cypress/', '/es/', '/example/', '/lib/', '/node_modules/'],
+  transformIgnorePatterns: ['node_modules/(?!(lodash-es)/)'],
+  collectCoverageFrom: ['./src/**/*.{js,jsx,ts,tsx}'],
+  coverageProvider: 'v8',
+  globals: {
+    extensionsToTreatAsEsm: ['.ts', '.js'],
+    'ts-jest': {
+      useESM: true,
+    },
+  },
   setupFilesAfterEnv: ['jest-extended'],
 };

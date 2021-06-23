@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
 import { types, flow, applySnapshot, getSnapshot, getEnv } from 'mobx-state-tree';
-import isEmpty from 'lodash/isEmpty';
+import { isEmpty } from 'lodash-es';
 
 import { SparqlClient } from '../SparqlClient';
 import { JsStrObj } from '../ObjectProvider';

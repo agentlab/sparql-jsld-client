@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
 import uuid62 from 'uuid62';
-import cloneDeep from 'lodash/cloneDeep';
+import { cloneDeep } from 'lodash-es';
 import { Quad, Variable } from 'rdf-js';
 import { namedNode, triple, variable } from '@rdfjs/data-model';
 import { ConstructQuery, Ordering, SelectQuery } from 'sparqljs';
@@ -580,7 +580,7 @@ function genContext(entConstrs: EntConstrInternal[]): JsObject {
  * @param jsonLdObjs
  * @param entConstrs
  */
-function genContextRecursive(entConstrs: EntConstrInternal[], index: number = 0): JsObject {
+function genContextRecursive(entConstrs: EntConstrInternal[], index = 0): JsObject {
   const entConstr = entConstrs[index];
   const context: JsStrObjObj = index === 0 ? { ...entConstr.prefixes } : {};
 
@@ -605,7 +605,7 @@ function genContextRecursive(entConstrs: EntConstrInternal[], index: number = 0)
 
   Object.keys(entConstr.bindsVars).forEach((key) => {
     const propSchema: any = entConstr.schema.properties[key];
-    let propContext: JsObject = {
+    const propContext: JsObject = {
       '@id': localUrn(key),
     };
     if (propSchema?.type === 'integer') {

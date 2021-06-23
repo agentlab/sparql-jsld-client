@@ -4,9 +4,13 @@
   "files.eol": "\n",
   "editor.tabSize": 2,
   "files.autoSave": "afterDelay",
-  "jest.autoEnable": false,
-  "jest.pathToJest": "npm test --",
-  "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
+  "eslint.validate": ["javascript", "javascriptreact", "typescript"],
+  "editor.codeActionsOnSave": {
+    "source.fixAll": true
+  },
   "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "prettier.endOfLine": "lf"
+  "prettier.endOfLine": "lf",
+  "jest.autoEnable": false,
+  "jest.autoRun": "off",
+  "jest.pathToJest": "npm test --"
 }

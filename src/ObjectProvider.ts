@@ -49,6 +49,9 @@ export interface JSONSchema6forRdfProperty extends JSONSchema6 {
   valueModifiability?: string; // user or non -- system
   shapeModifiability?: string; // user or non -- system
 
+  contentMediaType?: string;
+  contentEncoding?: string;
+
   properties?: {
     [key: string]: JSONSchema6DefinitionForRdfProperty;
   };

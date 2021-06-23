@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
 import { AxiosResponse } from 'axios';
-import { SparqlClient, FileUploadConfig, Results } from '../src/SparqlClient';
+import { SparqlClient, Results } from '../src/SparqlClient';
 import { JsObject, JsStrObj } from '../src/ObjectProvider';
 
 const HttpResponse200: AxiosResponse = {
@@ -141,7 +141,7 @@ export class SparqlClientImplMock implements SparqlClient {
     };
   }
 
-  async createRepositoryAndSetCurrent(repParam: JsObject = {}, repType: string = 'native-rdfs') {
+  async createRepositoryAndSetCurrent(repParam: JsObject = {}, repType = 'native-rdfs') {
     this.createRepositoryAndSetCurrentParams = {
       repParam,
       repType,
@@ -149,7 +149,7 @@ export class SparqlClientImplMock implements SparqlClient {
   }
 
   //ok
-  async createRepository(repParam: JsObject = {}, repType: string = 'native-rdfs') {
+  async createRepository(repParam: JsObject = {}, repType = 'native-rdfs') {
     this.createRepositoryParams = {
       repParam,
       repType,

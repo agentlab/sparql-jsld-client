@@ -627,8 +627,7 @@ function genContextRecursive(entConstrs: EntConstrInternal[], index = 0): JsObje
   delete context['@type'];
   //delete context['rdf'];
 
-  index++;
-  if (index < entConstrs.length) {
+  for (index++; index < entConstrs.length; index++) {
     const entConstr2 = entConstrs[index];
     const varName = '?' + entConstr2.props2vars['@id'];
     const conds = entConstr.conditions;

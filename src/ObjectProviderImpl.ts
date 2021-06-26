@@ -145,7 +145,10 @@ function propertyShapeToJsonSchemaProperty(
           };
         } else {
           // url field for unknown class
-          schemaContexts[shapePropKey] = shapePropUri;
+          schemaContexts[shapePropKey] = {
+            '@id': shapePropUri,
+            '@type': '@id',
+          };
         }
       }
     } else {

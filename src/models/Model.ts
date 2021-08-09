@@ -14,8 +14,6 @@ import { ArtifactShapeSchema, PropertyShapeSchema } from '../schema/ArtifactShap
 import { JsObject } from '../ObjectProvider';
 import { SparqlClient } from '../SparqlClient';
 
-import { mstSchemas } from './Coll';
-import { ViewDescr } from './ViewDescr';
 import { Repository } from './Repository';
 
 export const rootModelInitialState = {
@@ -32,6 +30,7 @@ export const rootModelInitialState = {
       rdf: 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
       xsd: 'http://www.w3.org/2001/XMLSchema#',
       sesame: 'http://www.openrdf.org/schema/sesame#',
+      aldkg: 'https://agentlab.ru/ldkg/onto#',
     },
   },
   schemas: {
@@ -53,8 +52,6 @@ export const rootModelInitialState = {
   //collsConstr: {},
   colls: {},
 };
-
-mstSchemas['rm:View'] = ViewDescr;
 
 /*onSnapshot(rootStore, (snapshot) => {
   console.debug('Snapshot: ', snapshot);

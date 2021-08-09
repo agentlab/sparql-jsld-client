@@ -40,7 +40,7 @@ export const EntConstr = types
      */
     '@id': types.identifier,
     /**
-     * IRI of a type of entity constraint. Should be 'rm:EntConstr' or undefined
+     * IRI of a type of entity constraint. Should be 'aldkg:EntConstr' or undefined
      */
     '@type': types.maybe(types.string),
     /**
@@ -98,7 +98,7 @@ export const CollConstr = types
      */
     '@id': types.identifier,
     /**
-     * IRI of a type of collection constraint. Should be 'rm:CollConstr'
+     * IRI of a type of collection constraint. Should be 'aldkg:CollConstr'
      */
     '@type': types.maybe(types.string),
     /**

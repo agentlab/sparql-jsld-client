@@ -19,7 +19,6 @@ export * from './SparqlGenUpdate';
 export * from './schema/ArtifactShapeSchema';
 export * from './schema/Formatters';
 export * from './schema/RdfsSchema';
-export * from './schema/ViewShapeSchema';
 
 export * from './models/Coll';
 export * from './models/CollConstr';
@@ -28,4 +27,3 @@ export * from './models/Namespaces';
 export * from './models/Repository';
 export * from './models/Schemas';
 export * from './models/Utils';
-export * from './models/ViewDescr';

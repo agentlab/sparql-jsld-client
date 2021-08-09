@@ -34,7 +34,18 @@ import {
 export interface MstModels {
   [key: string]: IAnyComplexType;
 }
-export const mstSchemas: MstModels = {};
+const mstSchemas: MstModels = {};
+
+export function registerMstSchema(id: string, t: IAnyComplexType): void {
+  console.log('registerMstSchema', { id, t });
+  mstSchemas[id] = t;
+}
+
+export function unregisterMstSchema(id: string): IAnyComplexType {
+  const t = mstSchemas[id];
+  delete mstSchemas[id];
+  return t;
+}
 
 export const DataType = types.union(
   {
@@ -42,11 +53,11 @@ export const DataType = types.union(
       if (snapshot) {
         const mstModel = mstSchemas[snapshot['@type']];
         if (mstModel) {
-          //console.log('DataType, create mstModel for', snapshot['@id'], mstModel.name);
+          console.log('DataType, create mstModel for', snapshot['@id'], mstModel.name);
           return mstModel;
         }
       }
-      //console.log('DataType, create JsObject2 for', snapshot['@id']);
+      console.log('DataType, create JsObject2 for', snapshot['@id']);
       return JsObject2;
     },
   },
@@ -54,8 +65,8 @@ export const DataType = types.union(
 );
 
 /**
- * Syncronizable/updateabe collection, retrieved from server based on CollConstr with the same '@id'
- * Incapsulates collection constraints, data, sync settings and metadata
+ * Syncronizable/updatable collection, retrieved from server based on CollConstr with the same '@id'
+ * Encapsulates collection constraints, data, sync settings and metadata
  */
 export const Coll = types
   .model('Coll', {

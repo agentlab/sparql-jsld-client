@@ -262,7 +262,7 @@ export const Schemas = types
     const loadSchemaInternal = flow(function* loadSchemaInternal(conditions: JsObject) {
       const r = yield resolveSchemaFromServer(conditions, repository.ns.currentJs, client);
       const schema = r.schema;
-      let uiSchema = r.uiSchema;
+      const uiSchema = r.uiSchema;
       if (!schema) return Promise.reject('Cannot load schema with conditions' + conditions);
       // get parent schemas
       let schemaQueue: JSONSchema6forRdf[] = yield getDirectSuperSchemas(schema);
@@ -284,10 +284,10 @@ export const Schemas = types
 
     const getDirectSuperSchemas = flow(function* getDirectSuperSchemas(schema: JSONSchema6forRdf) {
       //console.debug('getDirectSuperSchemas for schema=', schema['@id']);
-      let schemaOrUndef: JSONSchema6forRdf | undefined = schema;
-      let parentSchemas: any[] = [];
+      const schemaOrUndef: JSONSchema6forRdf | undefined = schema;
+      const parentSchemas: any[] = [];
       if (schemaOrUndef.allOf) {
-        let schemaAllOf: any[] = schemaOrUndef.allOf.filter((s1: any) => s1.$ref !== undefined);
+        const schemaAllOf: any[] = schemaOrUndef.allOf.filter((s1: any) => s1.$ref !== undefined);
         //console.debug('getDirectSuperSchemas allOf', { uri, schema, schemaAllOf });
         for (let i = 0; i < schemaAllOf.length; i++) {
           const iri = schemaAllOf[i].$ref;
@@ -366,7 +366,7 @@ export const Schemas = types
     };
   });
 
-export interface ISchemas extends Instance<typeof Schemas> {}
+export type ISchemas = Instance<typeof Schemas>;
 
 /**
  * Retrieves element's SHACL Shape from server and converts it to 'JSON Schema + LD' and UI Schema

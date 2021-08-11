@@ -53,7 +53,7 @@ export function addprops2vars2props(
 
 /**
  * Mapping from JSON Schema-like properties to SPARQL named variables
- * More complx then one to one because of '@id' props from JSON-LD
+ * More complex then one to one because of '@id' props from JSON-LD
  * '@id' -> 'uri'
  * @param schemaProps -- map of properties
  */
@@ -174,7 +174,7 @@ export interface ICollConstrJsOpt {
   limit?: number;
   offset?: number;
   distinct?: boolean;
-  //subqueries: types.optional(types.union(types.map(types.late(() => CollConstr)), types.undefined), undefined),
+  //sub-queries: types.optional(types.union(types.map(types.late(() => CollConstr)), types.undefined), undefined),
   // RDF4J REST API options
   options?: JsStrObj;
 }
@@ -202,7 +202,7 @@ export interface ICollConstrJs {
   limit?: number;
   offset?: number;
   distinct?: boolean;
-  //subqueries: types.optional(types.union(types.map(types.late(() => CollConstr)), types.undefined), undefined),
+  //sub-queries: types.optional(types.union(types.map(types.late(() => CollConstr)), types.undefined), undefined),
   // RDF4J REST API options
   options?: JsStrObj;
 }
@@ -250,7 +250,7 @@ export function unscreenIds(data: any | undefined) {
 }
 
 /**
- * Renumerates variables from entConstr schema to avoid collisions in SPARQL query,
+ * Re-numerate variables from entConstr schema to avoid collisions in SPARQL query,
  * but preserve variables not from schema
  */
 export function renumerateEntConstrVariables(entConstr: EntConstrInternal, index: number) {
@@ -340,7 +340,7 @@ export function genEntConstrSparqlSubject(
 }
 
 /**
- * generate unique variable name for element iri & check for uniquiness
+ * generate unique variable name for element iri & check for uniqueness
  * @param varPref '
  * @param no
  */
@@ -355,7 +355,7 @@ export function genUniqueVarName2(varPref: string, no: number, entConstrs: IEntC
 }
 
 /**
- * generate unique variable name for element iri & check for uniquiness
+ * generate unique variable name for element iri & check for uniqueness
  * @param varPref '
  * @param no
  */
@@ -390,7 +390,7 @@ export function getWhereVar(entConstr: EntConstrInternal, requireOptional = fals
   return { bgps, options };
 }
 
-export function getWhereVarFromDataWithoutOptinals(entConstr: EntConstrInternal): any[] {
+export function getWhereVarFromDataWithoutOptionals(entConstr: EntConstrInternal): any[] {
   const resultWhereVars: any[] = [];
   const bgp: Quad[] = [];
   Object.keys(entConstr.data).forEach((propertyKey) => {

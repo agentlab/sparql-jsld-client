@@ -48,7 +48,7 @@ export const EntConstr = types
      */
     '@parent': types.maybe(types.string),
     /**
-     * could be class IRI, resolved from local schema reposiory (local cache) or from server
+     * could be class IRI, resolved from local schema repository (local cache) or from server
      * or could be 'private' schema (full qualified JS object)
      */
     schema: types.union(JSONSchema7forRdfReference, JSONSchema7forRdf),

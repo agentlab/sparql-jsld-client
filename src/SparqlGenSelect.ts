@@ -183,8 +183,8 @@ function selectInternalEntConstrs(entConstrs: EntConstrInternal[]) {
           ignoredProperties[key] = null;
       });
       const properties = entConstr.schema.properties;
-      // if EntConstr has only conditions and array property then did not make subquery
-      //extract array variables into subquery
+      // if EntConstr has only conditions and array property then did not make sub-query
+      //extract array variables into sub-query
       const propKeys = Object.keys(properties);
       const isArrayOnly = propKeys.length <= 2 && propKeys.filter((key) => key === '@id').length === 1;
       propKeys.forEach((key) => {
@@ -251,7 +251,7 @@ function selectQueryFromEntConstrs(entConstrs: EntConstrInternal[], collConstrJs
   };
   let allOptions: any[] = [];
   entConstrs.forEach((entConstr) => {
-    // check variables for uniquiness
+    // check variables for uniqueness
     const generatedVariables = propsToSparqlVars(entConstr);
     let variablesToAdd: Variable[];
     if (query.variables.length === 0) {

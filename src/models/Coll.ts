@@ -109,7 +109,7 @@ export const Coll = types
     //index: types.map(types.reference(DataType)),
 
     /**
-     * Last synced with the server datetime
+     * Last synced with the server date-time
      */
     lastSynced: types.maybe(types.number),
 
@@ -126,7 +126,7 @@ export const Coll = types
     return {
       /**
        * Returns collection objects
-       * Preloads collection lazily and asyncronously
+       * Preloads collection lazily and asynchronously
        */
       get data() {
         // first-time load
@@ -192,7 +192,7 @@ export const Coll = types
           self.lastSynced = moment.now();
           //console.log('loadColl', objects.length);
         } else {
-          console.warn('loadColl: self.collConstr is undifined');
+          console.warn('loadColl: self.collConstr is undefined');
         }
         //console.log('loadColl END');
       }),
@@ -216,7 +216,7 @@ export const Coll = types
 
       /**
        * Adds single element or elements array into Coll's dataInternal
-       * @param elem -- element or element array
+       * @param elems -- element or element array
        */
       addElems(elems: JsObject | JsObject[]) {
         if (!elems) return;
@@ -228,7 +228,7 @@ export const Coll = types
       /**
        * Delete element from Coll by string @id or @id property in object
        * @param elem -- object with @id or string id
-       * @returns deleted object or null if no deletion occured
+       * @returns deleted object or null if no deletion occurred
        */
       delElem: flow(function* delElem(elem: JsObject | string) {
         if (!elem || !self.collConstr) return null;
@@ -266,8 +266,8 @@ export const Coll = types
 
       /**
        * Update element in Coll with the same @id property as in elem object
-       * @param elem -- object with @id property and other porperties for update
-       * @returns original object before modification or null if no update occured
+       * @param elem -- object with @id property and other properties for update
+       * @returns original object before modification or null if no update occurred
        */
       updElem(elem: JsObject) {
         if (!elem || !elem['@id']) return null;

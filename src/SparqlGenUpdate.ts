@@ -27,7 +27,7 @@ import {
   getInternalCollConstrs,
   getTypeCondition,
   getWhereVar,
-  getWhereVarFromDataWithoutOptinals,
+  getWhereVarFromDataWithoutOptionals,
   ICollConstrJsOpt,
   processConditions,
   renumerateEntConstrVariables,
@@ -176,7 +176,7 @@ function updateObjectQueryFromEntConstrs(entConstrs: EntConstrInternal[]) {
       ...entConstr.data,
     };
     renumerateEntConstrVariables(entConstr, index);
-    addTo(query.updates[0], 'delete', getWhereVarFromDataWithoutOptinals(entConstr));
+    addTo(query.updates[0], 'delete', getWhereVarFromDataWithoutOptionals(entConstr));
 
     let { bgps, options } = getWhereVar(entConstr);
     let filters: any[] = [];

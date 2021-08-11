@@ -8,10 +8,9 @@
       "name": "Debug Jest Tests",
       "type": "node",
       "request": "launch",
-      // https://github.com/formium/tsdx/issues/577
+      "runtimeExecutable": "yarn",
       "runtimeArgs": [
-        "--inspect-brk",
-        "${workspaceRoot}/node_modules/tsdx/dist/index.js",
+        //"--inspect-brk",
         "test",
         "--runInBand",
         //"-t", "should return Module UsedInModules with associated Artifact"
@@ -28,10 +27,9 @@
       "name": "vscode-jest-tests",
       "type": "node",
       "request": "launch",
-      // https://github.com/formium/tsdx/issues/577
+      "runtimeExecutable": "yarn",
       "runtimeArgs": [
-        "--inspect-brk",
-        "${workspaceRoot}/node_modules/tsdx/dist/index.js",
+        //"--inspect-brk",
         "test",
         "--runInBand",
         //"--no-cache",

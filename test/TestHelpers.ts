@@ -16,7 +16,7 @@ export function genTimestampedName(name: string): string {
 
 // eslint-disable-next-line no-undef
 export function sleep(ms: number): Promise<NodeJS.Timeout> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  return new Promise((resolve: (value: any) => void) => setTimeout(resolve, ms));
 }
 
 export async function selectHelper(repository: any, data: any, testerFn: (data: any) => void) {

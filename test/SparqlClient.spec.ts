@@ -80,10 +80,10 @@ afterAll(async () => {
 
 describe('SparqlClient', () => {
   it(`SparqlClient should select namespaces`, async () => {
-    expect(repository.ns.current.size).toBe(4);
+    expect(repository.ns.current.size).toBe(5);
     await repository.ns.reloadNs();
     //console.log(getSnapshot(repository.ns.current));
-    expect(repository.ns.current.size).toBeGreaterThan(4);
+    expect(repository.ns.current.size).toBeGreaterThan(5);
 
     const ns = repository.ns.currentJs;
     expect(ns.rdf).toBe('http://www.w3.org/1999/02/22-rdf-syntax-ns#');

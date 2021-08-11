@@ -7,6 +7,12 @@ module.exports = {
     sourceType: 'module',
     //project: './tsconfig.json',
   },*/
+  env: {
+    //browser: true,
+    node: true,
+    jasmine: true,
+    jest: true,
+  },
   plugins: ['jest', 'prettier'],
   extends: ['eslint:recommended', 'plugin:jest/recommended', 'prettier', 'plugin:prettier/recommended'],
   rules: {

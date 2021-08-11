@@ -10,9 +10,6 @@
   },
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "prettier.endOfLine": "lf",
-  "jest.autoEnable": false,
-  "jest.autoRun": "off",
-  "jest.pathToJest": "npm test --",
   "cSpell.words": [
     "Coll's",
     "Constr's",
@@ -76,8 +73,12 @@
     "undelegate",
     "unscreen",
     "uuidv",
+    "vocabs",
     "триплов",
     "триплы"
   ],
-  "cSpell.language": "en,ru"
+  "cSpell.language": "en,ru",
+  "terminal.integrated.scrollback": 10000,
+  "jest.jestCommandLine": "yarn test",
+  "jest.autoRun": "off"
 }

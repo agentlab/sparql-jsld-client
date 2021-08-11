@@ -408,4 +408,6 @@ export const Repository = types
 
 export type IRepository = Instance<typeof Repository>;
 
-function addMissingId(data: any | undefined) {}
+function addMissingId(data: any | undefined) {
+  if (data && typeof data === 'object' && !data['@id']) data['@id'] = '_' + uuid62.v4();
+}

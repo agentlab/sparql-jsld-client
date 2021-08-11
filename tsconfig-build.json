@@ -5,8 +5,8 @@
   "exclude": ["cypress", "es", "lib", "node_modules", "stories", "test"],
   "compilerOptions": {
     "module": "es2020",
-    "target": "es2019"
+    "target": "es2019",
     //"lib": ["dom", "dom.iterable", "esnext"]
-    //"types": []
+    "types": []
   }
 }

@@ -170,7 +170,10 @@ export const genericArtifactSchema: JSONSchema6forRdf = {
       '@id': 'dcterms:alternative',
       '@type': 'xsd:string',
     },
-    uri: 'cpgu:uri',
+    uri: {
+      '@id': 'cpgu:uri',
+      '@type': '@id',
+    },
     status: {
       '@id': 'cpgu:status',
       '@type': 'rmUserTypes:_YwrbNRmREemK5LEaKhoOow',

@@ -1,7 +1,7 @@
 
 # Testcases Structure
 
-This document describes testcases structure: from simple unit tests up to high level integration tests touches many components.
+This document describes test cases structure: from simple unit tests up to high level integration tests touches many components.
 
 Suitable for quick test-based diagnostics in case you have many errors from several library levels.
 

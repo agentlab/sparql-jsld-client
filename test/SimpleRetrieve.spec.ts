@@ -393,7 +393,7 @@ describe('SimpleRetrieve', () => {
   });
 });
 
-describe('LoadMore', () => {
+/*describe('LoadMore', () => {
   it('should sync load incrementally additional data into Coll', async () => {
     const coll = repository.addColl({
       entConstrs: [
@@ -447,4 +447,4 @@ describe('LoadMore', () => {
       coll.loadColl();
     });
   });
-});
+});*/

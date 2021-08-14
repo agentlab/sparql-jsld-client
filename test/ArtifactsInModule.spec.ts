@@ -12,7 +12,7 @@ import { when } from 'mobx';
 import { getSnapshot } from 'mobx-state-tree';
 
 import { rootModelInitialState } from '../src/models/Model';
-import { Repository } from '../src/models/Repository';
+import { MstRepository } from '../src/models/MstRepository';
 import { SparqlClientImpl } from '../src/SparqlClientImpl';
 import { JsObject } from '../src/ObjectProvider';
 import { uploadFiles } from '../src/FileUpload';
@@ -26,7 +26,7 @@ import { genTimestampedName } from './TestHelpers';
 jest.setTimeout(50000);
 
 const client = new SparqlClientImpl(rdfServerUrl);
-const repository = Repository.create(rootModelInitialState, { client });
+const repository = MstRepository.create(rootModelInitialState, { client });
 let rmRepositoryID: string;
 
 beforeAll(async () => {

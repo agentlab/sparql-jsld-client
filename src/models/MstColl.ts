@@ -8,6 +8,7 @@
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
 import moment from 'moment';
+import { reaction } from 'mobx';
 import {
   types,
   Instance,
@@ -24,52 +25,52 @@ import {
 
 import { JsObject } from '../ObjectProvider';
 import {
-  CollConstr,
+  MstCollConstr as MstCollConstr,
   constructObjectsSnapshot,
   deleteObjectSnapshot,
   ICollConstrSnapshotOut,
-  JsObject2,
-} from './CollConstr';
+  MstJsObject,
+} from './MstCollConstr';
 
 export interface MstModels {
   [key: string]: IAnyComplexType;
 }
-const mstSchemas: MstModels = {};
+const mstCollSchemas: MstModels = {};
 
-export function registerMstSchema(id: string, t: IAnyComplexType): void {
-  console.log('registerMstSchema', { id, t });
-  mstSchemas[id] = t;
+export function registerMstCollSchema(id: string, t: IAnyComplexType): void {
+  console.log('register mstCollSchema', { id, t });
+  mstCollSchemas[id] = t;
 }
 
-export function unregisterMstSchema(id: string): IAnyComplexType {
-  const t = mstSchemas[id];
-  delete mstSchemas[id];
+export function unregisterMstCollSchema(id: string): IAnyComplexType {
+  const t = mstCollSchemas[id];
+  delete mstCollSchemas[id];
   return t;
 }
 
-export const DataType = types.union(
+export const MstCollDataType = types.union(
   {
     dispatcher: (snapshot: any) => {
       if (snapshot) {
-        const mstModel = mstSchemas[snapshot['@type']];
+        const mstModel = mstCollSchemas[snapshot['@type']];
         if (mstModel) {
           //console.log('DataType, create mstModel for', snapshot['@id'], mstModel.name);
           return mstModel;
         }
       }
       //console.log('DataType, create JsObject2 for', snapshot['@id']);
-      return JsObject2;
+      return MstJsObject;
     },
   },
-  JsObject2,
+  MstJsObject,
 );
 
 /**
  * Syncronizable/updatable collection, retrieved from server based on CollConstr with the same '@id'
  * Encapsulates collection constraints, data, sync settings and metadata
  */
-export const Coll = types
-  .model('Coll', {
+export const MstColl = types
+  .model('MstColl', {
     /**
      * Collection id, the same as collConstr's id
      */
@@ -78,7 +79,7 @@ export const Coll = types
     /**
      * Collection constraint. Use this object as an observable
      */
-    collConstr: types.union(CollConstr, types.safeReference(CollConstr)),
+    collConstr: types.union(MstCollConstr, types.safeReference(MstCollConstr)),
 
     /**
      * Update from server period in seconds
@@ -100,7 +101,7 @@ export const Coll = types
      * Internal data array. Do not retrieve data on first access.
      * Use <code>coll.data</code> getter instead of <code>coll.dataIntrnl</code>
      */
-    dataIntrnl: types.array(DataType),
+    dataIntrnl: types.array(MstCollDataType),
 
     /**
      * Index data entries (data references) by '@id' (element iri)
@@ -161,8 +162,10 @@ export const Coll = types
   .actions((self: any) => {
     const rep: IAnyStateTreeNode = getRoot(self);
     const client = getEnv(self).client;
+    let dispose: any;
     return {
       afterAttach() {
+        //console.log('MstColl afterAttach, @id=', self['@id']);
         // first-time load
         if (self.lazy === false) {
           setImmediate(() => {
@@ -170,6 +173,20 @@ export const Coll = types
             self.loadColl();
           });
         }
+        dispose = reaction(
+          () => {
+            const collConstr = self.collConstr;
+            return getSnapshot(collConstr);
+          },
+          (newVal: any, oldVal: any) => {
+            //console.log('MstColl.collConstr changed, reload data', { newVal, oldVal });
+            setImmediate(() => {
+              //@ts-ignore
+              self.loadColl();
+            });
+          },
+          { fireImmediately: false, name: 'MstColl-Attach' },
+        );
         //TODO: indexation is not working due to complex reference type
         /*if(self.dataIntrnl.length > 0 && self.indexed) {
         self.dataIntrnl.forEach((d: any) => {
@@ -181,11 +198,23 @@ export const Coll = types
         });
       }*/
       },
+      beforeDetach() {
+        //console.log('MstColl beforeDetach, @id=', self['@id']);
+        if (dispose) dispose();
+      },
       loadColl: flow(function* loadColl() {
         //console.log('loadColl START');
         if (self.collConstr) {
           const collConstr = getSnapshot<ICollConstrSnapshotOut>(self.collConstr);
-          const objects: any[] = yield constructObjectsSnapshot(collConstr, rep.schemas, rep.ns.currentJs, client);
+          let parent: any = self.collConstr['@parent'];
+          if (parent) parent = getSnapshot<ICollConstrSnapshotOut>(parent);
+          const objects: any[] = yield constructObjectsSnapshot(
+            collConstr,
+            parent,
+            rep.schemas,
+            rep.ns.currentJs,
+            client,
+          );
           self.dataIntrnl = objects;
           //schema: {},
           //selectQuery: '',
@@ -204,8 +233,21 @@ export const Coll = types
             limit: self.pageSize,
             offset: self.dataIntrnl.length,
           };
-          const objects: any[] = yield constructObjectsSnapshot(collConstr, rep.schemas, rep.ns.currentJs, client);
+          let parent: any = self.collConstr['@parent'];
+          if (parent) parent = getSnapshot<ICollConstrSnapshotOut>(parent);
+          const objects: any[] = yield constructObjectsSnapshot(
+            collConstr,
+            parent,
+            rep.schemas,
+            rep.ns.currentJs,
+            client,
+          );
           self.dataIntrnl.push(...objects);
+          //const objectsToAdd: any[] = [];
+          //objects.forEach((o) => {
+          //
+          //});
+          //self.dataIntrnl.push(...objectsToAdd);
           if (self.collConstr.limit) {
             self.collConstr.setLimit(self.dataIntrnl.length);
           }
@@ -243,7 +285,9 @@ export const Coll = types
           '@type': collConstr['@type'],
           entConstrs: collConstr.entConstrs,
         };
-        yield deleteObjectSnapshot(rep.schemas, rep.ns.currentJs, client, collConstr, { '@_id': elem });
+        let parent: any = self.collConstr['@parent'];
+        if (parent) parent = getSnapshot<ICollConstrSnapshotOut>(parent);
+        yield deleteObjectSnapshot(rep.schemas, rep.ns.currentJs, client, collConstr, parent, { '@_id': elem });
         //@ts-ignore
         return self.delElemInternal(elem);
       }),
@@ -279,4 +323,4 @@ export const Coll = types
       },
     };
   });
-export type IColl = Instance<typeof Coll>;
+export type IColl = Instance<typeof MstColl>;

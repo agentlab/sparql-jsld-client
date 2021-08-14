@@ -60,17 +60,17 @@ export function createSchemaWithSubClassOf(schema: any, iri: string, classIri?: 
   };
 }
 
-const JSONSchema7TypeName = types.enumeration(['string', 'number', 'boolean', 'object', 'integer', 'array', 'null']);
-const JSONSchema7Type = types.union(
+const MstJSONSchema7TypeName = types.enumeration(['string', 'number', 'boolean', 'object', 'integer', 'array', 'null']);
+const MstJSONSchema7Type = types.union(
   types.string,
   types.number,
   types.boolean,
   types.late((): IAnyType => JSONSchema7Object),
-  types.late((): IAnyType => JSONSchema7Array),
+  types.late((): IAnyType => MstJSONSchema7Array),
   types.null,
 );
-const JSONSchema7Object = types.map(types.late(() => JSONSchema7Type));
-const JSONSchema7Array = types.array(types.late(() => JSONSchema7Type));
+const JSONSchema7Object = types.map(types.late(() => MstJSONSchema7Type));
+const MstJSONSchema7Array = types.array(types.late(() => MstJSONSchema7Type));
 
 //export interface IJSONSchema7Object extends Instance<typeof JSONSchema7Object> {}
 //export type TJSONSchema7Object = IJSONSchema7Object;
@@ -84,12 +84,12 @@ const JSONSchema7Array = types.array(types.late(() => JSONSchema7Type));
     | { [x: string]: JSONValue }
     | Array<JSONValue>;*/
 
-export const SchemaRef = types.model('JSONSchema7forRdf', {
+export const MstSchemaRef = types.model('MstJSONSchema7forRdf', {
   $ref: types.string,
 });
 
-export const JSONSchema7forRdf = types
-  .model('JSONSchema7forRdf', {
+export const MstJSONSchema7forRdf = types
+  .model('MstJSONSchema7forRdf', {
     /**
      * ext json-ld Node
      * https://github.com/json-ld/json-ld.org/blob/master/schemas/jsonld-schema.json
@@ -110,14 +110,14 @@ export const JSONSchema7forRdf = types
 
     $schema: types.maybe(types.string),
     $id: types.maybe(types.string),
-    type: JSONSchema7TypeName,
+    type: MstJSONSchema7TypeName,
 
-    allOf: types.maybe(types.array(SchemaRef)),
+    allOf: types.maybe(types.array(MstSchemaRef)),
 
     title: types.maybe(types.string),
     description: types.maybe(types.string),
 
-    properties: types.optional(types.map(types.late((): IAnyModelType => JSONSchema7PropertyForRdf)), {}),
+    properties: types.optional(types.map(types.late((): IAnyModelType => MstJSONSchema7PropertyForRdf)), {}),
     required: types.optional(types.array(types.string), []),
   })
 
@@ -141,14 +141,14 @@ export const JSONSchema7forRdf = types
 
 //export interface IJSONSchema7forRdf extends Instance<typeof JSONSchema7forRdf> {}
 
-export const JSONSchema7PropertyForRdf = types.model('JSONSchema7PropertyForRdf', {
+export const MstJSONSchema7PropertyForRdf = types.model('MstJSONSchema7PropertyForRdf', {
   title: types.maybe(types.string),
   description: types.maybe(types.string),
 
-  type: JSONSchema7TypeName,
-  enum: types.maybe(JSONSchema7Array),
-  default: types.maybe(JSONSchema7Type),
-  items: types.maybe(types.late((): IAnyModelType => JSONSchema7PropertyForRdf)),
+  type: MstJSONSchema7TypeName,
+  enum: types.maybe(MstJSONSchema7Array),
+  default: types.maybe(MstJSONSchema7Type),
+  items: types.maybe(types.late((): IAnyModelType => MstJSONSchema7PropertyForRdf)),
 
   format: types.maybe(types.string),
   contentMediaType: types.maybe(types.string),
@@ -164,13 +164,13 @@ export const JSONSchema7PropertyForRdf = types.model('JSONSchema7PropertyForRdf'
 
 //export interface IJSONSchema7PropertyForRdf extends Instance<typeof JSONSchema7PropertyForRdf> {}
 
-export const JSONSchema7forRdfReference = types.maybe(
-  types.reference(JSONSchema7forRdf, {
+export const MstJSONSchema7forRdfReference = types.maybe(
+  types.reference(MstJSONSchema7forRdf, {
     get(identifier: string, parent): any {
       if (!parent) return null;
       const repository: IAnyStateTreeNode = getRoot(parent);
       if (!repository) return null;
-      const schemas = repository.schemas as Instance<typeof Schemas>;
+      const schemas = repository.schemas as Instance<typeof MstSchemas>;
       const ss = getSnapshot(schemas);
       const r = schemas.getOrLoadSchemaByIri(identifier);
       return r;
@@ -181,12 +181,12 @@ export const JSONSchema7forRdfReference = types.maybe(
   }),
 );
 
-export const Schemas = types
-  .model('Schemas', {
+export const MstSchemas = types
+  .model('MstSchemas', {
     /**
      * Schemas by id
      */
-    json: types.map(JSONSchema7forRdf),
+    json: types.map(MstJSONSchema7forRdf),
     /**
      * Default schemas for classes
      */
@@ -366,7 +366,7 @@ export const Schemas = types
     };
   });
 
-export type ISchemas = Instance<typeof Schemas>;
+export type ISchemas = Instance<typeof MstSchemas>;
 
 /**
  * Retrieves element's SHACL Shape from server and converts it to 'JSON Schema + LD' and UI Schema

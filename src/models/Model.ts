@@ -14,7 +14,7 @@ import { ArtifactShapeSchema, PropertyShapeSchema } from '../schema/ArtifactShap
 import { JsObject } from '../ObjectProvider';
 import { SparqlClient } from '../SparqlClient';
 
-import { Repository } from './Repository';
+import { MstRepository } from './MstRepository';
 
 export const rootModelInitialState = {
   repId: '',
@@ -87,7 +87,7 @@ export const createModelFromState = (
   additionalColls: CollState[] | undefined = undefined,
 ): any => {
   //@ts-ignore
-  const model = Repository.create(initialState, { client });
+  const model = MstRepository.create(initialState, { client });
   model.setId(repId);
   model.ns.reloadNs();
   if (additionalColls && additionalColls.length > 0) {

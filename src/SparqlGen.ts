@@ -167,6 +167,7 @@ export const gen = new Generator();
 export interface ICollConstrJsOpt {
   '@id'?: string;
   '@type'?: string;
+  '@parent'?: string;
   // properties could be changed by client-code only (GUI code, etc.), immutable within SPARQL generation
   entConstrs: IEntConstrJsOpt[];
   // if last digit not specified, we assuming '0' (identifier0)
@@ -181,6 +182,7 @@ export interface ICollConstrJsOpt {
 export interface IEntConstrJsOpt {
   '@id'?: string;
   '@type'?: string;
+  '@parent'?: string;
   // external properties from Sparql EntConstr could be changed by client-code only (GUI code, etc.), immutable within SPARQL generation
   schema: JSONSchema6forRdf;
   conditions?: JsObject;
@@ -195,6 +197,7 @@ export interface IEntConstrJsOpt {
 export interface ICollConstrJs {
   '@id'?: string;
   '@type'?: string;
+  '@parent'?: string;
   // properties could be changed by client-code only (GUI code, etc.), immutable within SPARQL generation
   entConstrs: IEntConstrJs[];
   // if last digit not specified, we assuming '0' (identifier0)

@@ -12,7 +12,7 @@ import { when } from 'mobx';
 import { getSnapshot } from 'mobx-state-tree';
 
 import { rootModelInitialState } from '../src/models/Model';
-import { Repository } from '../src/models/Repository';
+import { MstRepository } from '../src/models/MstRepository';
 import { SparqlClientImpl } from '../src/SparqlClientImpl';
 import { uploadFiles } from '../src/FileUpload';
 
@@ -24,7 +24,7 @@ import { genTimestampedName, selectHelper } from './TestHelpers';
 jest.setTimeout(5000000);
 
 const client = new SparqlClientImpl(rdfServerUrl);
-const repository = Repository.create(rootModelInitialState, { client });
+const repository = MstRepository.create(rootModelInitialState, { client });
 let rmRepositoryID: string;
 
 beforeAll(async () => {
@@ -61,6 +61,20 @@ afterAll(async () => {
   }
 });
 
+const artifact30000Orig = {
+  '@id': 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml',
+  '@type': 'cpgu:Classifier',
+  assetFolder: 'folders:samples_module',
+  created: '2014-02-10T10:12:16.000Z',
+  creator: 'users:amivanoff',
+  description: 'ТН ВЭД ТС',
+  artifactFormat: 'rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Module',
+  identifier: 30000,
+  modifiedBy: 'users:amivanoff',
+  modified: '2014-02-10T10:12:16.000Z',
+  title: 'ТН ВЭД ТС',
+};
+
 describe('SimpleRetrieve', () => {
   it('should return Artifacts with expected schema', async () => {
     await selectHelper(repository, 'rm:ArtifactShape', (data) => {
@@ -73,19 +87,6 @@ describe('SimpleRetrieve', () => {
   });
 
   it('should return Specific Artifacts with id=30000 with expected schema', async () => {
-    const artifact30000Orig = {
-      '@id': 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml',
-      '@type': 'cpgu:Classifier',
-      assetFolder: 'folders:samples_module',
-      created: '2014-02-10T10:12:16.000Z',
-      creator: 'users:amivanoff',
-      description: 'ТН ВЭД ТС',
-      artifactFormat: 'rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Module',
-      identifier: 30000,
-      modifiedBy: 'users:amivanoff',
-      modified: '2014-02-10T10:12:16.000Z',
-      title: 'ТН ВЭД ТС',
-    };
     await repository.schemas.loadSchemaByClassIri('rm:Artifact');
     let origSchema: any = repository.schemas.getOrLoadSchemaByClassIri('rm:Artifact');
     origSchema = getSnapshot(origSchema);
@@ -119,7 +120,7 @@ describe('SimpleRetrieve', () => {
     );
   });
 
-  it('should return NO Artifacts with unexisted values', async () => {
+  it('should return NO Artifacts with non-existed values', async () => {
     await repository.schemas.loadSchemaByClassIri('rm:Artifact');
     const schema: any = repository.schemas.getOrLoadSchemaByClassIri('rm:Artifact');
     await selectHelper(
@@ -173,7 +174,7 @@ describe('SimpleRetrieve', () => {
     );
   });
 
-  it('should return NO Specific Artifacts with unexisted values', async () => {
+  it('should return NO Specific Artifacts with non-existed values', async () => {
     await repository.schemas.loadSchemaByClassIri('cpgu:Группировка');
     const schema = repository.schemas.getOrLoadSchemaByClassIri('cpgu:Группировка');
     await selectHelper(
@@ -390,6 +391,44 @@ describe('SimpleRetrieve', () => {
       },
       (data) => expect(data.length).toBe(3),
     );
+  });
+});
+
+describe('RetrieveWithParent', () => {
+  it('Retrieve With Parent should sync load', async () => {
+    const coll1 = repository.addColl({
+      '@id': 'rm:collConstr1',
+      entConstrs: [
+        {
+          '@id': 'rm:entConstr1',
+          schema: 'rm:ArtifactShape',
+          resolveType: true,
+        },
+      ],
+    });
+    expect(coll1).not.toBeUndefined();
+
+    const coll2 = repository.addColl({
+      '@id': 'rm:collConstr2',
+      '@parent': 'rm:collConstr1',
+      entConstrs: [
+        {
+          '@id': 'rm:entConstr2',
+          '@parent': 'rm:entConstr1',
+          conditions: { identifier: 30000 },
+        },
+      ],
+      limit: 10,
+    });
+    expect(coll2).not.toBeUndefined();
+
+    await coll2.loadColl();
+    const data: any = coll2 && coll2.data !== undefined ? getSnapshot(coll2.data) : [];
+    expect(data.length).toBe(1);
+    expect(data[0]).toMatchObject(artifact30000Orig);
+
+    repository.removeColl(coll2);
+    repository.removeColl(coll1);
   });
 });
 

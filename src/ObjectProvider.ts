@@ -7,6 +7,7 @@
  *
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
+import uuid62 from 'uuid62';
 import { JSONSchema6 } from 'json-schema';
 
 export function json2str(data: any): string {
@@ -95,6 +96,11 @@ export function copyObjectProps(objTo: JsObject, objFrom: JsObject): void {
   });
 }
 
+/**
+ *
+ * @param objTo
+ * @param objFrom
+ */
 export function copyUniqueObjectProps(objTo: JsObject, objFrom: JsObject): void {
   Object.keys(objFrom).forEach((objFromKey) => {
     if (objTo[objFromKey] === undefined) {
@@ -149,4 +155,8 @@ export function getPropKeysByFormat(schema: JSONSchema6forRdf, format: string): 
     }
   }
   return props;
+}
+
+export function addMissingId(data: any | undefined) {
+  if (data && typeof data === 'object' && !data['@id']) data['@id'] = '_' + uuid62.v4();
 }

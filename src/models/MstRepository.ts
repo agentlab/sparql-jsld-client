@@ -7,17 +7,17 @@
  *
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
-import uuid62 from 'uuid62';
 import { isArray } from 'lodash-es';
-import { types, getEnv, Instance } from 'mobx-state-tree';
+import { values } from 'mobx';
+import { types, getSnapshot, applySnapshot, getEnv, Instance } from 'mobx-state-tree';
 
-import { JsObject } from '../ObjectProvider';
+import { addMissingId, JsObject } from '../ObjectProvider';
 import { abbreviateIri } from '../SparqlGen';
 import { SparqlClient } from '../SparqlClient';
 
-import { Coll } from './Coll';
-import { Namespaces } from './Namespaces';
-import { Schemas } from './Schemas';
+import { MstColl } from './MstColl';
+import { MstNamespaces } from './MstNamespaces';
+import { MstSchemas } from './MstSchemas';
 
 export const User = types.model('User', {
   login: types.identifier,
@@ -30,20 +30,22 @@ export function setPropertyIfExistsAndUnset(schema: any, propKey: string, data: 
   return data[propKey];
 }
 
-export const Repository = types
-  .model('Repository', {
+export const MstRepository = types
+  .model('MstRepository', {
     repId: types.string,
     user: User,
     //processArea: types.string,
-    ns: Namespaces,
-    schemas: Schemas,
+    ns: MstNamespaces,
+    schemas: MstSchemas,
 
     /**
      * Internal colls map.
      * Use <code>rep.getColl(iri)</code> instead of <code>rep.colls.get(iri)</code>
      */
-    colls: types.map(Coll),
+    colls: types.map(MstColl),
     editingData: types.map(types.boolean),
+
+    selectedData: types.map(types.frozen<any>()),
   })
   /**
    * Views
@@ -58,6 +60,19 @@ export const Repository = types
         const iri = typeof iriOrCollConstr === 'string' ? iriOrCollConstr : iriOrCollConstr['@id'];
         const coll = self.colls.get(iri);
         return coll;
+      },
+
+      getSelectedDataJs(iri: string) {
+        const coll = this.getColl(iri);
+        if (coll) {
+          const id = self.selectedData.get(iri);
+          if (id) {
+            let data = coll.dataByIri(id);
+            if (data) data = getSnapshot(data);
+            return data;
+          }
+        }
+        return undefined;
       },
     };
   })
@@ -207,7 +222,25 @@ export const Repository = types
       },
 
       saveData(schemaUri: string) {},
-      selectData(schemaUri: string, data: any) {},
+      //////////  Selection Service  ///////////
+
+      setSelectedData(iri: string, data: any) {
+        console.log('setSelectedData START', { iri, data });
+        if (iri /*&& */) {
+          //let id: string;
+          //if (typeof data === 'string') {
+          //  id = data;
+          //} else {
+          //  id = data['@id'];
+          //
+          //if (id && typeof id === 'string') {
+          //  self.selectedData.set(iri, id);
+          //  console.log('setSelectedData UPDATE', { iri, id });
+          //}
+          self.selectedData.set(iri, data);
+        }
+        console.log('setSelectedData END', { iri, data });
+      },
       //////////  FORM  ///////////
       onSaveFormData(formId: string) {},
       onCancelForm(id: string) {},
@@ -232,6 +265,73 @@ export const Repository = types
       setEditingChanges(parentUri: string, state: boolean, childUri: string) {},
       onChangeFormData(form: string, path: string, data: any) {},
       resetEditingChanges(schemaUri: string) {},
+
+      /**
+       * Edit Connection
+       * @param viewElement
+       * @param scope
+       * @param c
+       * @param from
+       * @param by
+       */
+      editConn(connections: any[], data: any) {
+        console.log('editConn START wit data=', data);
+        connections.forEach((conn: any) => {
+          const toId = conn.to;
+          console.log('editConn conn with id=', toId);
+
+          const node: any = values(self.colls).find((coll: any) => {
+            console.log('editConn coll=', getSnapshot(coll));
+
+            console.log('editConn collConstr=', getSnapshot(coll.collConstr));
+            console.log('editConn collConstr @id=', coll.collConstr['@id']);
+            if (coll.collConstr['@id'] === toId) {
+              console.log('editConn found coll.collConstr');
+              return true;
+            }
+            return values(coll.collConstr.entConstrs).find((entConstr: any) => {
+              console.log('editConn entConstr=', getSnapshot(entConstr));
+              console.log('editConn entConstr @id=', entConstr['@id']);
+              if (entConstr['@id'] === toId) {
+                console.log('editConn found entConstr');
+                return true;
+              }
+              console.log('editConn conditions=', getSnapshot(entConstr.conditions));
+              console.log('editConn conditions @id=', entConstr.conditions['@id']);
+              console.log('editConn conditions snpsht @id=', (getSnapshot(entConstr.conditions) as any)['@id']);
+              console.log('editConn conditions get @id=', entConstr.conditions.get('@id'));
+              if (entConstr.conditions.get('@id') === toId) {
+                //console.log('editConn found conditions');
+                const node = entConstr.conditions;
+                console.log('editConn node found=', node);
+                let condition: any = getSnapshot(node);
+                condition = {
+                  ...condition,
+                };
+                if (typeof data === 'object') data = data['@id'];
+                condition[conn.by] = data;
+                console.log('editConn new condition=', condition);
+                applySnapshot(node, condition);
+                console.log('editConn applied condition=', condition);
+                return true;
+              }
+              return false;
+            });
+          });
+          //if (node) {
+          //  console.log('editConn node found=', node);
+          //  let condition: any = getSnapshot(node);
+          //  condition = {
+          //    ...condition,
+          //  };
+          //  condition[conn.by] = data;
+          //  console.log('editConn new condition=', condition);
+          //  applySnapshot(node, condition);
+          //  console.log('editConn applied condition=', condition);
+          //}
+          console.log('editConn END');
+        });
+      },
 
       /*loadColl: flow(function* loadColl(iriOrCollConstr: string | any) {
         const collConstr = (typeof iriOrCollConstr === 'string') ? self.collsConstr.get(iriOrCollConstr) : iriOrCollConstr;
@@ -406,8 +506,4 @@ export const Repository = types
     };
   });
 
-export type IRepository = Instance<typeof Repository>;
-
-function addMissingId(data: any | undefined) {
-  if (data && typeof data === 'object' && !data['@id']) data['@id'] = '_' + uuid62.v4();
-}
+export type IRepository = Instance<typeof MstRepository>;

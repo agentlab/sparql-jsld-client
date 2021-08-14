@@ -20,10 +20,10 @@ export * from './schema/ArtifactShapeSchema';
 export * from './schema/Formatters';
 export * from './schema/RdfsSchema';
 
-export * from './models/Coll';
-export * from './models/CollConstr';
+export * from './models/MstColl';
+export * from './models/MstCollConstr';
 export * from './models/Model';
-export * from './models/Namespaces';
-export * from './models/Repository';
-export * from './models/Schemas';
+export * from './models/MstNamespaces';
+export * from './models/MstRepository';
+export * from './models/MstSchemas';
 export * from './models/Utils';

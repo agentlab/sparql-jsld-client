@@ -13,8 +13,8 @@ import { isEmpty } from 'lodash-es';
 import { SparqlClient } from '../SparqlClient';
 import { JsStrObj } from '../ObjectProvider';
 
-export const Namespaces = types
-  .model('Namespaces', {
+export const MstNamespaces = types
+  .model('MstNamespaces', {
     //default: types.map(types.string),
     current: types.map(types.string),
   })

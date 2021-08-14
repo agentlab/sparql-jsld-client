@@ -7,34 +7,33 @@
  *
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
-import { cloneDeep } from 'lodash-es';
+import { assign, cloneDeep, has, omit, transform } from 'lodash-es';
 import {
   types,
   getSnapshot,
   getEnv,
-  getParent,
   getRoot,
-  isReferenceType,
   Instance,
   SnapshotOut,
   IAnyStateTreeNode,
+  IAnyModelType,
 } from 'mobx-state-tree';
 
-import { JsObject } from '../ObjectProvider';
-import { ISchemas, JSONSchema7forRdf, JSONSchema7forRdfReference } from './Schemas';
+import { addMissingId, JsObject } from '../ObjectProvider';
+import { ISchemas, MstJSONSchema7forRdf, MstJSONSchema7forRdfReference } from './MstSchemas';
 import { ICollConstrJs } from '../SparqlGen';
 import { constructObjectsQuery, selectObjectsQuery } from '../SparqlGenSelect';
 import { insertObjectQuery, deleteObjectQuery, updateObjectQuery } from '../SparqlGenUpdate';
 import { SparqlClient } from '../SparqlClient';
 
-export const JsObject2 = types.map(types.frozen<any>());
+export const MstJsObject = types.map(types.frozen<any>());
 //export interface IJsObject2 extends Instance<typeof JsObject2> {}
 
 /**
  * Entity Constraint, part of Collection Constraint (CollConstr)
  */
-export const EntConstr = types
-  .model('EntConstr', {
+export const MstEntConstr = types
+  .model('MstEntConstr', {
     /**
      * IRI of entity constraint
      */
@@ -46,24 +45,24 @@ export const EntConstr = types
     /**
      * IRI of a parent entity constraint
      */
-    '@parent': types.maybe(types.string),
+    '@parent': types.safeReference(types.late((): IAnyModelType => MstEntConstr)),
     /**
      * could be class IRI, resolved from local schema repository (local cache) or from server
      * or could be 'private' schema (full qualified JS object)
      */
-    schema: types.union(JSONSchema7forRdfReference, JSONSchema7forRdf),
+    schema: types.union(MstJSONSchema7forRdfReference, MstJSONSchema7forRdf),
     /**
      *
      */
-    conditions: types.optional(JsObject2, {}),
+    conditions: types.optional(MstJsObject, {}),
     /**
      * if null, use all schema props
      * if empty {}, not use schema props
      * if { kk: null }
      * if { kk: val }
      */
-    variables: types.union(JsObject2, types.undefined),
-    data: types.optional(JsObject2, {}),
+    variables: types.union(MstJsObject, types.undefined),
+    data: types.optional(MstJsObject, {}),
     /**
      * Retrieve DirectType class (lowest in the class hierarchy).
      */
@@ -84,15 +83,36 @@ export const EntConstr = types
         return getSnapshot(self.data);
       },
     };
+  })
+  .actions((self: any) => {
+    //let disp: any;
+    return {
+      /*afterAttach() {
+        console.log('MstEntConstr afterAttach, @id=', self['@id']);
+        disp = reaction(
+          () => getSnapshot(self.conditions),
+          (newVal: any, oldVal: any) => {
+            console.log('MstEntConstr.conditions changed, reload data', { newVal, oldVal });
+            //@ts-ignore
+            //self.loadColl();
+          },
+          { fireImmediately: false },
+        );
+      },
+      beforeDetach() {
+        //console.log('MstEntConstr beforeDetach, @id=', self['@id']);
+        //if (disp) disp();
+      },*/
+    };
   });
 
-export type IEntConstr = Instance<typeof EntConstr>;
+export type IEntConstr = Instance<typeof MstEntConstr>;
 
 /**
  * Collection Constraint
  */
-export const CollConstr = types
-  .model('CollConstr', {
+export const MstCollConstr = types
+  .model('MstCollConstr', {
     /**
      * IRI of collection constraint
      */
@@ -104,11 +124,11 @@ export const CollConstr = types
     /**
      * IRI of a parent entity constraint
      */
-    '@parent': types.maybe(types.string),
+    '@parent': types.safeReference(types.late((): IAnyModelType => MstCollConstr)),
     /**
      * Ordered array of entity constraints. Could be linked by conditions fields
      */
-    entConstrs: types.array(EntConstr),
+    entConstrs: types.array(MstEntConstr),
     /**
      * Ordered array of order clauses
      * If last digit not specified, we assuming '0' (identifier0)
@@ -152,18 +172,30 @@ export const CollConstr = types
    * Actions
    */
   .actions((self: any) => {
+    let disp: any;
     return {
-      afterAttach() {},
-      beforeDetach() {
-        console.log('CollConstr Detach');
+      /*afterAttach() {
+        console.log('MstCollConstrs afterAttach, @id=', self['@id']);
+        disp = reaction(
+          () => self.entConstrs,
+          () => {
+            console.log('MstCollConstrs.entConstrs changed, reload data');
+            //@ts-ignore
+            //self.loadColl();
+          },
+          { fireImmediately: false },
+        );
       },
+      beforeDetach() {
+        console.log('MstCollConstr Detach', self['@id']);
+        if (disp) disp();
+      },*/
       setLimit(limit: number) {
         self.limit = limit;
       },
       /**
        * SELECT
        */
-
       /**
        * Заменяет
        * @param obj
@@ -231,7 +263,6 @@ export const CollConstr = types
         //console.debug('END selectObjectsArrayProperties');
         return objects;
       }),*/
-
       /*selectObjects: flow(function* selectObjects() {
         const collConstrJs = resolveAndClone(self as ICollConstr);
         const entConstrs: EntConstrInternal[] = getInternalCollConstrs(collConstrJs, self.nsJs);
@@ -247,7 +278,6 @@ export const CollConstr = types
         //console.debug('selectObjects objects_with_arrays=', json2str(objects));
         return objects;
       }),*/
-
       /*constructObjects: flow(function* constructObjects() {
         const collConstrJs = resolveAndClone(self);
         const entConstrs: EntConstrInternal[] = getInternalCollConstrs(collConstrJs, self.nsJs);
@@ -258,7 +288,6 @@ export const CollConstr = types
         const objects: JsObject[] = yield jsonLdToObjects(results, entConstrs);
         return objects;
       }),*/
-
       /**
        * DELETE
        */
@@ -275,7 +304,6 @@ export const CollConstr = types
         if (loadIfNeeded && coll && !coll.lastSynced) yield self.selectObjects();
         return response;
       }),*/
-
       /**
        * INSERT
        */
@@ -292,7 +320,6 @@ export const CollConstr = types
         if (loadIfNeeded && coll && !coll.lastSynced) yield self.selectObjects();
         return response;
       }),*/
-
       /**
        * UPDATE
        */
@@ -312,17 +339,71 @@ export const CollConstr = types
     };
   });
 
-export type ICollConstr = Instance<typeof CollConstr>;
-export type ICollConstrSnapshotOut = SnapshotOut<typeof CollConstr>;
+export type ICollConstr = Instance<typeof MstCollConstr>;
+export type ICollConstrSnapshotOut = SnapshotOut<typeof MstCollConstr>;
+
+/**
+ * Smart deep-merge parent CollConstr and it's entConstrs into child CollConstr.
+ * Skip all JSON-LD props, starts with  '@'.
+ * @param collConstrJs
+ * @param parentCollConstrJs
+ * @returns
+ */
+function mergeCollConstrs(
+  collConstrJs: ICollConstrSnapshotOut,
+  parentCollConstrJs: ICollConstrSnapshotOut,
+): ICollConstrSnapshotOut {
+  // deep-merge entConstrs props
+  (collConstrJs.entConstrs as any) = collConstrJs.entConstrs.map((entConstrJs) => {
+    const parentEntConstrJs = parentCollConstrJs.entConstrs.find(
+      (parentEntConstrJs) => parentEntConstrJs['@id'] === entConstrJs['@parent'],
+    );
+    if (parentEntConstrJs) {
+      entConstrJs = transform(
+        omit(parentEntConstrJs, ['@id', '@type', '@parent']),
+        (result: any, value: any, key: string) => {
+          // override props: schema, resolveType
+          if (key === 'schema' && value) result[key] = value;
+          else if (key === 'resolveType' && value) result[key] = value;
+          // deep-merge props for objects in props: conditions, variables, data
+          else if (value !== undefined && !!Object.keys(value).length) {
+            result[key] = assign(result[key], omit(value, ['@id', '@type', '@parent']));
+            addMissingId(result[key]);
+          }
+        },
+        entConstrJs,
+      );
+    }
+    return entConstrJs;
+  });
+  // override props
+  if (has(parentCollConstrJs, 'distinct')) collConstrJs.distinct = parentCollConstrJs.distinct;
+  if (has(parentCollConstrJs, 'options'))
+    collConstrJs.options = assign(collConstrJs.options, parentCollConstrJs.options);
+  // default props
+  if (!has(collConstrJs, 'orderBy') && has(parentCollConstrJs, 'orderBy'))
+    collConstrJs.orderBy = parentCollConstrJs.orderBy;
+  if (!has(collConstrJs, 'limit') && has(parentCollConstrJs, 'limit')) collConstrJs.limit = parentCollConstrJs.limit;
+  if (!has(collConstrJs, 'offset') && has(parentCollConstrJs, 'offset'))
+    collConstrJs.offset = parentCollConstrJs.offset;
+  return collConstrJs;
+}
 
 async function resolveAndClone(self: ICollConstr) {
   const data = getSnapshot<ICollConstrSnapshotOut>(self);
-  return resolveAndCloneSnapshot(data, self.rep.schemas);
+  let parent: any = self['@parent'];
+  if (parent) parent = getSnapshot<ICollConstrSnapshotOut>(parent);
+  return resolveAndCloneSnapshot(data, parent, self.rep.schemas);
 }
 
-async function resolveAndCloneSnapshot(data: ICollConstrSnapshotOut, schemas: ISchemas) {
-  const collConstrJs: ICollConstrSnapshotOut = cloneDeep(data);
-  // resolve schema by reference
+async function resolveAndCloneSnapshot(
+  data: ICollConstrSnapshotOut,
+  parent: ICollConstrSnapshotOut | undefined,
+  schemas: ISchemas,
+) {
+  let collConstrJs: ICollConstrSnapshotOut = cloneDeep(data);
+  if (parent) collConstrJs = mergeCollConstrs(collConstrJs, parent);
+  // resolve schema by reference. For-loop because of async-await
   for (let index = 0; index < collConstrJs.entConstrs.length; index++) {
     const constrJs = collConstrJs.entConstrs[index];
     let schema: any = constrJs.schema;
@@ -331,6 +412,7 @@ async function resolveAndCloneSnapshot(data: ICollConstrSnapshotOut, schemas: IS
       schema = schemas.get(schemaIri);
       if (!schema) {
         schema = await schemas.loadSchemaByIri(schemaIri);
+        if (!schema) console.error('NULL Schema!!!');
       }
       schema = getSnapshot(schema);
       if (!schema) console.error('NULL Schema!!!');
@@ -358,12 +440,13 @@ export async function constructObjects(collConstr: ICollConstr) {
 
 export async function constructObjectsSnapshot(
   data: ICollConstrSnapshotOut,
+  parent: ICollConstrSnapshotOut | undefined,
   schemas: ISchemas,
   nsJs: any,
   client: SparqlClient,
 ) {
   //TODO: performance
-  const collConstrJs = await resolveAndCloneSnapshot(data, schemas);
+  const collConstrJs = await resolveAndCloneSnapshot(data, parent, schemas);
   return constructObjectsQuery(collConstrJs, nsJs, client);
 }
 
@@ -386,10 +469,11 @@ export async function deleteObjectSnapshot(
   nsJs: any,
   client: SparqlClient,
   data: ICollConstrSnapshotOut,
+  parent: ICollConstrSnapshotOut | undefined,
   conditions?: JsObject | JsObject[],
 ) {
   //TODO: performance
-  const collConstrJs = await resolveAndCloneSnapshot(data, schemas);
+  const collConstrJs = await resolveAndCloneSnapshot(data, parent, schemas);
   deleteObjectQuery(collConstrJs, nsJs, client, conditions);
 }
 

@@ -8,8 +8,8 @@
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
 import { rootModelInitialState } from '../../src/models/Model';
-import { Repository } from '../../src/models/Repository';
-import { createSchemaWithSubClassOf, resolveSchemaFromServer } from '../../src/models/Schemas';
+import { MstRepository } from '../../src/models/MstRepository';
+import { createSchemaWithSubClassOf, resolveSchemaFromServer } from '../../src/models/MstSchemas';
 import { SparqlClientImpl } from '../../src/SparqlClientImpl';
 import { selectObjectsQuery } from '../../src/SparqlGenSelect';
 import { ClassSchema } from '../../src/schema/RdfsSchema';
@@ -24,7 +24,7 @@ import { genTimestampedName } from '../TestHelpers';
 jest.setTimeout(5000000);
 
 const client = new SparqlClientImpl(rdfServerUrl);
-const repository = Repository.create(rootModelInitialState, { client });
+const repository = MstRepository.create(rootModelInitialState, { client });
 let rmRepositoryID: string;
 
 beforeAll(async () => {

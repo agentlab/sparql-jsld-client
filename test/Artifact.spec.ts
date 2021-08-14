@@ -11,7 +11,7 @@ import uuid62 from 'uuid62';
 import { getSnapshot } from 'mobx-state-tree';
 
 import { rootModelInitialState } from '../src/models/Model';
-import { Repository } from '../src/models/Repository';
+import { MstRepository } from '../src/models/MstRepository';
 import { SparqlClientImpl } from '../src/SparqlClientImpl';
 import { JsObject } from '../src/ObjectProvider';
 import { uploadFiles } from '../src/FileUpload';
@@ -26,7 +26,7 @@ import { genTimestampedName, sleep } from './TestHelpers';
 jest.setTimeout(500000);
 
 const client = new SparqlClientImpl(rdfServerUrl);
-const repository = Repository.create(rootModelInitialState, { client });
+const repository = MstRepository.create(rootModelInitialState, { client });
 let rmRepositoryID: string;
 
 const assetFolder = 'folders:folder1';

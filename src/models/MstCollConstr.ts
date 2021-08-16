@@ -26,7 +26,8 @@ import { constructObjectsQuery, selectObjectsQuery } from '../SparqlGenSelect';
 import { insertObjectQuery, deleteObjectQuery, updateObjectQuery } from '../SparqlGenUpdate';
 import { SparqlClient } from '../SparqlClient';
 
-export const MstJsObject = types.map(types.frozen<any>());
+export const MstJsObject = types.frozen<any>();
+export const MstMapOfJsObject = types.map(MstJsObject);
 //export interface IJsObject2 extends Instance<typeof JsObject2> {}
 
 /**
@@ -54,15 +55,15 @@ export const MstEntConstr = types
     /**
      *
      */
-    conditions: types.optional(MstJsObject, {}),
+    conditions: types.optional(MstMapOfJsObject, {}),
     /**
      * if null, use all schema props
      * if empty {}, not use schema props
      * if { kk: null }
      * if { kk: val }
      */
-    variables: types.union(MstJsObject, types.undefined),
-    data: types.optional(MstJsObject, {}),
+    variables: types.union(MstMapOfJsObject, types.undefined),
+    data: types.optional(MstMapOfJsObject, {}),
     /**
      * Retrieve DirectType class (lowest in the class hierarchy).
      */
@@ -353,38 +354,42 @@ function mergeCollConstrs(
   collConstrJs: ICollConstrSnapshotOut,
   parentCollConstrJs: ICollConstrSnapshotOut,
 ): ICollConstrSnapshotOut {
-  // deep-merge entConstrs props
-  (collConstrJs.entConstrs as any) = collConstrJs.entConstrs.map((entConstrJs) => {
-    const parentEntConstrJs = parentCollConstrJs.entConstrs.find(
-      (parentEntConstrJs) => parentEntConstrJs['@id'] === entConstrJs['@parent'],
-    );
-    if (parentEntConstrJs) {
-      entConstrJs = transform(
-        omit(parentEntConstrJs, ['@id', '@type', '@parent']),
-        (result: any, value: any, key: string) => {
-          // override props: schema, resolveType
-          if (key === 'schema' && value) result[key] = value;
-          else if (key === 'resolveType' && value) result[key] = value;
-          // deep-merge props for objects in props: conditions, variables, data
-          else if (value !== undefined && !!Object.keys(value).length) {
-            result[key] = assign(result[key], omit(value, ['@id', '@type', '@parent']));
-            addMissingId(result[key]);
-          }
-        },
-        entConstrJs,
+  // deep-merge entConstrs props, based on parent order of EntConstrs
+  (collConstrJs.entConstrs as any) = parentCollConstrJs.entConstrs
+    .map((parentEntConstrJs) => {
+      let entConstrJs = collConstrJs.entConstrs.find(
+        (entConstrJs) => entConstrJs['@parent'] === parentEntConstrJs['@id'],
       );
-    }
-    return entConstrJs;
-  });
-  // override props
-  if (has(parentCollConstrJs, 'distinct')) collConstrJs.distinct = parentCollConstrJs.distinct;
-  if (has(parentCollConstrJs, 'options'))
+      if (entConstrJs) {
+        entConstrJs = transform(
+          omit(parentEntConstrJs, ['@id', '@type', '@parent']),
+          (result: any, value: any, key: string) => {
+            // override props: schema, resolveType
+            if (key === 'schema' && value) result[key] = value;
+            else if (key === 'resolveType' && value) result[key] = value;
+            // deep-merge props for objects in props: conditions, variables, data
+            else if (value !== undefined && !!Object.keys(value).length) {
+              result[key] = assign(result[key], omit(value, ['@id', '@type', '@parent']));
+              addMissingId(result[key]);
+            }
+          },
+          entConstrJs,
+        );
+      } else entConstrJs = parentEntConstrJs; // add non-extended parent EntConstr
+      return entConstrJs;
+    })
+    .concat(collConstrJs.entConstrs.filter((entConstrJs) => entConstrJs['@parent'] === undefined));
+
+  // override props (due to MST props exists in parent but set to undefined)
+  if (parentCollConstrJs.distinct !== undefined) collConstrJs.distinct = parentCollConstrJs.distinct;
+  if (parentCollConstrJs.options !== undefined)
     collConstrJs.options = assign(collConstrJs.options, parentCollConstrJs.options);
-  // default props
-  if (!has(collConstrJs, 'orderBy') && has(parentCollConstrJs, 'orderBy'))
+  // set default props if unset
+  if (collConstrJs.orderBy === undefined && parentCollConstrJs.orderBy !== undefined)
     collConstrJs.orderBy = parentCollConstrJs.orderBy;
-  if (!has(collConstrJs, 'limit') && has(parentCollConstrJs, 'limit')) collConstrJs.limit = parentCollConstrJs.limit;
-  if (!has(collConstrJs, 'offset') && has(parentCollConstrJs, 'offset'))
+  if (collConstrJs.limit === undefined && parentCollConstrJs.limit !== undefined)
+    collConstrJs.limit = parentCollConstrJs.limit;
+  if (collConstrJs.offset === undefined && parentCollConstrJs.offset !== undefined)
     collConstrJs.offset = parentCollConstrJs.offset;
   return collConstrJs;
 }
@@ -402,7 +407,7 @@ async function resolveAndCloneSnapshot(
   schemas: ISchemas,
 ) {
   let collConstrJs: ICollConstrSnapshotOut = cloneDeep(data);
-  if (parent) collConstrJs = mergeCollConstrs(collConstrJs, parent);
+  if (parent) collConstrJs = mergeCollConstrs(collConstrJs, cloneDeep(parent));
   // resolve schema by reference. For-loop because of async-await
   for (let index = 0; index < collConstrJs.entConstrs.length; index++) {
     const constrJs = collConstrJs.entConstrs[index];

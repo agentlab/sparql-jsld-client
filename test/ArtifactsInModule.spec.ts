@@ -63,13 +63,28 @@ afterAll(async () => {
   }
 });
 
+const SchemaWithHasChildProp: any = {
+  ...artifactSchema,
+  '@id': 'rm:ArtifactInUsedInModuleLink',
+  properties: {
+    ...artifactSchema.properties,
+    hasChild: {
+      title: 'Имеет потомков',
+      description: 'Имеет потомков',
+      type: 'boolean',
+      shapeModifiability: 'system',
+    },
+  },
+  required: [...(artifactSchema.required || []), 'hasChild'],
+};
+
 const usedInModuleCollConstrJs: any = {
   '@id': 'rm:ModuleViewClass_Query', // not processed by query generator, could be omitted (object id could be used for mobx JSON-LD storage or server storage)
-  '@type': 'rm:Query', // not processed by query generator, could be omitted (object id could be used for mobx JSON-LD storage or server storage)
+  '@type': 'aldkg:CollConstr', // not processed by query generator, could be omitted (object id could be used for mobx JSON-LD storage or server storage)
   entConstrs: [
     {
       '@id': 'rm:UsedInModuleLink_Shape0', // not processed by query generator, could be omitted (object id could be used for mobx JSON-LD storage or server storage)
-      '@type': 'rm:QueryShape', // not processed by query generator, could be omitted (object id could be used for mobx JSON-LD storage or server storage)
+      '@type': 'aldkg:EntConstr', // not processed by query generator, could be omitted (object id could be used for mobx JSON-LD storage or server storage)
       schema: 'rmUserTypes:UsedInModuleShape', // it could be schema object or class IRI string
       //schema: usedInModuleSchema,
       conditions: {
@@ -77,7 +92,7 @@ const usedInModuleCollConstrJs: any = {
         // pay attention to the collisions with '@id', '@type' and other JSON-LD props!
         // it should be screened like '@_id', '@_type'
         '@id': 'rmUserTypes:my_link', // IRI of an element, but should be ID of condition object itself ('@id': 'rm:UsedInModuleLink_Shape0_Condition')
-        '@type': 'some conditions type', // normally gets from schema @id
+        '@type': 'aldkg:EntConstrCondition', // normally gets from schema @id
         //'@_id':
         //'@_type':
         object: 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml',
@@ -86,22 +101,9 @@ const usedInModuleCollConstrJs: any = {
       //variables: {},
     },
     {
-      '@id': 'rm:LinketArtifact_Shape1', // not processed by query generator, could be omitted (object id could be used for mobx JSON-LD storage or server storage)
-      '@type': 'rm:QueryShape', // not processed by query generator, could be omitted (object id could be used for mobx JSON-LD storage or server storage)
-      schema: {
-        ...artifactSchema,
-        '@id': 'rm:ArtifactInUsedInModuleLink',
-        properties: {
-          ...artifactSchema.properties,
-          hasChild: {
-            title: 'Имеет потомков',
-            description: 'Имеет потомков',
-            type: 'boolean',
-            shapeModifiability: 'system',
-          },
-        },
-        required: [...(artifactSchema.required || []), 'hasChild'],
-      }, // it could be schema object or class IRI string
+      '@id': 'rm:LinkedArtifact_Shape1', // not processed by query generator, could be omitted (object id could be used for mobx JSON-LD storage or server storage)
+      '@type': 'aldkg:EntConstr', // not processed by query generator, could be omitted (object id could be used for mobx JSON-LD storage or server storage)
+      schema: SchemaWithHasChildProp, // it could be schema object or class IRI string
       // key-value {}:JsObject
       conditions: {
         // context-less property calculated by EXISTS function
@@ -132,10 +134,39 @@ const usedInModuleCollConstrJs: any = {
   limit: 3,
 };
 
+const moduleObject: any = {
+  '@id': 'reqs:_M1HusThYEem2Z_XixsC3pQ',
+  '@type': 'rmUserTypes:UsedInModule',
+  bookOrder: 1,
+  created: '2014-02-10T10:12:16.000Z',
+  creator: 'users:amivanoff',
+  depth: 1,
+  modified: '2014-02-10T10:12:16.000Z',
+  modifiedBy: 'users:amivanoff',
+  object: 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml',
+  parentBinding: 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml',
+  processArea: 'projects:gishbbProject',
+  sectionNumber: '0-1',
+  subject: {
+    '@id': 'cpgu:_tHAikozUEeOiy8owVBW5pQ',
+    '@type': 'cpgu:Группировка',
+    artifactFormat: 'rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Text',
+    assetFolder: 'folders:samples_module',
+    created: '2014-02-10T10:12:16.000Z',
+    creator: 'users:amivanoff',
+    hasChild: true,
+    identifier: 30001,
+    modified: '2014-02-10T10:12:16.000Z',
+    modifiedBy: 'users:amivanoff',
+    processArea: 'projects:gishbbProject',
+    title: 'ТН ВЭД ТС',
+  },
+};
+
 describe('ArtifactsInModules query should return Module UsedInModules with associated Artifact', () => {
   it('sorted by bookOrder', () => {
     return new Promise<void>((done) => {
-      // not nessesary to add, it could be retrieved from server by type IRI
+      // not necessary to add, it could be retrieved from server by type IRI
       // used here to increase predictability
       //provider.addSchema(artifactSchema);
       //provider.addSchema(usedInSchema);
@@ -148,34 +179,7 @@ describe('ArtifactsInModules query should return Module UsedInModules with assoc
         () => {
           const linksAndArtifacts: JsObject[] = getSnapshot(coll?.data);
           expect(linksAndArtifacts.length).toBe(3);
-          expect(linksAndArtifacts[0]).toMatchObject({
-            '@id': 'reqs:_M1HusThYEem2Z_XixsC3pQ',
-            '@type': 'rmUserTypes:UsedInModule',
-            bookOrder: 1,
-            created: '2014-02-10T10:12:16.000Z',
-            creator: 'users:amivanoff',
-            depth: 1,
-            modified: '2014-02-10T10:12:16.000Z',
-            modifiedBy: 'users:amivanoff',
-            object: 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml',
-            parentBinding: 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml',
-            processArea: 'projects:gishbbProject',
-            sectionNumber: '0-1',
-            subject: {
-              '@id': 'cpgu:_tHAikozUEeOiy8owVBW5pQ',
-              '@type': 'cpgu:Группировка',
-              artifactFormat: 'rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Text',
-              assetFolder: 'folders:samples_module',
-              created: '2014-02-10T10:12:16.000Z',
-              creator: 'users:amivanoff',
-              hasChild: true,
-              identifier: 30001,
-              modified: '2014-02-10T10:12:16.000Z',
-              modifiedBy: 'users:amivanoff',
-              processArea: 'projects:gishbbProject',
-              title: 'ТН ВЭД ТС',
-            },
-          });
+          expect(linksAndArtifacts[0]).toMatchObject(moduleObject);
           repository.removeColl(coll);
           done();
         },
@@ -185,7 +189,7 @@ describe('ArtifactsInModules query should return Module UsedInModules with assoc
 
   it('sorted by ASC bookOrder', () => {
     return new Promise<void>((done) => {
-      // not nessesary to add, it could be retrieved from server by type IRI
+      // not necessary to add, it could be retrieved from server by type IRI
       // used here to increase predictability
       //provider.addSchema(artifactSchema);
       //provider.addSchema(usedInSchema);
@@ -254,7 +258,7 @@ describe('ArtifactsInModules query should return Module UsedInModules with assoc
       entConstrs: [
         {
           '@id': 'rm:UsedInModuleLink_Shape0', // not processed by query generator, could be omitted (object id could be used for mobx JSON-LD storage or server storage)
-          '@type': 'rm:QueryShape', // not processed by query generator, could be omitted (object id could be used for mobx JSON-LD storage or server storage)
+          '@type': 'aldkg:EntConstr', // not processed by query generator, could be omitted (object id could be used for mobx JSON-LD storage or server storage)
           schema: 'rmUserTypes:UsedInModuleShape', // it could be schema object or class IRI string
           //schema: usedInModuleSchema,
           conditions: {
@@ -348,4 +352,84 @@ describe('ArtifactsInModules query should return Module UsedInModules with assoc
       }
     );
   });*/
+});
+
+const usedInModuleParentCollConstrJs: any = {
+  '@id': 'rm:ModuleViewClass_Parent_CollConstr',
+  '@type': 'aldkg:CollConstr',
+  entConstrs: [
+    {
+      '@id': 'rm:UsedInModuleLink_Parent_EntConstr0',
+      '@type': 'aldkg:EntConstr',
+      schema: 'rmUserTypes:UsedInModuleShape',
+      conditions: {
+        '@id': 'rm:UsedInModuleLink_Parent_EntConstr0_Condition',
+        '@type': 'aldkg:EntConstrCondition',
+        subject: '?eIri1',
+      },
+    },
+    {
+      '@id': 'rm:UsedInModuleLink_Parent_EntConstr1',
+      '@type': 'aldkg:EntConstr',
+      schema: SchemaWithHasChildProp,
+      conditions: {
+        hasChild: {
+          bind: {
+            relation: 'exists',
+            triples: [
+              triple(
+                variable('eIri2'),
+                namedNode('http://cpgu.kbpm.ru/ns/rm/user-types#parentBinding'),
+                variable('eIri1'),
+              ),
+            ],
+          },
+        },
+      },
+      resolveType: true,
+    },
+  ],
+  orderBy: [
+    {
+      expression: variable('bookOrder0'),
+      descending: false,
+    },
+  ],
+  limit: 3,
+};
+
+const usedInModuleChildCollConstrJs: any = {
+  '@id': 'rm:ModuleViewClass_Child_CollConstr',
+  '@type': 'aldkg:CollConstr',
+  '@parent': 'rm:ModuleViewClass_Parent_CollConstr',
+  entConstrs: [
+    {
+      '@id': 'rm:UsedInModuleLink_Child_EntConstr0',
+      '@type': 'aldkg:EntConstr',
+      '@parent': 'rm:UsedInModuleLink_Parent_EntConstr0',
+      conditions: {
+        '@id': 'rm:UsedInModuleLink_Child_EntConstr0_Condition',
+        '@type': 'aldkg:EntConstrCondition',
+        object: 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml',
+      },
+    },
+  ],
+};
+
+describe('RetrieveModuleWithParent', () => {
+  it('RetrieveModuleWithParent should sync load', async () => {
+    const coll1 = repository.addColl(usedInModuleParentCollConstrJs);
+    expect(coll1).not.toBeUndefined();
+
+    const coll2 = repository.addColl(usedInModuleChildCollConstrJs);
+    expect(coll2).not.toBeUndefined();
+
+    await coll2.loadColl();
+    const data: any = coll2 && coll2.data !== undefined ? getSnapshot(coll2.data) : [];
+    expect(data.length).toBe(3);
+    expect(data[0]).toMatchObject(moduleObject);
+
+    repository.removeColl(coll2);
+    repository.removeColl(coll1);
+  });
 });

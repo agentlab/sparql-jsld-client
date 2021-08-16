@@ -29,7 +29,7 @@ import {
   constructObjectsSnapshot,
   deleteObjectSnapshot,
   ICollConstrSnapshotOut,
-  MstJsObject,
+  MstMapOfJsObject,
 } from './MstCollConstr';
 
 export interface MstModels {
@@ -59,10 +59,10 @@ export const MstCollDataType = types.union(
         }
       }
       //console.log('DataType, create JsObject2 for', snapshot['@id']);
-      return MstJsObject;
+      return MstMapOfJsObject;
     },
   },
-  MstJsObject,
+  MstMapOfJsObject,
 );
 
 /**

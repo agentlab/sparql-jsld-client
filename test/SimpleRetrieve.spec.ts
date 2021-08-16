@@ -279,12 +279,12 @@ describe('SimpleRetrieve', () => {
     const collConstr: any = {
       // globally unique ID of this Query object, could be used for references in mobx JSON-LD storage or server storage, not processed by query generator
       '@id': 'rm:ProjectViewClass_Artifacts_Query',
-      '@type': 'rm:Query',
+      '@type': 'aldkg:CollConstr',
       entConstrs: [
         {
           // globally unique ID of this Shape object, could be used for references in mobx JSON-LD storage or server storage, not processed by query generator
           '@id': 'rm:ProjectViewClass_Artifacts_Query_Shape0',
-          '@type': 'rm:QueryShape',
+          '@type': 'aldkg:EntConstr',
           // JSON Schema (often same as Class IRI), required!
           // it could be schema object or class IRI string
           schema: 'rm:ArtifactShape',
@@ -332,11 +332,11 @@ describe('SimpleRetrieve', () => {
       repository,
       {
         '@id': 'rm:ProjectViewClass_Folders_Query',
-        '@type': 'rm:Query',
+        '@type': 'aldkg:CollConstr',
         entConstrs: [
           {
             '@id': 'rm:ProjectViewClass_Folders_Query_Shape0',
-            '@type': 'rm:QueryShape',
+            '@type': 'aldkg:EntConstr',
             schema: 'nav:folderShape',
           },
         ],
@@ -348,11 +348,11 @@ describe('SimpleRetrieve', () => {
       repository,
       {
         '@id': 'rm:ProjectViewClass_Users_Query',
-        '@type': 'rm:Query',
+        '@type': 'aldkg:CollConstr',
         entConstrs: [
           {
             '@id': 'rm:Users_Shape0',
-            '@type': 'rm:QueryShape',
+            '@type': 'aldkg:EntConstr',
             schema: 'pporoles:UserShape',
           },
         ],
@@ -364,11 +364,11 @@ describe('SimpleRetrieve', () => {
       repository,
       {
         '@id': 'rm:ProjectViewClass_ArtifactClasses_Query',
-        '@type': 'rm:Query',
+        '@type': 'aldkg:CollConstr',
         entConstrs: [
           {
             '@id': 'rm:ProjectViewClass_ArtifactClasses_Query_Shape0',
-            '@type': 'rm:QueryShape',
+            '@type': 'aldkg:EntConstr',
             schema: 'rm:ArtifactClassesShape',
           },
         ],
@@ -380,11 +380,11 @@ describe('SimpleRetrieve', () => {
       repository,
       {
         '@id': 'rm:ProjectViewClass_ArtifactFormats_Query',
-        '@type': 'rm:Query',
+        '@type': 'aldkg:CollConstr',
         entConstrs: [
           {
             '@id': 'rm:ProjectViewClass_ArtifactFormats_Query_Shape0',
-            '@type': 'rm:QueryShape',
+            '@type': 'aldkg:EntConstr',
             schema: 'rmUserTypes:_YwcOsRmREemK5LEaKhoOowShape',
           },
         ],

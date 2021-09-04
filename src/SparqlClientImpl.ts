@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
-import axios from 'axios';
+import axios, { AxiosError, AxiosResponse } from 'axios';
 import { SparqlClient, sendGet, sendPostQuery, sendPostStatements, executeUpdate, Results } from './SparqlClient';
 import { JsObject, json2str, JsStrObj } from './ObjectProvider';
 
@@ -161,36 +161,41 @@ export class SparqlClientImpl implements SparqlClient {
   repId = '';
   repositoryUrl = '';
   statementsUrl = '';
+  nsUrl = '';
 
-  constructor(url: string) {
-    this.setServerUrl(url);
+  constructor(url: string, nsUrl?: string) {
+    this.setServerUrl(url, nsUrl);
   }
 
-  setServerUrl(url: string) {
+  setServerUrl(url: string, nsUrl?: string): void {
+    this.nsUrl = nsUrl || '';
     this.serverUrl = url;
     this.regenerateUrls();
   }
 
-  setRepositoryId(repId: string) {
+  setRepositoryId(repId: string): void {
     this.repId = repId;
     this.regenerateUrls();
   }
 
-  createRepositoryUrl(repId: string) {
+  createRepositoryUrl(repId: string): string {
     return `${this.serverUrl}/repositories/${repId}`;
   }
-  createStatementsUrl(repId: string) {
+  createNsUrl(repId: string): string {
+    return `${this.serverUrl}/repositories/${repId}/namespaces`;
+  }
+  createStatementsUrl(repId: string): string {
     return `${this.serverUrl}/repositories/${repId}/statements`;
   }
 
   regenerateUrls(): void {
+    if (this.nsUrl === '' && this.repId !== '') this.nsUrl = this.createNsUrl(this.repId);
     this.repositoryUrl = this.createRepositoryUrl(this.repId);
     this.statementsUrl = this.createStatementsUrl(this.repId);
   }
 
-  async loadNs() {
-    const url = this.repositoryUrl + '/namespaces';
-    const response = await sendGet(url);
+  async loadNs(): Promise<JsStrObj> {
+    const response = await sendGet(this.nsUrl);
     if (response.status < 200 && response.status > 204) return Promise.reject('Cannot get namespaces');
     const ns: JsStrObj = {};
     //console.debug('response.data', response.data);
@@ -224,7 +229,7 @@ export class SparqlClientImpl implements SparqlClient {
   //return Promise.reject('');
   //}
 
-  async sparqlSelect(query: string, queryParams: JsObject = {}) {
+  async sparqlSelect(query: string, queryParams: JsObject = {}): Promise<Results> {
     //console.debug(() => `sparqlSelect url=${this.repositoryUrl} query=${query} queryParams=${json2str(queryParams)}`);
     const response = await sendPostQuery(this.repositoryUrl, query, queryParams);
     // console.debug(() => `sparqlSelect response=${json2str(response)}`);
@@ -235,7 +240,7 @@ export class SparqlClientImpl implements SparqlClient {
     return results;
   }
 
-  async sparqlConstruct(query: string, queryParams: JsObject = {}) {
+  async sparqlConstruct(query: string, queryParams: JsObject = {}): Promise<JsObject[]> {
     //console.debug(() => `sparqlSelect url=${this.repositoryUrl} query=${query} queryParams=${json2str(queryParams)}`);
     //const response = await sendPostQuery(this.repositoryUrl, query, queryParams);
     // console.debug(() => `sparqlSelect response=${json2str(response)}`);
@@ -260,7 +265,7 @@ export class SparqlClientImpl implements SparqlClient {
         //transformResponse: (r) => r.data
       });
       return response.data;
-    } catch (error) {
+    } catch (error: AxiosError<JsObject[]> | any) {
       if (error.response) {
         // The request was made and the server responded with a status code
         // that falls out of the range of 2xx
@@ -290,7 +295,7 @@ export class SparqlClientImpl implements SparqlClient {
     }
   }
 
-  async sparqlUpdate(query: string, queryParams: JsObject = {}) {
+  async sparqlUpdate(query: string, queryParams: JsObject = {}): Promise<AxiosResponse> {
     //console.debug(() => `sparqlUpdate url=${this.repositoryUrl} queryParams=${json2str(queryParams)}`);
     return executeUpdate(this.statementsUrl, query, queryParams);
   }
@@ -299,7 +304,7 @@ export class SparqlClientImpl implements SparqlClient {
    * Удаляет все триплы в графе с заданным graph
    * @param graph
    */
-  async clearGraph(graph = 'null') {
+  async clearGraph(graph = 'null'): Promise<any> {
     const query = `CLEAR GRAPH <${graph}>`;
     //console.debug(() => `clearGraph url=${this.repositoryUrl} query=${query}`);
     //return sendPostQuery(this.repositoryUrl, query);
@@ -307,7 +312,7 @@ export class SparqlClientImpl implements SparqlClient {
   }
 
   //ok
-  async deleteRepository(repId: string) {
+  async deleteRepository(repId: string): Promise<void> {
     const url = this.createRepositoryUrl(repId);
     const response = await axios.request({
       method: 'delete',
@@ -321,13 +326,13 @@ export class SparqlClientImpl implements SparqlClient {
     //console.debug(() => `deleteRepository url=${url}`);
   }
 
-  async createRepositoryAndSetCurrent(repParam: JsObject = {}, repType = 'native-rdfs') {
+  async createRepositoryAndSetCurrent(repParam: JsObject = {}, repType = 'native-rdfs'): Promise<void> {
     await this.createRepository(repParam, repType);
     this.setRepositoryId(repParam['Repository ID']);
   }
 
   //ok
-  async createRepository(repParam: JsObject = {}, repType = 'native-rdfs') {
+  async createRepository(repParam: JsObject = {}, repType = 'native-rdfs'): Promise<void> {
     if (repType === 'virtuoso') {
       const repId = repParam['Repository ID'];
       repParam = {

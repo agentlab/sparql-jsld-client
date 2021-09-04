@@ -223,7 +223,7 @@ export async function executeUpdate(url: string, query: string, queryParams: JsO
 }
 
 export interface SparqlClient {
-  setServerUrl(url: string): void;
+  setServerUrl(url: string, nsUrl?: string): void;
   setRepositoryId(repId: string): void;
 
   loadNs(): Promise<JsStrObj>;

@@ -18,6 +18,7 @@ import {
   getSnapshot,
   IAnyStateTreeNode,
   IAnyComplexType,
+  isLiteralType,
   isMapType,
   getType,
   isModelType,
@@ -32,14 +33,28 @@ import {
   MstMapOfJsObject,
 } from './MstCollConstr';
 
+export function getMstLiteralPropValue(mstModel: any, name: string) {
+  const prop = mstModel?.properties[name];
+  if (prop && isLiteralType(prop)) {
+    return (prop as any).value;
+  }
+  return undefined;
+}
+
 export interface MstModels {
   [key: string]: IAnyComplexType;
 }
+
 const mstCollSchemas: MstModels = {};
 
-export function registerMstCollSchema(id: string, t: IAnyComplexType): void {
-  console.log('register mstCollSchema', { id, t });
-  mstCollSchemas[id] = t;
+export function registerMstCollSchema(mstModel: IAnyComplexType): void {
+  const id = getMstLiteralPropValue(mstModel as any, '@type');
+  if (id) {
+    console.log('register mstCollSchema', { id, t: mstModel });
+    mstCollSchemas[id] = mstModel;
+  } else {
+    console.log('cannot register mstCollSchema', { mstModel });
+  }
 }
 
 export function unregisterMstCollSchema(id: string): IAnyComplexType {

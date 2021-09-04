@@ -5,7 +5,7 @@
   "compilerOptions": {
     "module": "esnext",
     "target": "esnext",
-    "lib": ["esnext"],
+    "lib": ["dom", "esnext"],
     "outDir": "./lib",
     "allowJs": true,
     "importHelpers": true,

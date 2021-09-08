@@ -6,7 +6,6 @@
   "recommendations": [
     "yzhang.markdown-all-in-one",
     "joaompinto.asciidoctor-vscode",
-    "msjsdiag.debugger-for-chrome",
     "cmstead.jsrefactor",
     "eg2.vscode-npm-script",
     "esbenp.prettier-vscode",

@@ -221,8 +221,25 @@ export const MstColl = types
         //console.log('loadColl START');
         if (self.collConstr) {
           const collConstr = getSnapshot<ICollConstrSnapshotOut>(self.collConstr);
-          let parent: any = self.collConstr['@parent'];
+          let parent: any | undefined = self.collConstr['@parent'];
           if (parent) parent = getSnapshot<ICollConstrSnapshotOut>(parent);
+          //CollConstrs correctness pre-check (cond keys with undefined are signs of incorrectness)
+          const nullEntConstr = collConstr?.entConstrs?.find(
+            (entConstr) =>
+              entConstr.conditions &&
+              Object.keys(entConstr.conditions).find((condKey) => entConstr.conditions[condKey] === undefined),
+          );
+          const nullEntConstrParent = parent?.entConstrs?.find(
+            (entConstr: any) =>
+              entConstr.conditions &&
+              Object.keys(entConstr.conditions).find((condKey) => entConstr.conditions[condKey] === undefined),
+          );
+          if (nullEntConstr || nullEntConstrParent) {
+            self.dataIntrnl = [];
+            self.lastSynced = moment.now();
+            return;
+          }
+
           const objects: any[] = yield constructObjectsSnapshot(
             collConstr,
             parent,

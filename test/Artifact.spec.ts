@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
-import uuid62 from 'uuid62';
+import { afterAll, beforeAll, describe, expect, jest, it } from '@jest/globals';
 import { getSnapshot } from 'mobx-state-tree';
 
 import { rootModelInitialState } from '../src/models/Model';

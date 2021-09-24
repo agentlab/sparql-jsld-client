@@ -7,6 +7,7 @@
  *
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
+import { afterAll, beforeAll, describe, expect, jest, it } from '@jest/globals';
 import { triple, variable, namedNode } from '@rdfjs/data-model';
 import { when } from 'mobx';
 import { getSnapshot } from 'mobx-state-tree';

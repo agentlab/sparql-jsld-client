@@ -57,22 +57,22 @@ export const MstRepository = types
        * @param iriOrCollConstr
        */
       getColl(iriOrCollConstr: string | any) {
+        if (!iriOrCollConstr) return undefined;
         const iri = typeof iriOrCollConstr === 'string' ? iriOrCollConstr : iriOrCollConstr['@id'];
         const coll = self.colls.get(iri);
         return coll;
       },
 
       getSelectedDataJs(iri: string) {
+        if (!iri) return undefined;
         const coll = this.getColl(iri);
-        if (coll) {
-          const id = self.selectedData.get(iri);
-          if (id) {
-            let data = coll.dataByIri(id);
-            if (data) data = getSnapshot(data);
-            return data;
-          }
+        if (!coll) return undefined;
+        const id = self.selectedData.get(iri);
+        if (id) {
+          let data = coll.dataByIri(id);
+          if (data) data = getSnapshot(data);
+          return data;
         }
-        return undefined;
       },
     };
   })

@@ -65,6 +65,14 @@ export const MstEntConstr = types
     variables: types.union(MstMapOfJsObject, types.undefined),
     data: types.optional(MstMapOfJsObject, {}),
     /**
+     * Ordered array of order clauses
+     * If last digit not specified, we assuming '0' (identifier0)
+     */
+    orderBy: types.maybe(types.array(types.frozen<any>())),
+    limit: types.maybe(types.number),
+    offset: types.maybe(types.number),
+    distinct: types.maybe(types.boolean),
+    /**
      * Retrieve DirectType class (lowest in the class hierarchy).
      */
     resolveType: types.maybe(types.boolean),
@@ -127,7 +135,7 @@ export const MstCollConstr = types
      */
     '@parent': types.safeReference(types.late((): IAnyModelType => MstCollConstr)),
     /**
-     * Ordered array of entity constraints. Could be linked by conditions fields
+     * Ordered (!) array of entity constraints. Could be linked by conditions fields
      */
     entConstrs: types.array(MstEntConstr),
     /**

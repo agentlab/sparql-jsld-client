@@ -311,7 +311,6 @@ export class SparqlClientImpl implements SparqlClient {
     return executeUpdate(this.statementsUrl, query);
   }
 
-  //ok
   async deleteRepository(repId: string): Promise<void> {
     const url = this.createRepositoryUrl(repId);
     const response = await axios.request({
@@ -331,10 +330,9 @@ export class SparqlClientImpl implements SparqlClient {
     this.setRepositoryId(repParam['Repository ID']);
   }
 
-  //ok
   async createRepository(repParam: JsObject = {}, repType = 'native-rdfs'): Promise<void> {
+    const repId = repParam['Repository ID'];
     if (repType === 'virtuoso') {
-      const repId = repParam['Repository ID'];
       repParam = {
         ...repParam,
         'Default graph name': `http://cpgu.kbpm.ru/ns/rm/${repId}`,
@@ -342,7 +340,7 @@ export class SparqlClientImpl implements SparqlClient {
         "Use defGraph with SPARQL queries, if query default graph wasn't set": true,
       };
     }
-    const url = this.createRepositoryUrl(repParam['Repository ID']);
+    const url = this.createRepositoryUrl(repId);
     const data = createRepositoryConfig(repParam, repType);
     const response = await axios.request({
       method: 'put',
@@ -352,7 +350,10 @@ export class SparqlClientImpl implements SparqlClient {
       },
       data,
     });
-    if (response.status < 200 && response.status > 204) throw Error(`createRepository fault, url=${url}`);
-    //console.debug(() => `createRepository url=${url}`);
+    if (response.status < 200 && response.status > 204) {
+      console.log('createRepository error', { repId, url, data, response });
+      throw Error(`createRepository fault: repId=${repId}, url=${url}`);
+    }
+    //console.log(`createRepository success: repId=${repId}, url=${url}`);
   }
 }

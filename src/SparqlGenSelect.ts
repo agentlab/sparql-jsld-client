@@ -21,6 +21,7 @@ import {
   copyUniqueObjectProps,
   JsStrObjObj,
   JSONSchema6forRdf,
+  JsStrObj,
 } from './ObjectProvider';
 import {
   addprops2vars2props,
@@ -44,18 +45,6 @@ import {
   deAbbreviateIri,
   localUrn,
 } from './SparqlGen';
-
-export async function constructObjectsQuery(collConstrJs2: ICollConstrJsOpt, nsJs: any, client: SparqlClient) {
-  //TODO: performance
-  const collConstrJs: ICollConstrJsOpt = cloneDeep(collConstrJs2);
-  const entConstrs: EntConstrInternal[] = getInternalCollConstrs(collConstrJs, nsJs);
-  const query = constructQueryFromEntConstrs(entConstrs, collConstrJs);
-  const queryStr = gen.stringify(query);
-  //console.log('constructObjectsQuery  query=', queryStr);
-  const results: JsObject[] = await client.sparqlConstruct(queryStr, collConstrJs.options);
-  const objects: JsObject[] = await jsonLdToObjects(results, entConstrs);
-  return objects;
-}
 
 export async function selectObjectsQuery(collConstrJs2: ICollConstrJsOpt, nsJs: any, client: SparqlClient) {
   //TODO: performance
@@ -152,23 +141,13 @@ export async function selectObjectsArrayProperties(
   return objects;
 }
 
-/**
- * SELECT
- */
-
-/**
- *
- * @param entConstrs
- * @param prefixes
- */
-function selectInternalEntConstrs(entConstrs: EntConstrInternal[]) {
-  entConstrs.forEach((entConstr, index) => {
-    entConstr.query.variables = {};
+function analyseProps(entConstrs: EntConstrInternal[]) {
+  entConstrs.forEach((entConstr) => {
     if (entConstr.schema.properties) {
-      // if variables not set, copy all from schema except @type
-      // copy as variables: all non-conditional properties, properties with "extended filter functions" or "bindings"
-      // did not copy properties with conditions with values or reference ?xxx variables
-      const ignoredProperties: JsObject = {
+      // if variables not set, mark for copy all from schema except @type (ignore it)
+      // mark for copy as variables: all non-conditional properties, properties with "extended filter functions" or "bindings"
+      // did not mark for copy (ignore it) properties with conditions with values or reference ?xxx variables
+      entConstr.ignoredProperties = {
         '@type': null,
         //targetClass: null,
       };
@@ -180,7 +159,7 @@ function selectInternalEntConstrs(entConstrs: EntConstrInternal[]) {
           filterProperty.relation === undefined &&
           filterProperty.bind === undefined
         )
-          ignoredProperties[key] = null;
+          entConstr.ignoredProperties[key] = null;
       });
       const properties = entConstr.schema.properties;
       // if EntConstr has only conditions and array property then did not make sub-query
@@ -196,13 +175,30 @@ function selectInternalEntConstrs(entConstrs: EntConstrInternal[]) {
           if (conditions[key] !== undefined) entConstr.conditionsWithoutArrays[key] = conditions[key];
         }
       });
+    }
+  });
+}
+
+/**
+ * SELECT
+ */
+
+/**
+ *
+ * @param entConstrs
+ * @param prefixes
+ */
+function selectInternalEntConstrs(entConstrs: EntConstrInternal[]) {
+  analyseProps(entConstrs);
+  entConstrs.forEach((entConstr, index) => {
+    if (entConstr.schema.properties) {
       if (entConstr.variables) {
         copyUniqueObjectProps(entConstr.query.variables, entConstr.variables);
       } else {
         //copy the rest
         copyUniqueObjectProps(
           entConstr.query.variables,
-          copyObjectPropsWithRenameOrFilter(entConstr.schemaPropsWithoutArrays, ignoredProperties),
+          copyObjectPropsWithRenameOrFilter(entConstr.schemaPropsWithoutArrays, entConstr.ignoredProperties),
         );
       }
     }
@@ -237,7 +233,23 @@ function selectInternalEntConstrs(entConstrs: EntConstrInternal[]) {
 /**
  *
  * @param entConstrs
- * @param prefixes
+ */
+function selectQueryFromEntConstr(entConstr: EntConstrInternal) {
+  let options: any[] = [];
+  // check variables for uniqueness
+  const variables = propsToSparqlVars(entConstr);
+  entConstr.query.bgps =
+    entConstr.query.bgps && entConstr.query.bgps.length > 0 ? [toBgp(entConstr.query.bgps)] : entConstr.query.bgps;
+  entConstr.query.options = entConstr.query.options.map((option: any) => toOptional(toBgp(option)));
+  // create result query from partial queries
+  const where = [...entConstr.query.bgps, ...entConstr.query.filters, ...entConstr.query.binds];
+  options = entConstr.query.options;
+  return { variables, where, options };
+}
+
+/**
+ *
+ * @param entConstrs
  * @param collConstrJs
  */
 function selectQueryFromEntConstrs(entConstrs: EntConstrInternal[], collConstrJs: any) {
@@ -251,15 +263,15 @@ function selectQueryFromEntConstrs(entConstrs: EntConstrInternal[], collConstrJs
   };
   let allOptions: any[] = [];
   entConstrs.forEach((entConstr) => {
+    const { variables, where, options } = selectQueryFromEntConstr(entConstr);
     // check variables for uniqueness
-    const generatedVariables = propsToSparqlVars(entConstr);
     let variablesToAdd: Variable[];
     if (query.variables.length === 0) {
-      variablesToAdd = generatedVariables;
+      variablesToAdd = variables;
     } else {
       variablesToAdd = [];
       let flag = false;
-      generatedVariables.forEach((v1) => {
+      variables.forEach((v1) => {
         for (let i = 0; i < query.variables.length; i++) {
           const v2 = (query.variables as Variable[])[i];
           if (v1.value === v2.value) {
@@ -276,17 +288,9 @@ function selectQueryFromEntConstrs(entConstrs: EntConstrInternal[], collConstrJs
     }
     //@ts-ignore
     query.variables = [...query.variables, ...variablesToAdd];
-    entConstr.query.bgps =
-      entConstr.query.bgps && entConstr.query.bgps.length > 0 ? [toBgp(entConstr.query.bgps)] : entConstr.query.bgps;
-    entConstr.query.options = entConstr.query.options.map((option: any) => toOptional(toBgp(option)));
     // create result query from partial queries
-    query.where = [
-      ...(query.where || []),
-      ...entConstr.query.bgps,
-      ...(entConstr.query.filters || []),
-      ...(entConstr.query.binds || []),
-    ];
-    allOptions = [...allOptions, ...(entConstr.query.options || [])];
+    query.where = [...(query.where || []), ...where];
+    allOptions = [...allOptions, ...options];
   });
   // options should be the latest in WHERE (SPARQL performance optimizations)
   query.where = [...(query.where || []), ...allOptions];
@@ -413,41 +417,49 @@ function sparqlBindingsToObjectProp(bindings: Bindings, entConstrs: EntConstrInt
  * CONSTRUCT
  */
 
+export async function constructObjectsQuery(
+  collConstrJs2: ICollConstrJsOpt,
+  nsJs: JsStrObj,
+  client: SparqlClient,
+): Promise<JsObject[]> {
+  //TODO: performance
+  const collConstrJs: ICollConstrJsOpt = cloneDeep(collConstrJs2);
+  const entConstrs: EntConstrInternal[] = getInternalCollConstrs(collConstrJs, nsJs);
+  const query = constructQueryFromEntConstrs(entConstrs, collConstrJs);
+  const queryStr = gen.stringify(query);
+  //console.log('constructObjectsQuery  query=', queryStr);
+  const results: JsObject[] = await client.sparqlConstruct(queryStr, collConstrJs.options);
+  const objects: JsObject[] = await jsonLdToObjects(results, entConstrs);
+  return objects;
+}
+
 /**
  *
  * @param entConstrs
- * @param prefixes
+ * @param collConstrJs
  */
 function constructQueryFromEntConstrs(entConstrs: EntConstrInternal[], collConstrJs: any) {
+  analyseProps(entConstrs);
+  // numerated query variables
   entConstrs.forEach((entConstr, index) => {
-    entConstr.query.variables = {};
     if (entConstr.schema.properties) {
-      // if variables not set, copy all from schema except @type
-      // copy as variables: all non-conditional properties, properties with "extended filter functions" or "bindings"
-      // did not copy properties with conditions with values or reference ?xxx variables
-      const ignoredProperties: JsObject = {
-        '@type': null,
-        //targetClass: null,
-      };
-      const conditions = entConstr.conditions;
-      Object.keys(conditions).forEach((key) => {
-        const filterProperty = conditions[key];
-        if (
-          filterProperty.value === undefined &&
-          filterProperty.relation === undefined &&
-          filterProperty.bind === undefined
-        ) {
-          ignoredProperties[key] = null;
-        }
-      });
       if (entConstr.variables) {
+        //TODO: it could be an array property conflicted with LIMIT
         copyUniqueObjectProps(entConstr.query.variables, entConstr.variables);
       } else {
-        //copy the rest
-        copyUniqueObjectProps(
-          entConstr.query.variables,
-          copyObjectPropsWithRenameOrFilter(entConstr.schema.properties, ignoredProperties),
-        );
+        const entConstrJs = collConstrJs.entConstrs[index];
+        if (entConstrJs.limit) {
+          copyUniqueObjectProps(
+            entConstr.query.variables,
+            copyObjectPropsWithRenameOrFilter(entConstr.schemaPropsWithoutArrays, entConstr.ignoredProperties),
+          );
+        } else {
+          //copy the rest
+          copyUniqueObjectProps(
+            entConstr.query.variables,
+            copyObjectPropsWithRenameOrFilter(entConstr.schema.properties, entConstr.ignoredProperties),
+          );
+        }
       }
     }
     if (entConstr.resolveType) {
@@ -458,53 +470,85 @@ function constructQueryFromEntConstrs(entConstrs: EntConstrInternal[], collConst
     }
     renumerateEntConstrVariables(entConstr, index);
   });
+  // form partial query patterns (bgps, options, filters, binds)
   entConstrs.forEach((entConstr, index) => {
     const { bgps, options } = getWhereVar(entConstr);
-    const conditions = processConditions(entConstr, entConstr.conditions);
-    const conditionsBeforeSeparation = { ...conditions };
-    if (entConstrs.length > 1) {
-      const condBgpsSeparation = separateReferencedQuads(conditions.bgps);
-      conditions.bgps = condBgpsSeparation.nonRefs;
-      condBgpsSeparation.refs.forEach(
-        (r) => (entConstrs[r.index].query.bgps = [...(entConstrs[r.index].query.bgps || []), r.quad]),
-      );
-
-      const condOptsSeparation = separateReferencedQuads(conditions.options);
-      conditions.options = condOptsSeparation.nonRefs;
-      // make optional condition required in optional block
-      condOptsSeparation.refs.forEach(
-        (r) => (entConstrs[r.index].query.bgps = [...(entConstrs[r.index].query.bgps || []), r.quad]),
-      );
+    const entConstrJs = collConstrJs.entConstrs[index];
+    //let conditions: any = {};
+    if (entConstrJs.limit) {
+      //TODO: In case of array props, make subquery for every proptrty from entConstr.schemaPropsWithoutArrays
+      entConstr.qCond = processConditions(entConstr, entConstr.conditionsWithoutArrays, true);
+      //if array conditions are also relations, push-down bgps
+      Object.entries(entConstr.conditionsWithArrays).forEach((c) => {
+        const toEntConstrIndex: number | undefined = entConstr.relatedTo[c[0]];
+        if (toEntConstrIndex) {
+          const toEntConstr = entConstrs[toEntConstrIndex];
+          const conditionWithArrays = processConditions(entConstr, { [c[0]]: c[1] }, true);
+          conditionWithArrays.bgps = fixPropPath(conditionWithArrays.bgps);
+          toEntConstr.query.bgps = [...toEntConstr.query.bgps, ...conditionWithArrays.bgps];
+          toEntConstr.query.templates = [...toEntConstr.query.templates, ...conditionWithArrays.bgps];
+        }
+      });
+    } else {
+      //entConstr.qCond = processConditions(entConstr, entConstr.conditions);
+      entConstr.qCond = processConditions(entConstr, entConstr.conditions);
+      // push-down relation bgp to the child (object) group but preserve it in parent (subject) template (for style)
+      if (entConstrs.length > 1) {
+        const condBgpsSeparation = separateReferencedQuads(entConstr.qCond.bgps);
+        entConstr.qCond.bgps = condBgpsSeparation.nonRefs;
+        condBgpsSeparation.refs.forEach((r) => {
+          // if child entity (very rough)
+          if (r.index > index) {
+            const toEntConstr = entConstrs[r.index];
+            toEntConstr.query.bgps = [...toEntConstr.query.bgps, r.quad];
+            entConstr.query.templates = [...entConstr.query.templates, r.quad];
+          } else {
+            entConstr.qCond.bgps = [...entConstr.qCond.bgps, r.quad];
+          }
+        });
+        const condOptsSeparation = separateReferencedQuads(entConstr.qCond.options);
+        entConstr.qCond.options = condOptsSeparation.nonRefs;
+        // make optional condition required in optional block
+        condOptsSeparation.refs.forEach((r) => {
+          // if child entity (very rough)
+          if (r.index > index) {
+            const toEntConstr = entConstrs[r.index];
+            toEntConstr.query.bgps = [...toEntConstr.query.bgps, r.quad];
+            entConstr.query.templates = [...entConstr.query.templates, r.quad];
+          } else {
+            entConstr.qCond.options = [...entConstr.qCond.options, r.quad];
+          }
+        });
+      }
     }
     // make all conditions mandatory
-    conditions.bgps = [...conditions.bgps, ...conditions.options];
-    conditions.options = [];
+    entConstr.qCond.bgps = [...entConstr.qCond.bgps, ...entConstr.qCond.options];
+    entConstr.qCond.options = [];
 
-    let typeFilters: any[] = [];
-    let typeConditions: Quad[] = [];
     if (entConstr.resolveType) {
-      typeFilters = genSuperTypesFilter(entConstr, index);
-      typeConditions = [...genTypeCondition(entConstr), typeFilters[0]];
+      entConstr.qTypeFilters = genSuperTypesFilter(entConstr, index);
+      entConstr.qTypeConds = [...entConstr.qTypeConds, ...genTypeCondition(entConstr), entConstr.qTypeFilters[0]];
     } else {
-      typeConditions = genTypeCondition(entConstr);
+      entConstr.qTypeConds = genTypeCondition(entConstr);
     }
 
-    entConstr.query.bgps = [...(entConstr.query.bgps || []), ...typeConditions, ...conditions.bgps, ...bgps];
-    entConstr.query.options = [...(entConstr.query.options || []), ...conditions.options, ...options];
-    entConstr.query.filters = [...(entConstr.query.filters || []), ...typeFilters, ...conditions.filters];
-    entConstr.query.binds = conditions.binds;
+    entConstr.query.bgps = [...entConstr.qTypeConds, ...entConstr.query.bgps, ...entConstr.qCond.bgps, ...bgps];
+    entConstr.query.options = [...entConstr.query.options, ...entConstr.qCond.options, ...options];
+    entConstr.query.filters = [...entConstr.query.filters, ...entConstr.qTypeFilters, ...entConstr.qCond.filters];
+    entConstr.query.binds = entConstr.qCond.binds;
 
-    entConstr.bindsVars = conditions.bindsVars;
-    const bindsVarsTriples = Object.keys(conditions.bindsVars).map((key) => {
-      const varName = conditions.bindsVars[key];
+    entConstr.bindsVars = entConstr.qCond.bindsVars;
+    const bindsVarsTriples = Object.keys(entConstr.qCond.bindsVars).map((key) => {
+      const varName = entConstr.qCond.bindsVars[key];
       return triple(entConstr.subj, namedNode(localUrn(key)), variable(varName));
     });
     const { bgps: bgps2 } = getWhereVar(entConstr, true);
 
     entConstr.query.templates = [
-      ...typeConditions,
-      ...conditionsBeforeSeparation.bgps,
-      ...conditionsBeforeSeparation.options,
+      ...entConstr.qTypeConds,
+      ...entConstr.query.templates,
+      ...entConstr.qCond.bgps, // conditionsBeforeSeparation
+      ...entConstr.qCond.options, // conditionsBeforeSeparation
       ...bgps2,
       ...bindsVarsTriples,
     ];
@@ -524,25 +568,68 @@ function constructQueryFromEntConstrs(entConstrs: EntConstrInternal[], collConst
     template: [],
   };
   let allOptions: any[] = [];
+  let isSubqueries = false;
 
   entConstrs.forEach((entConstr, index) => {
-    entConstr.query.bgps =
-      entConstr.query.bgps && entConstr.query.bgps.length > 0 ? [toBgp(entConstr.query.bgps)] : entConstr.query.bgps;
-    entConstr.query.options = entConstr.query.options.map((option: any) => toOptional(toBgp(option)));
-    //nest referenced entity conditions into parent optional
-    if (index > 0 && isReferencedAndOptional(entConstrs, index)) {
-      entConstr.query.options = [toOptional([...entConstr.query.bgps, ...entConstr.query.options])];
-      entConstr.query.bgps = [];
+    const entConstrJs = collConstrJs.entConstrs[index];
+    if (entConstrJs.limit) {
+      // LIMIT exists, use SELECT subquery
+      // array fields breaks LIMIT due to results denormalization
+      isSubqueries = true;
+      const { variables, where, options } = selectQueryFromEntConstr(entConstr);
+      const subQuery: SelectQuery = {
+        type: 'query',
+        queryType: 'SELECT',
+        prefixes: {},
+        variables,
+        where: [...where, ...options],
+      };
+      if (entConstrJs.orderBy) subQuery.order = entConstrJs.orderBy;
+      if (entConstrJs.limit) subQuery.limit = entConstrJs.limit;
+      if (entConstrJs.offset) subQuery.offset = entConstrJs.offset;
+      if (entConstrJs.distinct) subQuery.distinct = entConstrJs.distinct;
+      query.where = [
+        ...(query.where || []),
+        {
+          type: 'group',
+          patterns: [subQuery],
+        },
+      ];
+    } else {
+      // no LIMIT, proceed with CONSTRUCT (without a subquery)
+      entConstr.query.bgps =
+        entConstr.query.bgps && entConstr.query.bgps.length > 0 ? [toBgp(entConstr.query.bgps)] : entConstr.query.bgps;
+      entConstr.query.options = entConstr.query.options.map((option: any) => toOptional(toBgp(option)));
+      //nest referenced entity conditions into parent optional
+      if (index > 0 && isReferencedAndOptional(entConstrs, index)) {
+        entConstr.query.options = [toOptional([...entConstr.query.bgps, ...entConstr.query.options])];
+        entConstr.query.bgps = [];
+      }
+      // create result query from partial queries
+      if (isSubqueries) {
+        query.where = [
+          ...(query.where || []),
+          {
+            type: 'group',
+            patterns: [
+              ...entConstr.query.bgps,
+              ...entConstr.query.filters,
+              ...entConstr.query.binds,
+              ...entConstr.query.options, // add options to the bottom of the sub-group instead of the global options list
+            ],
+          } as any,
+        ];
+      } else {
+        query.where = [
+          ...(query.where || []),
+          ...entConstr.query.bgps,
+          ...entConstr.query.filters,
+          ...entConstr.query.binds,
+        ];
+        allOptions = [...allOptions, ...entConstr.query.options];
+      }
     }
-    // create result query from partial queries
-    query.where = [
-      ...(query.where || []),
-      ...entConstr.query.bgps,
-      ...(entConstr.query.filters || []),
-      ...(entConstr.query.binds || []),
-    ];
-    allOptions = [...allOptions, ...(entConstr.query.options || [])];
-    query.template = [...(query.template || []), ...(entConstr.query.templates || [])];
+    query.template = [...(query.template || []), ...entConstr.query.templates];
   });
 
   // options should be the latest in WHERE (SPARQL performance optimizations)
@@ -554,6 +641,13 @@ function constructQueryFromEntConstrs(entConstrs: EntConstrInternal[], collConst
   return query;
 }
 
+function fixPropPath(templates: any[]) {
+  return templates.map((t) =>
+    t?.predicate?.type === 'path' && t?.predicate?.pathType === '^'
+      ? triple(t.object, t.predicate.items[0], t.subject)
+      : t,
+  );
+}
 /**
  *
  * @param entConstrs
@@ -710,12 +804,12 @@ function convertAnyTypes(val: any, type?: string, ctxs?: JsStrObjObj[]) {
   } else if (Array.isArray(val)) {
     val = val.map((subVal) => convertAnyTypes(subVal, type, ctxs));
   } else {
-    val = convertObjectTypes(val, ctxs);
+    val = convertPropValues(val, ctxs);
   }
   return val;
 }
 
-function convertObjectTypes(obj: JsObject, ctxs?: JsStrObjObj[]) {
+function convertPropValues(obj: JsObject, ctxs?: JsStrObjObj[]) {
   if (!ctxs) {
     const ctx = obj['@context'];
     if (ctx) ctxs = [ctx];
@@ -758,53 +852,67 @@ function nestObjs(jsonLdObjs: JsObject[], entConstrs: EntConstrInternal[]) {
     entsObjs[indexEntConstr] = dd;
   });
   if (!entsObjs || entsObjs[0].length === 0) return jsonLdObjs;
-  entConstrs.forEach((entConstr, indexEntConstr) => {
+  entConstrs.forEach((entConstr, entConstrFromIndex) => {
     Object.keys(entConstr.relatedTo).forEach((prop) => {
-      const indexEntConstr2 = entConstr.relatedTo[prop];
+      const entConstrToIndex = entConstr.relatedTo[prop];
       const context = entConstr.schema['@context'];
       if (context) {
         let propIri = context[prop];
         if (typeof propIri === 'object') propIri = propIri['@id'];
-        const fullPropIri = deAbbreviateIri(propIri as string, entConstr.prefixes);
-        entsObjs[indexEntConstr].forEach((obj) => {
-          const objProp = obj[fullPropIri];
-          if (Array.isArray(objProp)) {
-            objProp.forEach((op, opIndex) => {
-              const refIri = op['@id'];
-              if (refIri) {
-                objProp[opIndex] = entsObjs[indexEntConstr2].find((obj2) => obj2['@id'] === refIri);
-              }
-            });
+        if (propIri) {
+          const fullPropIri = deAbbreviateIri(propIri as string, entConstr.prefixes);
+          entsObjs[entConstrFromIndex].forEach((entObjFrom) => {
+            const entObjFromPropVals = entObjFrom[fullPropIri];
+            if (Array.isArray(entObjFromPropVals)) {
+              entObjFromPropVals.forEach((entObjFromPropVal, opvIndex) => {
+                const refIri = entObjFromPropVal['@id'];
+                if (refIri) {
+                  entObjFromPropVals[opvIndex] = entsObjs[entConstrToIndex].find(
+                    (entObjTo) => entObjTo['@id'] === refIri,
+                  );
+                }
+              });
+            }
+          });
+        } else {
+          propIri = context[prop];
+          if (typeof propIri === 'object') {
+            propIri = propIri['@reverse'];
+            if (propIri) {
+              const fullPropIri = deAbbreviateIri(propIri as string, entConstr.prefixes);
+              entsObjs[entConstrFromIndex].forEach((entObjFrom) => {
+                const refIri = entObjFrom['@id'];
+                const toObjs = entsObjs[entConstrToIndex].filter((entObjTo) => {
+                  const prop = entObjTo[fullPropIri];
+                  if (!prop) return false;
+                  const v = prop[0]['@id'] === refIri;
+                  return v;
+                });
+                toObjs.forEach((toObj) => {
+                  delete toObj[fullPropIri];
+                });
+                if (!entObjFrom['@reverse']) entObjFrom['@reverse'] = {};
+                entObjFrom['@reverse'] = {
+                  ...entObjFrom['@reverse'],
+                  [fullPropIri]: toObjs,
+                };
+              });
+            }
           }
-        });
+        }
       }
     });
   });
   return entsObjs[0];
 }
 
-//let num = 1;
-
 async function jsonLdToObjects(jsonLdObjs: JsObject[], entConstrs: EntConstrInternal[]): Promise<JsObject[]> {
-  const objects: JsObject[] = [];
   const context = genContextRecursive(entConstrs);
-  /*context.property = {
-    ...context.property,
-    '@container': '@list',
-  };*/
-  //context.property = context.property['@id'];
-  //console.log(context);
-
-  jsonLdObjs = nestObjs(jsonLdObjs, entConstrs);
-
-  for (const jsonLdObj of jsonLdObjs) {
-    //console.log('jsonLdToObjects+' + num);
-    //if (num > 2) {
-    //  console.log(context);
-    //}
-    //num++;
+  const jsonLdObjsNested = nestObjs(jsonLdObjs, entConstrs);
+  const objects: JsObject[] = [];
+  for (const jsonLdObj of jsonLdObjsNested) {
     const compacted = await jsonld.compact(jsonLdObj, context);
-    const converted = convertObjectTypes(compacted);
+    const converted = convertPropValues(compacted);
     delete converted['@context'];
     objects.push(converted);
   }

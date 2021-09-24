@@ -16,7 +16,7 @@ import { SparqlClient } from '../SparqlClient';
 
 import { MstRepository } from './MstRepository';
 
-export const rootModelInitialState = {
+export const rootModelInitialState: any = {
   repId: '',
   user: {
     //'@id': 'mailto:guest@example.com',//<mailto:guest@example.com>

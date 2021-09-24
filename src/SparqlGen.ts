@@ -8,6 +8,7 @@
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
 import _isUrl from 'is-url';
+import { isArray } from 'lodash';
 
 import { Quad, NamedNode, Variable } from 'rdf-js';
 import { literal, namedNode, triple, variable } from '@rdfjs/data-model';
@@ -67,7 +68,7 @@ export function propsToSparqlVars(entConstr: Pick<EntConstrInternal, 'props2vars
   return variables;
 }
 
-export function getSchemaPropUri(schema: JSONSchema6forRdf, propertyKey: string): string | undefined {
+export function getSchemaPropUri(schema: JSONSchema6forRdf, propertyKey: string): string | string[] | undefined {
   const properties = schema.properties;
   const context = schema['@context'];
   if (properties && context && typeof context !== 'string') {
@@ -79,6 +80,8 @@ export function getSchemaPropUri(schema: JSONSchema6forRdf, propertyKey: string)
           return propContext;
         } else if (propContext['@id']) {
           return propContext['@id'];
+        } else if (propContext['@reverse']) {
+          return ['^', propContext['@reverse']];
         }
       }
     }
@@ -232,12 +235,39 @@ export interface EntConstrInternal extends EntConstrData {
   subj: NamedNode | Variable;
   props2vars: JsStrObj;
   vars2props: JsStrObj;
-  query: { [s: string]: any }; // partial query (variables and conditions)
+  // pred-partial
+  qCond: {
+    bgps: Quad[];
+    options: Quad[];
+    filters: any[];
+    binds: any[];
+    bindsVars: JsObject;
+  };
+  qTypeConds: Quad[];
+  qTypeFilters: any[];
+  // partial query (variables and conditions)
+  query: {
+    variables: { [s: string]: any };
+    bgps: any[];
+    filters: any[];
+    binds: any[];
+    options: any[];
+    templates: any[];
+  };
+  ignoredProperties: JsObject;
   schemaPropsWithoutArrays: any;
   schemaPropsWithArrays: any;
-  conditionsWithoutArrays: any;
-  conditionsWithArrays: any;
+  conditionsWithoutArrays: JsObject;
+  conditionsWithArrays: JsObject;
+  /**
+   * Outgoing References dictionary
+   * ConditionProp: EntConstrNumberInArray
+   */
   relatedTo: { [s: string]: number };
+  /**
+   * Incoming References dictionary
+   * ConditionProp: EntConstrNumberInArray
+   */
   relatedFrom: { [s: string]: number };
   bindsVars: JsObject;
 }
@@ -310,7 +340,13 @@ export function abbreviateIri(fullIri: string, prefixes: JsStrObj): string {
 export function deAbbreviateIri(abbreviatedIri: string, prefixes: JsStrObj): string {
   if (abbreviatedIri && !abbreviatedIri.startsWith('urn:')) {
     const [, prefixKey, propertyKey] = abbreviatedIri.match(/^([\d\w-_]+):([\d\w-_а-яА-ЯёЁ]+)$/i) || ['', '', ''];
-    if (prefixKey && propertyKey) return `${prefixes[prefixKey]}${propertyKey}`;
+    if (prefixKey && propertyKey) {
+      const resolverPrefix = prefixes[prefixKey];
+      if (!resolverPrefix) {
+        throw new Error(`Cannot resolve prefix '${prefixKey}' for IRI '${abbreviatedIri}'`);
+      }
+      return `${resolverPrefix}${propertyKey}`;
+    }
   }
   return abbreviatedIri;
 }
@@ -381,7 +417,7 @@ export function getWhereVar(entConstr: EntConstrInternal, requireOptional = fals
       const propUri = getSchemaPropUri(entConstr.schema, key);
       const varName = entConstr.props2vars[key];
       if (propUri && varName) {
-        const option = triple(entConstr.subj, getFullIriNamedNode(propUri, entConstr.prefixes), variable(varName));
+        const option = getTripleWithPredOrPath(entConstr.subj, propUri, variable(varName), entConstr.prefixes);
         if ((entConstr.schema.required && entConstr.schema.required.includes(key)) || requireOptional) {
           bgps.push(option);
         } else {
@@ -401,10 +437,11 @@ export function getWhereVarFromDataWithoutOptionals(entConstr: EntConstrInternal
       // filter @id, @type,...
       const propUri = getSchemaPropUri(entConstr.schema, propertyKey);
       if (propUri) {
-        const option = triple(
+        const option = getTripleWithPredOrPath(
           entConstr.subj,
-          getFullIriNamedNode(propUri, entConstr.prefixes),
+          propUri,
           variable(entConstr.props2vars[propertyKey]),
+          entConstr.prefixes,
         );
         bgp.push(option);
       }
@@ -598,7 +635,13 @@ export function genTypeCondition(entConstr: EntConstrInternal) {
   return result;
 }
 
-export function getConditionalTriple(property: any, subj: any, value: any, propUri: string, prefixes: JsStrObj): Quad {
+export function getConditionalTriple(
+  property: any,
+  subj: any,
+  value: any,
+  propUri: string | string[],
+  prefixes: JsStrObj,
+): Quad {
   if (property.type === 'string') {
     if (property.format === undefined) {
       value = literal(`${value}`, getFullIriNamedNode('xsd:string', prefixes));
@@ -628,7 +671,23 @@ export function getConditionalTriple(property: any, subj: any, value: any, propU
       }
     }
   }
-  return triple(subj, getFullIriNamedNode(propUri, prefixes), value);
+  return getTripleWithPredOrPath(subj, propUri, value, prefixes);
+}
+
+function getTripleWithPredOrPath(subj: any, propUri: string | string[], value: any, prefixes: JsStrObj): Quad {
+  if (isArray(propUri)) {
+    return triple(
+      subj,
+      {
+        type: 'path',
+        pathType: propUri[0],
+        items: [getFullIriNamedNode(propUri[1], prefixes)],
+      } as any,
+      value,
+    );
+  } else {
+    return triple(subj, getFullIriNamedNode(propUri, prefixes), value);
+  }
 }
 
 export function getSimpleFilter(schemaProperty: any, filterProperty: any, variable: Variable, prefixes: JsStrObj): any {
@@ -922,7 +981,7 @@ export function getExtendedFilter(
         filter.args = [
           {
             type: 'bgp',
-            triples: [triple(entConstr.subj, getFullIriNamedNode(propUri, entConstr.prefixes), variable)],
+            triples: [getTripleWithPredOrPath(entConstr.subj, propUri, variable, entConstr.prefixes)],
           },
         ];
       }
@@ -933,7 +992,7 @@ export function getExtendedFilter(
         filter.args = [
           {
             type: 'bgp',
-            triples: [triple(entConstr.subj, getFullIriNamedNode(propUri, entConstr.prefixes), variable)],
+            triples: [getTripleWithPredOrPath(entConstr.subj, propUri, variable, entConstr.prefixes)],
           },
         ];
       }
@@ -1018,10 +1077,11 @@ export function processConditions(
         if (schemaProperty && propUri) {
           let option;
           if (typeof filterProperty === 'string' && filterProperty.startsWith('?')) {
-            option = triple(
+            option = getTripleWithPredOrPath(
               entConstr.subj,
-              getFullIriNamedNode(propUri, entConstr.prefixes),
+              propUri,
               variable(filterProperty.substring(1)),
+              entConstr.prefixes,
             );
           } else {
             option = getConditionalTriple(schemaProperty, entConstr.subj, filterProperty, propUri, entConstr.prefixes);
@@ -1103,7 +1163,24 @@ export function getInternalCollConstrs(
       subj: genEntConstrSparqlSubject(uri, uriVar, prefixes),
       props2vars: {},
       vars2props: {},
-      query: {},
+      qCond: {
+        bgps: [],
+        options: [],
+        filters: [],
+        binds: [],
+        bindsVars: {},
+      },
+      qTypeConds: [],
+      qTypeFilters: [],
+      query: {
+        variables: {},
+        bgps: [],
+        filters: [],
+        binds: [],
+        options: [],
+        templates: [],
+      },
+      ignoredProperties: {},
       schemaPropsWithoutArrays: {},
       schemaPropsWithArrays: {},
       conditionsWithoutArrays: {},

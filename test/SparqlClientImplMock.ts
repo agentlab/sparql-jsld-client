@@ -134,7 +134,6 @@ export class SparqlClientImplMock implements SparqlClient {
     return this.clearGraphReturn;
   }
 
-  //ok
   async deleteRepository(repId: string) {
     this.createRepositoryParams = {
       repId,
@@ -148,7 +147,6 @@ export class SparqlClientImplMock implements SparqlClient {
     };
   }
 
-  //ok
   async createRepository(repParam: JsObject = {}, repType = 'native-rdfs') {
     this.createRepositoryParams = {
       repParam,

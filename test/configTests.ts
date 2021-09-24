@@ -39,6 +39,8 @@ export const testNs: JsStrObj = {
   projects: 'http://cpgu.kbpm.ru/ns/rm/projects#',
   folders: 'http://cpgu.kbpm.ru/ns/rm/folders#',
   reqs: 'http://cpgu.kbpm.ru/ns/rm/reqs#',
+
+  hs: 'https://huntersales.ru/schema#',
 };
 
 export const rootFolder = '../rdf-data-expert/';

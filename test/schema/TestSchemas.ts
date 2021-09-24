@@ -605,3 +605,190 @@ export const usedInModuleSchema: JSONSchema6forRdf = {
 };
 
 export const { property: artifactShapeProperty, ...artifactShapeNoProperty } = artifactShape;
+
+export const ProductCardShapeSchema: JSONSchema6forRdf = {
+  $schema: 'http://json-schema.org/draft-07/schema#',
+  '@id': 'hs:ProductCardCardsShape',
+  '@type': 'sh:NodeShape',
+  title: '',
+  description: '',
+  targetClass: 'hs:ProductCard',
+  type: 'object',
+  '@context': {
+    '@type': 'rdf:type',
+    name: {
+      '@id': 'hs:name',
+      '@type': 'xsd:string',
+    },
+    lastMonthSalesValue: {
+      '@id': 'hs:lastMonthSalesValue',
+      '@type': 'xsd:int',
+    },
+  },
+  properties: {
+    '@id': {
+      title: 'URI',
+      type: 'string',
+      format: 'iri',
+    },
+    '@type': {
+      title: 'Тип',
+      type: 'string',
+      format: 'iri',
+    },
+    name: {
+      type: 'string',
+    },
+    lastMonthSalesValue: {
+      type: 'integer',
+    },
+  },
+  required: ['@id', '@type', 'name', 'lastMonthSalesValue'],
+};
+
+export const HSObservationShapeSchema: JSONSchema6forRdf = {
+  $schema: 'http://json-schema.org/draft-07/schema#',
+  '@id': 'hs:HSObservationCardsShape',
+  '@type': 'sh:NodeShape',
+  title: '',
+  description: '',
+  targetClass: 'hs:HSObservation',
+  type: 'object',
+  '@context': {
+    '@type': 'rdf:type',
+    product: {
+      '@id': 'hs:product',
+    },
+    parsedAt: {
+      '@id': 'hs:parsedAt',
+      '@type': 'xsd:dateTime',
+    },
+    price: {
+      '@id': 'hs:price',
+      '@type': 'xsd:int',
+    },
+  },
+  properties: {
+    '@id': {
+      title: 'URI',
+      type: 'string',
+      format: 'iri',
+    },
+    '@type': {
+      title: 'Тип',
+      type: 'string',
+      format: 'iri',
+    },
+    product: {
+      type: 'object',
+    },
+    parsedAt: {
+      type: 'string',
+      format: 'date-time',
+    },
+    price: {
+      type: 'integer',
+    },
+  },
+  required: ['@id', '@type', 'product', 'parsedAt', 'price'],
+};
+
+export const ProductCardShapeSchemaForCardsList: JSONSchema6forRdf = {
+  $schema: 'http://json-schema.org/draft-07/schema#',
+  '@id': 'hs:ProductCardShapeForCardsList',
+  '@type': 'sh:NodeShape',
+  title: '',
+  description: '',
+  targetClass: 'hs:ProductCard',
+  type: 'object',
+  '@context': {
+    '@type': 'rdf:type',
+    name: {
+      '@id': 'hs:name',
+      '@type': 'xsd:string',
+    },
+    lastMonthSalesValue: {
+      '@id': 'hs:lastMonthSalesValue',
+      '@type': 'xsd:int',
+    },
+    hasObservations: {
+      '@reverse': 'hs:product',
+    },
+    //hasObservations: {
+    //  '@id': 'hs:hasObservations',
+    //},
+  },
+  properties: {
+    '@id': {
+      title: 'URI',
+      type: 'string',
+      format: 'iri',
+    },
+    '@type': {
+      title: 'Тип',
+      type: 'string',
+      format: 'iri',
+    },
+    name: {
+      type: 'string',
+    },
+    lastMonthSalesValue: {
+      type: 'integer',
+    },
+    hasObservations: {
+      type: 'array',
+      items: {
+        type: 'object',
+      },
+    },
+  },
+  required: ['@id', '@type', 'name', 'lastMonthSalesValue', 'hasObservations'],
+};
+
+export const HSObservationShapeSchemaForCardsList: JSONSchema6forRdf = {
+  $schema: 'http://json-schema.org/draft-07/schema#',
+  '@id': 'hs:HSObservationShapeForCardsList',
+  '@type': 'sh:NodeShape',
+  title: '',
+  description: '',
+  targetClass: 'hs:HSObservation',
+  type: 'object',
+  '@context': {
+    '@type': 'rdf:type',
+    //product: {
+    //  '@id': 'hs:product',
+    //  //'@type': 'hs:ProductCard',
+    //},
+    parsedAt: {
+      '@id': 'hs:parsedAt',
+      '@type': 'xsd:dateTime',
+    },
+    price: {
+      '@id': 'hs:price',
+      '@type': 'xsd:int',
+    },
+  },
+  properties: {
+    '@id': {
+      title: 'URI',
+      type: 'string',
+      format: 'iri',
+    },
+    '@type': {
+      title: 'Тип',
+      type: 'string',
+      format: 'iri',
+    },
+    /*product: {
+      type: 'object',
+    },*/
+    parsedAt: {
+      type: 'string',
+      format: 'date-time',
+    },
+    price: {
+      type: 'integer',
+    },
+  },
+  required: ['@id', '@type', /*'product',*/ 'parsedAt', 'price'],
+};

@@ -53,7 +53,7 @@ export async function sendGet(url: string, queryParams: JsObject = {}): Promise<
       },
     });
     return response;
-  } catch (error) {
+  } catch (error: any) {
     if (error.response) {
       // The request was made and the server responded with a status code
       // that falls out of the range of 2xx
@@ -113,7 +113,7 @@ export async function sendPostQuery(
       //transformResponse: (r) => r.data
     });
     return response;
-  } catch (error) {
+  } catch (error: any) {
     if (error.response) {
       // The request was made and the server responded with a status code
       // that falls out of the range of 2xx
@@ -167,7 +167,7 @@ export async function sendPostStatements(
       //transformResponse: (r) => r.data
     });
     return response;
-  } catch (error) {
+  } catch (error: any) {
     if (error.response) {
       // The request was made and the server responded with a status code
       // that falls out of the range of 2xx

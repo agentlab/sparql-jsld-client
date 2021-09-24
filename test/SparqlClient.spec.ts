@@ -7,6 +7,7 @@
  *
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
+import { afterAll, beforeAll, describe, expect, jest, it } from '@jest/globals';
 import jsonld from 'jsonld';
 
 import { rootModelInitialState } from '../src/models/Model';
@@ -50,7 +51,7 @@ beforeAll(async () => {
     await uploadFiles(client, projectsFoldersFiles, rootFolder);
     await uploadFiles(client, samplesFiles, rootFolder);
     await uploadFiles(client, shapesFiles, rootFolder);
-  } catch (error) {
+  } catch (error: any) {
     if (error.response) {
       // Request made and server responded
       console.log(error.response.data);

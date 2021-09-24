@@ -7,13 +7,21 @@
  *
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
+import { afterAll, beforeAll, beforeEach, describe, expect, jest, it } from '@jest/globals';
 import { Parser } from 'sparqljs';
 import { triple, variable } from '@rdfjs/data-model';
 
 import { JsObject, JSONSchema6forRdf } from '../src/ObjectProvider';
 import { SparqlClientImplMock } from './SparqlClientImplMock';
 
-import { artifactSchema, usedInModuleSchema } from './schema/TestSchemas';
+import {
+  artifactSchema,
+  HSObservationShapeSchemaForCardsList,
+  HSObservationShapeSchema,
+  ProductCardShapeSchemaForCardsList,
+  ProductCardShapeSchema,
+  usedInModuleSchema,
+} from './schema/TestSchemas';
 import { testNs } from './configTests';
 import { getFullIriNamedNode, ICollConstrJsOpt } from '../src/SparqlGen';
 import { ArtifactShapeSchema, PropertyShapeSchema } from '../src/schema/ArtifactShapeSchema';
@@ -405,12 +413,7 @@ describe('ArtifactSchema', () => {
           },
         ],
         limit: 1,
-        orderBy: [
-          {
-            expression: variable('identifier0'),
-            descending: true,
-          },
-        ],
+        orderBy: [{ expression: variable('identifier0'), descending: true }],
         distinct: true,
       },
       `PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
@@ -454,15 +457,14 @@ describe('constructObjectsQuery', () => {
         ],
         orderBy: [{ expression: variable('order1'), descending: false }],
       },
-      //TODO: generates but did not parses 'ORDER BY (?order1)'
       `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
       PREFIX dcterms: <http://purl.org/dc/terms/>
       PREFIX sh: <http://www.w3.org/ns/shacl#>
       PREFIX rm: <http://cpgu.kbpm.ru/ns/rm/rdf#>
       CONSTRUCT {
         ?eIri0 rdf:type sh:NodeShape.
-        ?eIri0 sh:targetClass ${targetClass}.
         ?eIri0 sh:property ?eIri1.
+        ?eIri0 sh:targetClass ${targetClass}.
         ?eIri0 dcterms:title ?title0.
         ?eIri0 dcterms:description ?description0.
         ?eIri0 rm:inCreationMenu ?inCreationMenu0.
@@ -494,9 +496,9 @@ describe('constructObjectsQuery', () => {
         OPTIONAL { ?eIri0 rm:iconReference ?iconReference0. }
 
         OPTIONAL {
+          ?eIri1 rdf:type sh:PropertyShape.
           ?eIri0 sh:property ?eIri1.
-          ?eIri1 rdf:type sh:PropertyShape;
-            sh:path ?path1.
+          ?eIri1 sh:path ?path1.
           OPTIONAL { ?eIri1 sh:name ?name1. }
           OPTIONAL { ?eIri1 sh:description ?description1. }
           OPTIONAL { ?eIri1 sh:order ?order1. }
@@ -532,7 +534,6 @@ describe('constructObjectsQuery', () => {
         ],
         orderBy: [{ expression: variable('order1'), descending: false }],
       },
-      //TODO: generates but did not parses 'ORDER BY (?order1)'
       `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
       PREFIX dcterms: <http://purl.org/dc/terms/>
       PREFIX sh: <http://www.w3.org/ns/shacl#>
@@ -540,8 +541,8 @@ describe('constructObjectsQuery', () => {
       PREFIX cpgu: <http://cpgu.kbpm.ru/ns/rm/cpgu#>
       CONSTRUCT {
         ?eIri0 rdf:type sh:NodeShape.
-        ?eIri0 sh:targetClass ${targetClass}.
         ?eIri0 sh:property ?eIri1.
+        ?eIri0 sh:targetClass ${targetClass}.
         ?eIri0 dcterms:title ?title0.
         ?eIri0 dcterms:description ?description0.
         ?eIri0 rm:inCreationMenu ?inCreationMenu0.
@@ -573,9 +574,9 @@ describe('constructObjectsQuery', () => {
         OPTIONAL { ?eIri0 rm:iconReference ?iconReference0. }
 
         OPTIONAL {
+          ?eIri1 rdf:type sh:PropertyShape.
           ?eIri0 sh:property ?eIri1.
-          ?eIri1 rdf:type sh:PropertyShape;
-            sh:path ?path1.
+          ?eIri1 sh:path ?path1.
           OPTIONAL { ?eIri1 sh:name ?name1. }
           OPTIONAL { ?eIri1 sh:description ?description1. }
           OPTIONAL { ?eIri1 sh:order ?order1. }
@@ -604,8 +605,8 @@ describe('constructObjectsQuery', () => {
       PREFIX rmUserTypes: <http://cpgu.kbpm.ru/ns/rm/user-types#>
       CONSTRUCT {
         ?eIri0 rdf:type rmUserTypes:UsedInModule.
-        ?eIri0 rdf:object <file:///urn-s2-iisvvt-infosystems-classifier-45950.xml>.
         ?eIri0 rdf:subject ?eIri1.
+        ?eIri0 rdf:object <file:///urn-s2-iisvvt-infosystems-classifier-45950.xml>.
         ?eIri0 dcterms:creator ?creator0.
         ?eIri0 dcterms:created ?created0.
         ?eIri0 oslc:modifiedBy ?modifiedBy0.
@@ -637,10 +638,10 @@ describe('constructObjectsQuery', () => {
           rmUserTypes:depth ?depth0;
           rmUserTypes:bookOrder ?bookOrder0;
           rmUserTypes:sectionNumber ?sectionNumber0.
-        ?eIri0 rdf:subject ?eIri1.
 
-        ?eIri1 rdf:type rm:Artifact, ?type1;
-          dcterms:title ?title1.
+        ?eIri1 rdf:type rm:Artifact, ?type1.
+        ?eIri0 rdf:subject ?eIri1.
+        ?eIri1 dcterms:title ?title1.
         ?eIri1 rdf:type ?type1.
         FILTER(NOT EXISTS {
           ?subtype1 ^rdf:type ?eIri1;
@@ -672,6 +673,181 @@ describe('constructObjectsQuery', () => {
       }
       ORDER BY (?bookOrder0) LIMIT 10`,
     ));
+
+  it('construct with filter should generate correctly', async () => {
+    const client = new SparqlClientImplMock();
+    const collConstrJs = {
+      entConstrs: [
+        {
+          schema: HSObservationShapeSchema,
+          conditions: {
+            product: 'https://www.wildberries.ru/catalog/10322023/detail.aspx',
+            parsedAt: {
+              relation: 'after',
+              value: ['2021-07-01T00:00:00'],
+            },
+          },
+        },
+      ],
+      orderBy: [{ expression: variable('parsedAt0'), descending: false }],
+    };
+    const coll = await constructObjectsQuery(collConstrJs, testNs, client);
+    expect(coll).not.toBeUndefined();
+    //expect(coll.length).toBe(0);
+    const genQueryStr = client.sparqlConstructParams.query;
+    //console.log(genQueryStr);
+    const correctQuery = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+      PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>  
+      PREFIX hs: <https://huntersales.ru/schema#>
+      CONSTRUCT {
+        ?eIri0 rdf:type hs:HSObservation ;
+          hs:product <https://www.wildberries.ru/catalog/10322023/detail.aspx> ;
+          hs:parsedAt ?parsedAt0 ;
+          hs:price ?price0 .
+      } WHERE {
+        ?eIri0 rdf:type hs:HSObservation ;
+          hs:product <https://www.wildberries.ru/catalog/10322023/detail.aspx> ;
+          hs:parsedAt ?parsedAt0 ;
+          hs:price ?price0 .
+        filter(?parsedAt0 >= "2021-07-01T00:00:00"^^xsd:dateTime)
+      }
+      ORDER BY (?parsedAt0)`;
+    const parser = new Parser();
+    const correctParsedQuery = parser.parse(correctQuery);
+    expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery as any);
+  });
+
+  it('construct subquery should generate correctly', async () => {
+    const client = new SparqlClientImplMock();
+    const collConstrJs = {
+      entConstrs: [
+        {
+          schema: ProductCardShapeSchema,
+          orderBy: [{ expression: variable('lastMonthSalesValue0'), descending: true }],
+          limit: 2,
+        },
+        {
+          schema: HSObservationShapeSchema,
+          conditions: {
+            product: '?eIri0',
+            parsedAt: {
+              relation: 'after',
+              value: ['2021-07-01T00:00:00'],
+            },
+          },
+          orderBy: [{ expression: variable('parsedAt1'), descending: false }],
+        },
+      ],
+      orderBy: [
+        { expression: variable('lastMonthSalesValue0'), descending: true },
+        { expression: variable('parsedAt1'), descending: false },
+      ],
+    };
+    const coll = await constructObjectsQuery(collConstrJs, testNs, client);
+    expect(coll).not.toBeUndefined();
+    //expect(coll.length).toBe(0);
+    const genQueryStr = client.sparqlConstructParams.query;
+    //console.log(genQueryStr);
+    const correctQuery = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+    PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+    PREFIX hs: <https://huntersales.ru/schema#>
+    CONSTRUCT {
+      ?eIri0 rdf:type hs:ProductCard .
+      ?eIri0 hs:name ?name0 .
+      ?eIri0 hs:lastMonthSalesValue ?lastMonthSalesValue0 .
+      ?eIri1 rdf:type hs:HSObservation .
+      ?eIri1 hs:product ?eIri0 .
+      ?eIri1 hs:parsedAt ?parsedAt1 .
+      ?eIri1 hs:price ?price1 .
+    } WHERE {
+      {
+        SELECT ?eIri0 ?name0 ?lastMonthSalesValue0 WHERE {
+          ?eIri0 rdf:type hs:ProductCard ;
+            hs:name ?name0 ;
+            hs:lastMonthSalesValue ?lastMonthSalesValue0 .
+        }
+        ORDER BY DESC(?lastMonthSalesValue0)
+        LIMIT 2
+      } . {
+        ?eIri1 rdf:type hs:HSObservation ;
+          hs:product ?eIri0 ;
+          hs:parsedAt ?parsedAt1 ;
+          hs:price ?price1 .
+        filter(?parsedAt1 >= "2021-07-01T00:00:00"^^xsd:dateTime)
+      }
+    }
+    ORDER BY DESC(?lastMonthSalesValue0) ?parsedAt1`;
+    const parser = new Parser();
+    const correctParsedQuery = parser.parse(correctQuery);
+    expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery as any);
+  });
+
+  it('construct subquery with inverse reference should generate correctly', async () => {
+    const client = new SparqlClientImplMock();
+    const collConstrJs = {
+      entConstrs: [
+        {
+          schema: ProductCardShapeSchemaForCardsList,
+          conditions: {
+            hasObservations: '?eIri1',
+          },
+          orderBy: [{ expression: variable('lastMonthSalesValue0'), descending: true }],
+          limit: 2,
+        },
+        {
+          schema: HSObservationShapeSchemaForCardsList,
+          conditions: {
+            parsedAt: {
+              relation: 'after',
+              value: ['2021-07-01T00:00:00'],
+            },
+          },
+          orderBy: [{ expression: variable('parsedAt1'), descending: false }],
+        },
+      ],
+      orderBy: [
+        { expression: variable('lastMonthSalesValue0'), descending: true },
+        { expression: variable('parsedAt1'), descending: false },
+      ],
+    };
+    const coll = await constructObjectsQuery(collConstrJs, testNs, client);
+    expect(coll).not.toBeUndefined();
+    //expect(coll.length).toBe(0);
+    const genQueryStr = client.sparqlConstructParams.query;
+    //console.log(genQueryStr);
+    const correctQuery = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+    PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+    PREFIX hs: <https://huntersales.ru/schema#>
+    CONSTRUCT {
+      ?eIri0 rdf:type hs:ProductCard .
+      ?eIri0 hs:name ?name0 .
+      ?eIri0 hs:lastMonthSalesValue ?lastMonthSalesValue0 .
+      ?eIri1 rdf:type hs:HSObservation .
+      ?eIri1 hs:product ?eIri0 .
+      ?eIri1 hs:parsedAt ?parsedAt1 .
+      ?eIri1 hs:price ?price1 .
+    } WHERE {
+      {
+        SELECT ?eIri0 ?name0 ?lastMonthSalesValue0 WHERE {
+          ?eIri0 rdf:type hs:ProductCard ;
+            hs:name ?name0 ;
+            hs:lastMonthSalesValue ?lastMonthSalesValue0 .
+        }
+        ORDER BY DESC(?lastMonthSalesValue0)
+        LIMIT 2
+      } . {
+        ?eIri1 rdf:type hs:HSObservation ;
+          hs:product ?eIri0 ;
+          hs:parsedAt ?parsedAt1 ;
+          hs:price ?price1 .
+        filter(?parsedAt1 >= "2021-07-01T00:00:00"^^xsd:dateTime)
+      }
+    }
+    ORDER BY DESC(?lastMonthSalesValue0) ?parsedAt1`;
+    const parser = new Parser();
+    const correctParsedQuery = parser.parse(correctQuery);
+    expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery as any);
+  });
 });
 
 describe('deleteObjectQuery', () => {
@@ -868,10 +1044,9 @@ async function selectTestHelper(collConstrJs: ICollConstrJsOpt, correctQuery: st
   //expect(coll.length).toBe(0);
   const genQueryStr = client.sparqlSelectParams.query;
   //console.log(genQueryStr);
-
   const parser = new Parser();
   const correctParsedQuery = parser.parse(correctQuery);
-  expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery);
+  expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery as any);
 }
 
 async function constructTestHelper(collConstrJs: ICollConstrJsOpt, correctQuery: string) {
@@ -881,10 +1056,9 @@ async function constructTestHelper(collConstrJs: ICollConstrJsOpt, correctQuery:
   //expect(coll.length).toBe(0);
   const genQueryStr = client.sparqlConstructParams.query;
   //console.log(genQueryStr);
-
   const parser = new Parser();
   const correctParsedQuery = parser.parse(correctQuery);
-  expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery);
+  expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery as any);
 }
 
 async function deleteTestHelper(
@@ -896,10 +1070,9 @@ async function deleteTestHelper(
   await deleteObjectQuery(collConstrJs, testNs, client, conditions);
   const genQueryStr = client.sparqlUpdateParams.query;
   //console.log(genQueryStr);
-
   const parser = new Parser();
   const correctParsedQuery = parser.parse(correctQuery);
-  expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery);
+  expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery as any);
 }
 
 async function insertTestHelper(
@@ -911,10 +1084,9 @@ async function insertTestHelper(
   await insertObjectQuery(collConstrJs, testNs, client, data);
   const genQueryStr = client.sparqlUpdateParams.query;
   //console.log(genQueryStr);
-
   const parser = new Parser();
   const correctParsedQuery = parser.parse(correctQuery);
-  expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery);
+  expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery as any);
 }
 
 async function updateTestHelper(
@@ -927,8 +1099,7 @@ async function updateTestHelper(
   await updateObjectQuery(collConstrJs, testNs, client, conditions, data);
   const genQueryStr = client.sparqlUpdateParams.query;
   //console.log(genQueryStr);
-
   const parser = new Parser();
   const correctParsedQuery = parser.parse(correctQuery);
-  expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery);
+  expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery as any);
 }

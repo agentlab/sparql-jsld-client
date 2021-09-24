@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
 import _isUrl from 'is-url';
-import { isArray } from 'lodash';
+import { isArray } from 'lodash-es';
 
 import { Quad, NamedNode, Variable } from 'rdf-js';
 import { literal, namedNode, triple, variable } from '@rdfjs/data-model';

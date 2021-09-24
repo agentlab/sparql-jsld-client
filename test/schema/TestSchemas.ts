@@ -714,9 +714,6 @@ export const ProductCardShapeSchemaForCardsList: JSONSchema6forRdf = {
     hasObservations: {
       '@reverse': 'hs:product',
     },
-    //hasObservations: {
-    //  '@id': 'hs:hasObservations',
-    //},
   },
   properties: {
     '@id': {
@@ -755,10 +752,6 @@ export const HSObservationShapeSchemaForCardsList: JSONSchema6forRdf = {
   type: 'object',
   '@context': {
     '@type': 'rdf:type',
-    //product: {
-    //  '@id': 'hs:product',
-    //  //'@type': 'hs:ProductCard',
-    //},
     parsedAt: {
       '@id': 'hs:parsedAt',
       '@type': 'xsd:dateTime',
@@ -779,9 +772,6 @@ export const HSObservationShapeSchemaForCardsList: JSONSchema6forRdf = {
       type: 'string',
       format: 'iri',
     },
-    /*product: {
-      type: 'object',
-    },*/
     parsedAt: {
       type: 'string',
       format: 'date-time',
@@ -790,5 +780,5 @@ export const HSObservationShapeSchemaForCardsList: JSONSchema6forRdf = {
       type: 'integer',
     },
   },
-  required: ['@id', '@type', /*'product',*/ 'parsedAt', 'price'],
+  required: ['@id', '@type', 'parsedAt', 'price'],
 };

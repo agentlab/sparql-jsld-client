@@ -22,6 +22,7 @@ import { rdfServerUrl, rmRepositoryParam, rmRepositoryType } from './config';
 import { vocabsFiles, shapesFiles, usersFiles, projectsFoldersFiles, samplesFiles, rootFolder } from './configTests';
 import {
   artifactSchema,
+  HSObservationShapeSchema,
   HSObservationShapeSchemaForCardsList,
   ProductCardShapeSchemaForCardsList,
   usedInModuleSchema,
@@ -160,6 +161,32 @@ describe('Retrieve subqueries', () => {
     await coll1.loadColl();
     const data: any = coll1.dataJs;
     expect(data.length).toBe(2);
+    expect(data[0]).toMatchObject({});
+    repository.removeColl(coll1);
+  });
+
+  it('Retrieve Federated HSObservation with hardcoded schema', async () => {
+    const coll1 = repository.addColl({
+      '@id': 'rm:collConstr1',
+      entConstrs: [
+        {
+          schema: HSObservationShapeSchema,
+          conditions: {
+            product: 'https://www.wildberries.ru/catalog/10322023/detail.aspx',
+            parsedAt: {
+              relation: 'after',
+              value: ['2021-07-01T00:00:00'],
+            },
+          },
+          service: 'http://192.168.1.33:8090/sparql',
+        },
+      ],
+      orderBy: [{ expression: variable('parsedAt0'), descending: false }],
+    });
+    expect(coll1).not.toBeUndefined();
+    await coll1.loadColl();
+    const data: any = coll1.dataJs;
+    expect(data.length).toBeGreaterThan(10);
     expect(data[0]).toMatchObject({});
     repository.removeColl(coll1);
   });

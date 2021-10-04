@@ -577,12 +577,26 @@ function constructQueryFromEntConstrs(entConstrs: EntConstrInternal[], collConst
       // array fields breaks LIMIT due to results denormalization
       isSubqueries = true;
       const { variables, where, options } = selectQueryFromEntConstr(entConstr);
+      let where2: any[] = [...where, ...options];
+      if (entConstrJs.service) {
+        where2 = [
+          {
+            type: 'service',
+            patterns: where2,
+            name: {
+              termType: 'NamedNode',
+              value: entConstrJs.service,
+            },
+            silent: false,
+          },
+        ];
+      }
       const subQuery: SelectQuery = {
         type: 'query',
         queryType: 'SELECT',
         prefixes: {},
         variables,
-        where: [...where, ...options],
+        where: where2,
       };
       if (entConstrJs.orderBy) subQuery.order = entConstrJs.orderBy;
       if (entConstrJs.limit) subQuery.limit = entConstrJs.limit;
@@ -606,28 +620,51 @@ function constructQueryFromEntConstrs(entConstrs: EntConstrInternal[], collConst
         entConstr.query.bgps = [];
       }
       // create result query from partial queries
+      let where: any[] = [];
       if (isSubqueries) {
-        query.where = [
-          ...(query.where || []),
-          {
-            type: 'group',
-            patterns: [
-              ...entConstr.query.bgps,
-              ...entConstr.query.filters,
-              ...entConstr.query.binds,
-              ...entConstr.query.options, // add options to the bottom of the sub-group instead of the global options list
-            ],
-          } as any,
-        ];
-      } else {
-        query.where = [
-          ...(query.where || []),
+        where = [
           ...entConstr.query.bgps,
           ...entConstr.query.filters,
           ...entConstr.query.binds,
+          ...entConstr.query.options, // add options to the bottom of the sub-group instead of the global options list
         ];
+        if (entConstrJs.service) {
+          where = [
+            {
+              type: 'service',
+              patterns: where,
+              name: {
+                termType: 'NamedNode',
+                value: entConstrJs.service,
+              },
+              silent: false,
+            },
+          ];
+        }
+        where = [
+          {
+            type: 'group',
+            patterns: where,
+          } as any,
+        ];
+      } else {
+        where = [...entConstr.query.bgps, ...entConstr.query.filters, ...entConstr.query.binds];
+        if (entConstrJs.service) {
+          where = [
+            {
+              type: 'service',
+              patterns: where,
+              name: {
+                termType: 'NamedNode',
+                value: entConstrJs.service,
+              },
+              silent: false,
+            },
+          ];
+        }
         allOptions = [...allOptions, ...entConstr.query.options];
       }
+      query.where = [...(query.where || []), ...where];
     }
     query.template = [...(query.template || []), ...entConstr.query.templates];
   });

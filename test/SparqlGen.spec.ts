@@ -717,6 +717,52 @@ describe('constructObjectsQuery', () => {
     expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery as any);
   });
 
+  it('construct Federated with filter should generate correctly', async () => {
+    const client = new SparqlClientImplMock();
+    const collConstrJs = {
+      entConstrs: [
+        {
+          schema: HSObservationShapeSchema,
+          conditions: {
+            product: 'https://www.wildberries.ru/catalog/10322023/detail.aspx',
+            parsedAt: {
+              relation: 'after',
+              value: ['2021-07-01T00:00:00'],
+            },
+          },
+          service: 'http://192.168.1.33:8090/sparql',
+        },
+      ],
+      orderBy: [{ expression: variable('parsedAt0'), descending: false }],
+    };
+    const coll = await constructObjectsQuery(collConstrJs, testNs, client);
+    expect(coll).not.toBeUndefined();
+    //expect(coll.length).toBe(0);
+    const genQueryStr = client.sparqlConstructParams.query;
+    console.log(genQueryStr);
+    const correctQuery = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+      PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>  
+      PREFIX hs: <https://huntersales.ru/schema#>
+      CONSTRUCT {
+        ?eIri0 rdf:type hs:HSObservation ;
+          hs:product <https://www.wildberries.ru/catalog/10322023/detail.aspx> ;
+          hs:parsedAt ?parsedAt0 ;
+          hs:price ?price0 .
+      } WHERE {
+        SERVICE <http://192.168.1.33:8090/sparql> {
+          ?eIri0 rdf:type hs:HSObservation ;
+            hs:product <https://www.wildberries.ru/catalog/10322023/detail.aspx> ;
+            hs:parsedAt ?parsedAt0 ;
+            hs:price ?price0 .
+          filter(?parsedAt0 >= "2021-07-01T00:00:00"^^xsd:dateTime)
+        }
+      }
+      ORDER BY (?parsedAt0)`;
+    const parser = new Parser();
+    const correctParsedQuery = parser.parse(correctQuery);
+    expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery as any);
+  });
+
   it('construct subquery should generate correctly', async () => {
     const client = new SparqlClientImplMock();
     const collConstrJs = {

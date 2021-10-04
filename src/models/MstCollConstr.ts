@@ -73,6 +73,10 @@ export const MstEntConstr = types
     offset: types.maybe(types.number),
     distinct: types.maybe(types.boolean),
     /**
+     * manual federation in query
+     */
+    service: types.maybe(types.string),
+    /**
      * Retrieve DirectType class (lowest in the class hierarchy).
      */
     resolveType: types.maybe(types.boolean),

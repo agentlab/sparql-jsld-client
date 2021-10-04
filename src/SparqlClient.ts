@@ -102,7 +102,7 @@ export async function sendPostQuery(
   }
   url = url + queryParamsInUrl;
   try {
-    const response = await axios.request<ServerResponse>({
+    const response = await axios.request<string, AxiosResponse<ServerResponse>>({
       method: 'post',
       url,
       headers: {
@@ -156,7 +156,7 @@ export async function sendPostStatements(
   }
   url = url + queryParamsInUrl;
   try {
-    const response = await axios.request<ServerResponse>({
+    const response = await axios.request<string, AxiosResponse<ServerResponse>>({
       method: 'post',
       url,
       headers: {
@@ -210,7 +210,7 @@ export async function executeUpdate(url: string, query: string, queryParams: JsO
       .join('&')}`;
   }
   url = url + queryParamsInUrl;
-  const response = await axios.request<AxiosResponse>({
+  const response = await axios.request<string, AxiosResponse>({
     method: 'post',
     url,
     headers: {

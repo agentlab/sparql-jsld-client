@@ -240,7 +240,11 @@ export class SparqlClientImpl implements SparqlClient {
     return results;
   }
 
-  async sparqlConstruct(query: string, queryParams: JsObject = {}): Promise<JsObject[]> {
+  async sparqlConstruct(
+    query: string,
+    queryParams: JsObject = {},
+    accept = 'application/ld+json',
+  ): Promise<JsObject[]> {
     //console.debug(() => `sparqlSelect url=${this.repositoryUrl} query=${query} queryParams=${json2str(queryParams)}`);
     //const response = await sendPostQuery(this.repositoryUrl, query, queryParams);
     // console.debug(() => `sparqlSelect response=${json2str(response)}`);
@@ -252,14 +256,15 @@ export class SparqlClientImpl implements SparqlClient {
     }
     const url = this.repositoryUrl + queryParamsInUrl;
     try {
-      const response = await axios.request<JsObject[]>({
+      const response = await axios.request<string, AxiosResponse<JsObject[]>>({
         method: 'post',
         url,
         //TODO: Not working 'application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"'
         headers: {
           'Content-Type': 'application/sparql-query;charset=UTF-8',
           //Accept: 'application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"',
-          Accept: 'application/ld+json',
+          Accept: accept, //'application/ld+json',
+          'Accept-Encoding': 'gzip, deflate, br',
         },
         data: query,
         //transformResponse: (r) => r.data

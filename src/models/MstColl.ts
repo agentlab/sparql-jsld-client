@@ -129,6 +129,11 @@ export const MstColl = types
      */
     lastSynced: types.maybe(types.number),
 
+    /**
+     * If CollConstr has changed and data is loading
+     */
+    isLoading: types.optional(types.boolean, false),
+
     pageSize: types.optional(types.number, 10),
     /**
      * Add colls to the repository for the discovered in dataIntrnl CollConstrs.
@@ -183,6 +188,7 @@ export const MstColl = types
         //console.log('MstColl afterAttach, @id=', self['@id']);
         // first-time load
         if (self.lazy === false) {
+          self.isLoading = true;
           setImmediate(() => {
             //@ts-ignore
             self.loadColl();
@@ -195,6 +201,7 @@ export const MstColl = types
           },
           (newVal: any, oldVal: any) => {
             //console.log('MstColl.collConstr changed, reload data', { newVal, oldVal });
+            self.isLoading = true;
             setImmediate(() => {
               //@ts-ignore
               self.loadColl();
@@ -218,6 +225,7 @@ export const MstColl = types
         if (dispose) dispose();
       },
       loadColl: flow(function* loadColl() {
+        self.isLoading = true;
         //console.log('loadColl START');
         if (self.collConstr) {
           const collConstr = getSnapshot<ICollConstrSnapshotOut>(self.collConstr);
@@ -236,6 +244,7 @@ export const MstColl = types
           );
           if (nullEntConstr || nullEntConstrParent) {
             self.dataIntrnl = [];
+            self.isLoading = false;
             self.lastSynced = moment.now();
             return;
           }
@@ -250,6 +259,7 @@ export const MstColl = types
           self.dataIntrnl = objects;
           //schema: {},
           //selectQuery: '',
+          self.isLoading = false;
           self.lastSynced = moment.now();
           //console.log('loadColl', objects.length);
         } else {
@@ -259,6 +269,7 @@ export const MstColl = types
       }),
 
       loadMore: flow(function* loadMore() {
+        self.isLoading = true;
         if (self.collConstr) {
           const collConstr = {
             ...getSnapshot<ICollConstrSnapshotOut>(self.collConstr),
@@ -283,6 +294,7 @@ export const MstColl = types
           if (self.collConstr.limit) {
             self.collConstr.setLimit(self.dataIntrnl.length);
           }
+          self.isLoading = false;
         }
       }),
 

@@ -11,7 +11,7 @@ import { AxiosResponse } from 'axios';
 import { SparqlClient, Results } from '../src/SparqlClient';
 import { JsObject, JsStrObj } from '../src/ObjectProvider';
 
-const HttpResponse200: AxiosResponse = {
+const HttpResponse200: AxiosResponse<any> = {
   data: {},
   status: 200,
   statusText: 'Ok',
@@ -60,33 +60,33 @@ export class SparqlClientImplMock implements SparqlClient {
   createRepositoryAndSetCurrentParams = {};
   createRepositoryParams = {};
 
-  setServerUrl(url: string) {
+  setServerUrl(url: string): void {
     this.serverUrl = url;
     this.regenerateUrls();
   }
 
-  setRepositoryId(repId: string) {
+  setRepositoryId(repId: string): void {
     this.repId = repId;
     this.regenerateUrls();
   }
 
-  createRepositoryUrl(repId: string) {
+  createRepositoryUrl(repId: string): string {
     return `${this.serverUrl}/repositories/${repId}`;
   }
-  createStatementsUrl(repId: string) {
+  createStatementsUrl(repId: string): string {
     return `${this.serverUrl}/repositories/${repId}/statements`;
   }
 
-  regenerateUrls() {
+  regenerateUrls(): void {
     this.repositoryUrl = this.createRepositoryUrl(this.repId);
     this.statementsUrl = this.createStatementsUrl(this.repId);
   }
 
-  async loadNs() {
+  async loadNs(): Promise<JsStrObj> {
     return this.nsReturn;
   }
 
-  async uploadStatements(statements: string, baseURI?: string, graph?: string) {
+  async uploadStatements(statements: string, baseURI?: string, graph?: string): Promise<void> {
     this.uploadStatementsParams = {
       statements: statements.replace(/^#.*$/gm, ''),
       baseURI,
@@ -99,7 +99,7 @@ export class SparqlClientImplMock implements SparqlClient {
   //return Promise.reject('');
   //}
 
-  async sparqlSelect(query: string, queryParams: JsObject = {}) {
+  async sparqlSelect(query: string, queryParams: JsObject = {}): Promise<Results> {
     this.sparqlSelectParams = {
       query,
       queryParams,
@@ -107,7 +107,7 @@ export class SparqlClientImplMock implements SparqlClient {
     return this.sparqlSelectReturn;
   }
 
-  async sparqlConstruct(query: string, queryParams: JsObject = {}) {
+  async sparqlConstruct(query: string, queryParams: JsObject = {}): Promise<JsObject[]> {
     this.sparqlConstructParams = {
       query,
       queryParams,
@@ -115,7 +115,7 @@ export class SparqlClientImplMock implements SparqlClient {
     return this.sparqlConstructReturn;
   }
 
-  async sparqlUpdate(query: string, queryParams: JsObject = {}) {
+  async sparqlUpdate(query: string, queryParams: JsObject = {}): Promise<AxiosResponse<any>> {
     this.sparqlUpdateParams = {
       query,
       queryParams,

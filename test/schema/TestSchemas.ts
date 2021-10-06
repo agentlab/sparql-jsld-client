@@ -667,6 +667,14 @@ export const HSObservationShapeSchema: JSONSchema6forRdf = {
       '@id': 'hs:price',
       '@type': 'xsd:int',
     },
+    totalSales: {
+      '@id': 'hs:totalSales',
+      '@type': 'xsd:int',
+    },
+    categoryPopularity: {
+      '@id': 'hs:categoryPopularity',
+      '@type': 'xsd:double',
+    },
   },
   properties: {
     '@id': {
@@ -686,11 +694,20 @@ export const HSObservationShapeSchema: JSONSchema6forRdf = {
       type: 'string',
       format: 'date-time',
     },
+    // optional int
     price: {
       type: 'integer',
     },
+    // mandatory int
+    totalSales: {
+      type: 'integer',
+    },
+    // optional double
+    categoryPopularity: {
+      type: 'number',
+    },
   },
-  required: ['@id', '@type', 'product', 'parsedAt', 'price'],
+  required: ['@id', '@type', 'product', 'parsedAt', 'totalSales'],
 };
 
 export const ProductCardShapeSchemaForCardsList: JSONSchema6forRdf = {

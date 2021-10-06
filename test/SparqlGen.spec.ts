@@ -724,9 +724,9 @@ describe('constructObjectsQuery', () => {
         {
           schema: HSObservationShapeSchema,
           conditions: {
-            product: 'https://www.wildberries.ru/catalog/10322023/detail.aspx',
+            product: 'https://www.wildberries.ru/catalog/10477067/detail.aspx',
             parsedAt: {
-              relation: 'after',
+              relation: 'before',
               value: ['2021-07-01T00:00:00'],
             },
           },
@@ -739,22 +739,26 @@ describe('constructObjectsQuery', () => {
     expect(coll).not.toBeUndefined();
     //expect(coll.length).toBe(0);
     const genQueryStr = client.sparqlConstructParams.query;
-    console.log(genQueryStr);
+    //console.log(genQueryStr);
     const correctQuery = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
       PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>  
       PREFIX hs: <https://huntersales.ru/schema#>
       CONSTRUCT {
         ?eIri0 rdf:type hs:HSObservation ;
-          hs:product <https://www.wildberries.ru/catalog/10322023/detail.aspx> ;
+          hs:product <https://www.wildberries.ru/catalog/10477067/detail.aspx> ;
           hs:parsedAt ?parsedAt0 ;
-          hs:price ?price0 .
+          hs:price ?price0 ;
+          hs:totalSales ?totalSales0 ;
+          hs:categoryPopularity ?categoryPopularity0 .
       } WHERE {
         SERVICE <http://192.168.1.33:8090/sparql> {
           ?eIri0 rdf:type hs:HSObservation ;
-            hs:product <https://www.wildberries.ru/catalog/10322023/detail.aspx> ;
+            hs:product <https://www.wildberries.ru/catalog/10477067/detail.aspx> ;
             hs:parsedAt ?parsedAt0 ;
-            hs:price ?price0 .
-          filter(?parsedAt0 >= "2021-07-01T00:00:00"^^xsd:dateTime)
+            hs:totalSales ?totalSales0 .
+          FILTER(?parsedAt0 <= "2021-07-01T00:00:00"^^xsd:dateTime)
+          OPTIONAL{ ?eIri0 hs:price ?price0 . }
+          OPTIONAL{ ?eIri0 hs:categoryPopularity ?categoryPopularity0 . }
         }
       }
       ORDER BY (?parsedAt0)`;

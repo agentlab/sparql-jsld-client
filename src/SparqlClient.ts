@@ -202,7 +202,11 @@ export async function sendPostStatements(
  * @param {*} url
  * @param {*} query
  */
-export async function executeUpdate(url: string, query: string, queryParams: JsObject = {}): Promise<AxiosResponse> {
+export async function executeUpdate(
+  url: string,
+  query: string,
+  queryParams: JsObject = {},
+): Promise<AxiosResponse<any>> {
   let queryParamsInUrl = '';
   if (Object.keys(queryParams).length > 0) {
     queryParamsInUrl = `?${Object.keys(queryParams)
@@ -210,7 +214,7 @@ export async function executeUpdate(url: string, query: string, queryParams: JsO
       .join('&')}`;
   }
   url = url + queryParamsInUrl;
-  const response = await axios.request<string, AxiosResponse>({
+  const response = await axios.request<string, AxiosResponse<any>>({
     method: 'post',
     url,
     headers: {
@@ -233,7 +237,7 @@ export interface SparqlClient {
 
   sparqlSelect(query: string, queryParams?: JsObject): Promise<Results>;
   sparqlConstruct(query: string, queryParams?: JsObject): Promise<JsObject[]>;
-  sparqlUpdate(query: string, queryParams?: JsObject): Promise<AxiosResponse>;
+  sparqlUpdate(query: string, queryParams?: JsObject): Promise<AxiosResponse<any>>;
 
   clearGraph(graph?: string): Promise<any>;
 

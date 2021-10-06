@@ -653,7 +653,7 @@ function constructQueryFromEntConstrs(entConstrs: EntConstrInternal[], collConst
           where = [
             {
               type: 'service',
-              patterns: where,
+              patterns: [...where, ...entConstr.query.options],
               name: {
                 termType: 'NamedNode',
                 value: entConstrJs.service,
@@ -661,8 +661,9 @@ function constructQueryFromEntConstrs(entConstrs: EntConstrInternal[], collConst
               silent: false,
             },
           ];
+        } else {
+          allOptions = [...allOptions, ...entConstr.query.options];
         }
-        allOptions = [...allOptions, ...entConstr.query.options];
       }
       query.where = [...(query.where || []), ...where];
     }

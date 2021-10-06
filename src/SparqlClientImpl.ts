@@ -300,7 +300,7 @@ export class SparqlClientImpl implements SparqlClient {
     }
   }
 
-  async sparqlUpdate(query: string, queryParams: JsObject = {}): Promise<AxiosResponse> {
+  async sparqlUpdate(query: string, queryParams: JsObject = {}): Promise<AxiosResponse<any>> {
     //console.debug(() => `sparqlUpdate url=${this.repositoryUrl} queryParams=${json2str(queryParams)}`);
     return executeUpdate(this.statementsUrl, query, queryParams);
   }

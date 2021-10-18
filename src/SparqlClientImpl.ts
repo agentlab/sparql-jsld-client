@@ -263,8 +263,7 @@ export class SparqlClientImpl implements SparqlClient {
         headers: {
           'Content-Type': 'application/sparql-query;charset=UTF-8',
           //Accept: 'application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"',
-          Accept: accept, //'application/ld+json',
-          'Accept-Encoding': 'gzip, deflate, br',
+          Accept: accept,
         },
         data: query,
         //transformResponse: (r) => r.data

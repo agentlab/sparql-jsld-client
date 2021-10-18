@@ -277,7 +277,7 @@ export const MstRepository = types
       editConn(connections: any[], data: any) {
         console.log('editConn START wit data=', data);
         connections.forEach((conn: any) => {
-          const toId = conn.to;
+          const toId = conn.toObj;
           console.log('editConn conn with id=', toId);
 
           const node: any = values(self.colls).find((coll: any) => {
@@ -296,23 +296,28 @@ export const MstRepository = types
                 console.log('editConn found entConstr');
                 return true;
               }
-              console.log('editConn conditions=', getSnapshot(entConstr.conditions));
-              console.log('editConn conditions @id=', entConstr.conditions['@id']);
-              console.log('editConn conditions snpsht @id=', (getSnapshot(entConstr.conditions) as any)['@id']);
-              console.log('editConn conditions get @id=', entConstr.conditions.get('@id'));
+              //console.log('editConn conditions=', getSnapshot(entConstr.conditions));
+              //console.log('editConn conditions @id=', entConstr.conditions['@id']);
+              //console.log('editConn conditions snpsht @id=', (getSnapshot(entConstr.conditions) as any)['@id']);
+              //console.log('editConn conditions get @id=', entConstr.conditions.get('@id'));
               if (entConstr.conditions.get('@id') === toId) {
                 //console.log('editConn found conditions');
                 const node = entConstr.conditions;
-                console.log('editConn node found=', node);
+                //console.log('editConn node found=', node);
                 let condition: any = getSnapshot(node);
                 condition = {
                   ...condition,
                 };
-                if (typeof data === 'object') data = data['@id'];
-                condition[conn.by] = data;
+                if (data !== undefined) {
+                  console.log('editConn set key=', conn.toProp);
+                  condition[conn.toProp] = data;
+                } else {
+                  console.log('editConn delete key=', conn.toProp);
+                  delete condition[conn.toProp];
+                }
                 console.log('editConn new condition=', condition);
                 applySnapshot(node, condition);
-                console.log('editConn applied condition=', condition);
+                //console.log('editConn applied condition=', condition);
                 return true;
               }
               return false;
@@ -324,7 +329,7 @@ export const MstRepository = types
           //  condition = {
           //    ...condition,
           //  };
-          //  condition[conn.by] = data;
+          //  condition[conn.toProp] = data;
           //  console.log('editConn new condition=', condition);
           //  applySnapshot(node, condition);
           //  console.log('editConn applied condition=', condition);

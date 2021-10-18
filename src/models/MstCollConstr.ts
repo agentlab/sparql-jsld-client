@@ -422,8 +422,8 @@ async function resolveAndCloneSnapshot(
   if (parent) collConstrJs = mergeCollConstrs(collConstrJs, cloneDeep(parent));
   // resolve schema by reference. For-loop because of async-await
   for (let index = 0; index < collConstrJs.entConstrs.length; index++) {
-    const constrJs = collConstrJs.entConstrs[index];
-    let schema: any = constrJs.schema;
+    const entConstrJs = collConstrJs.entConstrs[index];
+    let schema: any = entConstrJs.schema;
     if (typeof schema === 'string') {
       const schemaIri = schema;
       schema = schemas.get(schemaIri);
@@ -435,7 +435,17 @@ async function resolveAndCloneSnapshot(
       if (!schema) console.error('NULL Schema!!!');
     }
     // make schema snapshot modifiable again by copying it
-    constrJs.schema = cloneDeep(schema);
+    entConstrJs.schema = cloneDeep(schema);
+    // convert full object value into IRI value
+    if (entConstrJs.conditions) {
+      Object.keys(entConstrJs.conditions).forEach((k) => {
+        const val = entConstrJs.conditions[k];
+        if (typeof val === 'object' && val['@id'] !== undefined && val['@type'] !== undefined) {
+          entConstrJs.conditions[k] = val['@id'];
+        }
+      });
+    }
+    collConstrJs.entConstrs[index] = entConstrJs;
   }
   return collConstrJs as ICollConstrJs;
 }

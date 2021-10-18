@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
-import { assign, cloneDeep, has, omit, transform } from 'lodash-es';
+import { assign, cloneDeep, omit, transform } from 'lodash-es';
 import {
   types,
   getSnapshot,
@@ -53,7 +53,15 @@ export const MstEntConstr = types
      */
     schema: types.union(MstJSONSchema7forRdfReference, MstJSONSchema7forRdf),
     /**
-     *
+     * Obj property corresponds schema property
+     * Obj value -- constrain value:
+     *   simple value: simple constrain
+     *   object value:
+     *     json-ld object (with '@id' and '@type') will be replaced with a value of '@id' property
+     *     filter object used for complex constrains like ranges, enums, etc.
+     *   undefined value -- special case -- remove constrain property with undefined value from conditions
+     *   null value -- special case -- indicates partial (unfinished) constrain, which should not be selected from the server.
+     *                 Reactive changes in conditions will be ignored by client and dataInternal will return an empty array.
      */
     conditions: types.optional(MstMapOfJsObject, {}),
     /**

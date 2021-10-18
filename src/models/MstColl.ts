@@ -235,12 +235,16 @@ export const MstColl = types
           const nullEntConstr = collConstr?.entConstrs?.find(
             (entConstr) =>
               entConstr.conditions &&
-              Object.keys(entConstr.conditions).find((condKey) => entConstr.conditions[condKey] === undefined),
+              Object.keys(entConstr.conditions).find(
+                (condKey) => entConstr.conditions[condKey] === undefined || entConstr.conditions[condKey] === null,
+              ),
           );
           const nullEntConstrParent = parent?.entConstrs?.find(
             (entConstr: any) =>
               entConstr.conditions &&
-              Object.keys(entConstr.conditions).find((condKey) => entConstr.conditions[condKey] === undefined),
+              Object.keys(entConstr.conditions).find(
+                (condKey) => entConstr.conditions[condKey] === undefined || entConstr.conditions[condKey] === null,
+              ),
           );
           if (nullEntConstr || nullEntConstrParent) {
             self.dataIntrnl = [];

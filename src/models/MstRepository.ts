@@ -275,25 +275,67 @@ export const MstRepository = types
        * @param by
        */
       editConn(connections: any[], data: any) {
-        console.log('editConn START wit data=', data);
+        //console.log('editConn START with data=', data);
         connections.forEach((conn: any) => {
           const toId = conn.toObj;
-          console.log('editConn conn with id=', toId);
-
+          let value = conn.fromProp === undefined || data === undefined ? data : data[conn.fromProp];
+          //console.log('editConn conn with id=', toId);
           const node: any = values(self.colls).find((coll: any) => {
-            console.log('editConn coll=', getSnapshot(coll));
-
-            console.log('editConn collConstr=', getSnapshot(coll.collConstr));
-            console.log('editConn collConstr @id=', coll.collConstr['@id']);
+            //console.log('editConn coll=', getSnapshot(coll));
+            //console.log('editConn collConstr=', getSnapshot(coll.collConstr));
+            //console.log('editConn collConstr @id=', coll.collConstr['@id']);
             if (coll.collConstr['@id'] === toId) {
-              console.log('editConn found coll.collConstr');
+              //console.log('editConn found coll.collConstr');
               return true;
             }
             return values(coll.collConstr.entConstrs).find((entConstr: any) => {
-              console.log('editConn entConstr=', getSnapshot(entConstr));
-              console.log('editConn entConstr @id=', entConstr['@id']);
+              //console.log('editConn entConstr=', getSnapshot(entConstr));
+              //console.log('editConn entConstr @id=', entConstr['@id']);
               if (entConstr['@id'] === toId) {
-                console.log('editConn found entConstr');
+                //console.log('editConn found entConstr');
+                if (conn.toProp === 'schema') {
+                  if (typeof value === 'object') value = value['@type'];
+                  //console.log('editConn entConstr schema settings found for id=', value);
+                  let schema = (self as any).schemas.json.get(value);
+                  //console.log('editConn entConstr schema found=', schema);
+                  if (!schema) {
+                    schema = (self as any).schemas.class2schema.get(value); // maybe value is a class
+                    //console.log('editConn entConstr schema for class found=', schema);
+                  }
+                  if (!schema) {
+                    //console.log('editConn entConstr schema value=', schema);
+                    schema = value;
+                  }
+                  //entConstr.schema = schema;
+                  let entConstrJs: any = getSnapshot(entConstr);
+                  entConstrJs = {
+                    ...entConstrJs,
+                  };
+                  if (value !== undefined) {
+                    //console.log('editConn set key=', conn.toProp);
+                    entConstrJs[conn.toProp] = value;
+                  } else {
+                    //console.log('editConn delete key=', conn.toProp);
+                    delete entConstrJs[conn.toProp];
+                  }
+                  console.log('editConn set new entConstr=', entConstrJs);
+                  applySnapshot(entConstr, entConstrJs);
+                  //console.log('editConn applied entConstr=', entConstrJs);
+                }
+                /*let entConstrJs: any = getSnapshot(entConstr);
+                entConstrJs = {
+                  ...entConstrJs,
+                };
+                if (value !== undefined) {
+                  console.log('editConn set key=', conn.toProp);
+                  entConstrJs[conn.toProp] = value;
+                } else {
+                  console.log('editConn delete key=', conn.toProp);
+                  delete entConstrJs[conn.toProp];
+                }
+                console.log('editConn new entConstr=', entConstrJs);
+                applySnapshot(entConstr, entConstrJs);
+                console.log('editConn applied entConstr=', entConstrJs);*/
                 return true;
               }
               //console.log('editConn conditions=', getSnapshot(entConstr.conditions));
@@ -308,14 +350,14 @@ export const MstRepository = types
                 condition = {
                   ...condition,
                 };
-                if (data !== undefined) {
-                  console.log('editConn set key=', conn.toProp);
-                  condition[conn.toProp] = data;
+                if (value !== undefined) {
+                  //console.log('editConn set key=', conn.toProp);
+                  condition[conn.toProp] = value;
                 } else {
-                  console.log('editConn delete key=', conn.toProp);
+                  //console.log('editConn delete key=', conn.toProp);
                   delete condition[conn.toProp];
                 }
-                console.log('editConn new condition=', condition);
+                console.log('editConn set new condition=', condition);
                 applySnapshot(node, condition);
                 //console.log('editConn applied condition=', condition);
                 return true;
@@ -329,7 +371,7 @@ export const MstRepository = types
           //  condition = {
           //    ...condition,
           //  };
-          //  condition[conn.toProp] = data;
+          //  condition[conn.toProp] = value;
           //  console.log('editConn new condition=', condition);
           //  applySnapshot(node, condition);
           //  console.log('editConn applied condition=', condition);

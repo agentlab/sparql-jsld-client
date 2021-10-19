@@ -275,17 +275,17 @@ export const MstRepository = types
        * @param by
        */
       editConn(connections: any[], data: any) {
-        //console.log('editConn START with data=', data);
+        //console.log('editConn START with data=', { connections, data });
         connections.forEach((conn: any) => {
           const toId = conn.toObj;
-          let value = conn.fromProp === undefined || data === undefined ? data : data[conn.fromProp];
+          let value = conn.fromProp === undefined || data === undefined || data === null ? data : data[conn.fromProp];
           //console.log('editConn conn with id=', toId);
           const node: any = values(self.colls).find((coll: any) => {
             //console.log('editConn coll=', getSnapshot(coll));
             //console.log('editConn collConstr=', getSnapshot(coll.collConstr));
             //console.log('editConn collConstr @id=', coll.collConstr['@id']);
             if (coll.collConstr['@id'] === toId) {
-              //console.log('editConn found coll.collConstr');
+              console.log('editConn found coll.collConstr, ignore it');
               return true;
             }
             return values(coll.collConstr.entConstrs).find((entConstr: any) => {
@@ -312,13 +312,13 @@ export const MstRepository = types
                     ...entConstrJs,
                   };
                   if (value !== undefined) {
-                    //console.log('editConn set key=', conn.toProp);
-                    entConstrJs[conn.toProp] = value;
+                    console.log('editConn set key=', conn.toProp);
+                    //entConstrJs[conn.toProp] = value;
                   } else {
                     //console.log('editConn delete key=', conn.toProp);
                     delete entConstrJs[conn.toProp];
                   }
-                  console.log('editConn set new entConstr=', entConstrJs);
+                  console.log('editConn set new entConstr by conn', { entConstrJs, conn });
                   applySnapshot(entConstr, entConstrJs);
                   //console.log('editConn applied entConstr=', entConstrJs);
                 }
@@ -357,7 +357,7 @@ export const MstRepository = types
                   //console.log('editConn delete key=', conn.toProp);
                   delete condition[conn.toProp];
                 }
-                console.log('editConn set new condition=', condition);
+                console.log('editConn set new condition by conn', { condition, conn });
                 applySnapshot(node, condition);
                 //console.log('editConn applied condition=', condition);
                 return true;
@@ -376,7 +376,7 @@ export const MstRepository = types
           //  applySnapshot(node, condition);
           //  console.log('editConn applied condition=', condition);
           //}
-          console.log('editConn END');
+          //console.log('editConn END');
         });
       },
 

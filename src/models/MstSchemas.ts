@@ -220,8 +220,16 @@ export const MstSchemas = types
         } else {
           // TODO: this is ugly, but workaround the idea that views should be side effect free.
           // We need a more elegant solution.
-          //@ts-ignore
-          setImmediate(() => self.loadSchemaByClassIri(iri));
+          setImmediate(() => {
+            if (iri && !self.class2schema.has(iri)) {
+              try {
+                //@ts-ignore
+                self.loadSchemaByClassIri(iri);
+              } catch (err) {
+                console.log(err);
+              }
+            }
+          });
           return null;
         }
       },
@@ -233,21 +241,23 @@ export const MstSchemas = types
       getOrLoadSchemaByIri(iri: string | undefined) {
         if (!iri || iri.length === 0) return null;
         iri = abbreviateIri(iri, repository.ns.currentJs);
-        if (!self.json.has(iri)) {
-          // TODO: this is ugly, but workaround the idea that views should be side effect free.
-          // We need a more elegant solution.
-          setImmediate(async () => {
+        if (self.json.has(iri)) {
+          //console.log('getOrLoadSchemaByIri: return schema', iri);
+          return self.json.get(iri);
+        }
+        // TODO: this is ugly, but workaround the idea that views should be side effect free.
+        // We need a more elegant solution.
+        setImmediate(async () => {
+          if (iri && !self.json.has(iri)) {
             try {
               //@ts-ignore
               await self.loadSchemaByIri(iri);
             } catch (err) {
               console.log(err);
             }
-          });
-          return null;
-        } else {
-          return self.json.get(iri);
-        }
+          }
+        });
+        return null;
       },
     };
   })
@@ -292,6 +302,7 @@ export const MstSchemas = types
         for (let i = 0; i < schemaAllOf.length; i++) {
           const iri = schemaAllOf[i].$ref;
           if (!self.json.has(iri)) {
+            //console.log('getDirectSuperSchemas: load schema', iri);
             //@ts-ignore
             yield self.loadSchemaByIri(iri);
           }
@@ -324,6 +335,9 @@ export const MstSchemas = types
       return schema;
     };
 
+    const loadingByClass: any = {};
+    const loadingByIri: any = {};
+
     return {
       addSchema(schema: JSONSchema6forRdf): void {
         const iri: string = abbreviateIri(schema['@id'], repository.ns.currentJs);
@@ -346,8 +360,26 @@ export const MstSchemas = types
       loadSchemaByClassIri: flow(function* loadSchemaByClassIri(iri: string | undefined) {
         //console.log('loadSchemaByClassIri', iri);
         if (!iri || iri.length === 0) return;
-        const schemaObs = yield loadSchemaInternal({ targetClass: iri });
-        //console.log('END loadSchemaByClassIri', iri);
+        // check loaded repo
+        let schemaObs: any = self.class2schema.get(iri);
+        if (schemaObs !== undefined) {
+          schemaObs = self.json.get(schemaObs);
+          if (schemaObs !== undefined) return schemaObs;
+        }
+        // check loading process
+        let loadSchemaGen = loadingByClass[iri];
+        if (loadSchemaGen) {
+          //console.log('WAIT START loadSchemaByClassIri', iri);
+          schemaObs = yield loadSchemaGen;
+          //console.log('WAIT END loadSchemaByClassIri', iri);
+        } else {
+          //console.log('LOAD START loadSchemaByClassIri', iri);
+          loadSchemaGen = loadSchemaInternal({ targetClass: iri });
+          loadingByClass[iri] = loadSchemaGen;
+          schemaObs = yield loadSchemaGen;
+          delete loadingByClass[iri];
+          //console.log('LOAD END loadSchemaByClassIri', iri);
+        }
         return schemaObs;
       }),
 
@@ -359,8 +391,23 @@ export const MstSchemas = types
       loadSchemaByIri: flow(function* loadSchemaByIri(iri: string | undefined) {
         //console.log('loadSchemaByIri', iri);
         if (!iri || iri.length === 0) return;
-        const schemaObs = yield loadSchemaInternal({ '@_id': iri });
-        //console.log('END loadSchemaByIri', iri);
+        // check loaded repo
+        let schemaObs: any = self.json.get(iri);
+        if (schemaObs !== undefined) return schemaObs;
+        // check loading process
+        let loadSchemaGen = loadingByIri[iri];
+        if (loadSchemaGen) {
+          //console.log('WAIT START loadSchemaByIri', iri);
+          schemaObs = yield loadSchemaGen;
+          //console.log('WAIT END loadSchemaByIri', iri);
+        } else {
+          //console.log('LOAD START loadSchemaByIri', iri);
+          loadSchemaGen = loadSchemaInternal({ '@_id': iri });
+          loadingByIri[iri] = loadSchemaGen;
+          schemaObs = yield loadSchemaGen;
+          delete loadingByIri[iri];
+          //console.log('LOAD END loadSchemaByIri', iri);
+        }
         return schemaObs;
       }),
     };

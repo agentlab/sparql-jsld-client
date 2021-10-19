@@ -188,7 +188,6 @@ export const MstColl = types
         //console.log('MstColl afterAttach, @id=', self['@id']);
         // first-time load
         if (self.lazy === false) {
-          self.isLoading = true;
           setImmediate(() => {
             //@ts-ignore
             self.loadColl();
@@ -201,7 +200,6 @@ export const MstColl = types
           },
           (newVal: any, oldVal: any) => {
             //console.log('MstColl.collConstr changed, reload data', { newVal, oldVal });
-            self.isLoading = true;
             setImmediate(() => {
               //@ts-ignore
               self.loadColl();

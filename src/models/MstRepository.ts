@@ -225,7 +225,7 @@ export const MstRepository = types
       //////////  Selection Service  ///////////
 
       setSelectedData(iri: string, data: any) {
-        console.log('setSelectedData START', { iri, data });
+        //console.log('setSelectedData START', { iri, data });
         if (iri /*&& */) {
           //let id: string;
           //if (typeof data === 'string') {
@@ -239,7 +239,7 @@ export const MstRepository = types
           //}
           self.selectedData.set(iri, data);
         }
-        console.log('setSelectedData END', { iri, data });
+        //console.log('setSelectedData END', { iri, data });
       },
       //////////  FORM  ///////////
       onSaveFormData(formId: string) {},
@@ -365,17 +365,19 @@ export const MstRepository = types
               return false;
             });
           });
-          //if (node) {
-          //  console.log('editConn node found=', node);
-          //  let condition: any = getSnapshot(node);
-          //  condition = {
-          //    ...condition,
-          //  };
-          //  condition[conn.toProp] = value;
-          //  console.log('editConn new condition=', condition);
-          //  applySnapshot(node, condition);
-          //  console.log('editConn applied condition=', condition);
-          //}
+          if (node) {
+            //console.log('editConn isLoading for node=', node['@id']);
+            node.isLoading = true;
+            //  console.log('editConn node found=', node);
+            //  let condition: any = getSnapshot(node);
+            //  condition = {
+            //    ...condition,
+            //  };
+            //  condition[conn.toProp] = value;
+            //  console.log('editConn new condition=', condition);
+            //  applySnapshot(node, condition);
+            //  console.log('editConn applied condition=', condition);
+          }
           //console.log('editConn END');
         });
       },

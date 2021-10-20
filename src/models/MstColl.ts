@@ -196,7 +196,9 @@ export const MstColl = types
         dispose = reaction(
           () => {
             const collConstr = self.collConstr;
-            return getSnapshot(collConstr);
+            const collConstrJs = getSnapshot(collConstr);
+            //console.log('Coll reaction', collConstrJs);
+            return collConstrJs;
           },
           (newVal: any, oldVal: any) => {
             //console.log('MstColl.collConstr changed, reload data', { newVal, oldVal });
@@ -245,6 +247,7 @@ export const MstColl = types
               ),
           );
           if (nullEntConstr || nullEntConstrParent) {
+            //console.log('loadColl ignore constr with nulls and undefs', collConstr['@id']);
             self.dataIntrnl = [];
             self.isLoading = false;
             self.lastSynced = moment.now();
@@ -266,12 +269,13 @@ export const MstColl = types
           //console.log('loadColl', objects.length);
         } else {
           console.warn('loadColl: self.collConstr is undefined');
+          if (self.isLoading) self.isLoading = false;
         }
         //console.log('loadColl END');
       }),
 
       loadMore: flow(function* loadMore() {
-        self.isLoading = true;
+        if (!self.isLoading) self.isLoading = true;
         if (self.collConstr) {
           const collConstr = {
             ...getSnapshot<ICollConstrSnapshotOut>(self.collConstr),

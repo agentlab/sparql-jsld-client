@@ -312,8 +312,8 @@ export const MstRepository = types
                     ...entConstrJs,
                   };
                   if (value !== undefined) {
-                    console.log('editConn set key=', conn.toProp);
-                    //entConstrJs[conn.toProp] = value;
+                    //console.log('editConn set key=', conn.toProp);
+                    entConstrJs[conn.toProp] = value;
                   } else {
                     //console.log('editConn delete key=', conn.toProp);
                     delete entConstrJs[conn.toProp];

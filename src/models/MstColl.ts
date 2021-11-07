@@ -254,19 +254,23 @@ export const MstColl = types
             return;
           }
 
-          const objects: any[] = yield constructObjectsSnapshot(
-            collConstr,
-            parent,
-            rep.schemas,
-            rep.ns.currentJs,
-            client,
-          );
-          self.dataIntrnl = objects;
-          //schema: {},
-          //selectQuery: '',
-          self.isLoading = false;
-          self.lastSynced = moment.now();
-          //console.log('loadColl', objects.length);
+          try {
+            const objects: any[] = yield constructObjectsSnapshot(
+              collConstr,
+              parent,
+              rep.schemas,
+              rep.ns.currentJs,
+              client,
+            );
+            self.dataIntrnl = objects;
+            //schema: {},
+            //selectQuery: '',
+            self.isLoading = false;
+            self.lastSynced = moment.now();
+            //console.log('loadColl', objects.length);
+          } catch (e) {
+            console.error(e);
+          }
         } else {
           console.warn('loadColl: self.collConstr is undefined');
           if (self.isLoading) self.isLoading = false;

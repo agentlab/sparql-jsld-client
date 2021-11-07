@@ -429,6 +429,8 @@ export async function constructObjectsQuery(
   const queryStr = gen.stringify(query);
   //console.log('constructObjectsQuery  query=', queryStr);
   const results: JsObject[] = await client.sparqlConstruct(queryStr, collConstrJs.options);
+  if (!results)
+    throw new Error('Collection load error, no response for the CollConstr with @id=' + collConstrJs['@id']);
   const objects: JsObject[] = await jsonLdToObjects(results, entConstrs);
   return objects;
 }

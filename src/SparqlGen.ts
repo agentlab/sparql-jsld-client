@@ -259,6 +259,7 @@ export interface EntConstrInternal extends EntConstrData {
   schemaPropsWithArrays: any;
   conditionsWithoutArrays: JsObject;
   conditionsWithArrays: JsObject;
+  props: JsObject;
   /**
    * Outgoing References dictionary
    * ConditionProp: EntConstrNumberInArray
@@ -270,6 +271,7 @@ export interface EntConstrInternal extends EntConstrData {
    */
   relatedFrom: { [s: string]: number };
   bindsVars: JsObject;
+  subEntConstr?: EntConstrInternal;
 }
 
 export function unscreenIds(data: any | undefined) {
@@ -674,7 +676,7 @@ export function getConditionalTriple(
   return getTripleWithPredOrPath(subj, propUri, value, prefixes);
 }
 
-function getTripleWithPredOrPath(subj: any, propUri: string | string[], value: any, prefixes: JsStrObj): Quad {
+export function getTripleWithPredOrPath(subj: any, propUri: string | string[], value: any, prefixes: JsStrObj): Quad {
   if (isArray(propUri)) {
     return triple(
       subj,
@@ -1185,6 +1187,7 @@ export function getInternalCollConstrs(
       schemaPropsWithArrays: {},
       conditionsWithoutArrays: {},
       conditionsWithArrays: {},
+      props: {},
       relatedTo: {},
       relatedFrom: {},
       bindsVars: {},

@@ -44,6 +44,8 @@ import {
   getSchemaPropType,
   deAbbreviateIri,
   localUrn,
+  getSchemaPropUri,
+  getTripleWithPredOrPath,
 } from './SparqlGen';
 
 export async function selectObjectsQuery(collConstrJs2: ICollConstrJsOpt, nsJs: any, client: SparqlClient) {
@@ -434,6 +436,66 @@ export async function constructObjectsQuery(
   const objects: JsObject[] = await jsonLdToObjects(results, entConstrs);
   return objects;
 }
+//TODO: replace getWhereVar
+export function getWhereProps(
+  entConstr: EntConstrInternal,
+  requireOptional = false,
+): { bgps: Quad[]; options: Quad[] } {
+  const bgps: Quad[] = [];
+  const options: Quad[] = [];
+  Object.keys(entConstr.props).forEach((key) => {
+    // filter @id, @type,...
+    if (!key.startsWith('@')) {
+      const propUri = getSchemaPropUri(entConstr.schema, key);
+      const varName = entConstr.props2vars[key];
+      if (propUri && varName) {
+        const option = getTripleWithPredOrPath(entConstr.subj, propUri, variable(varName), entConstr.prefixes);
+        if ((entConstr.schema.required && entConstr.schema.required.includes(key)) || requireOptional) {
+          bgps.push(option);
+        } else {
+          options.push(option);
+        }
+      }
+    }
+  });
+  return { bgps, options };
+}
+
+function processEntConstr(entConstr: EntConstrInternal, index: number, addType = true) {
+  const { bgps, options } = getWhereProps(entConstr);
+  entConstr.qCond = processConditions(entConstr, entConstr.conditions);
+  // make all conditions mandatory
+  entConstr.qCond.bgps = [...entConstr.qCond.bgps, ...entConstr.qCond.options];
+  entConstr.qCond.options = [];
+
+  if (entConstr.resolveType) {
+    entConstr.qTypeFilters = genSuperTypesFilter(entConstr, index);
+    entConstr.qTypeConds = [...entConstr.qTypeConds, ...genTypeCondition(entConstr), entConstr.qTypeFilters[0]];
+  } else if (addType) {
+    entConstr.qTypeConds = genTypeCondition(entConstr);
+  }
+
+  entConstr.query.bgps = [...entConstr.qTypeConds, ...entConstr.query.bgps, ...entConstr.qCond.bgps, ...bgps];
+  entConstr.query.options = [...entConstr.query.options, ...entConstr.qCond.options, ...options];
+  entConstr.query.filters = [...entConstr.query.filters, ...entConstr.qTypeFilters, ...entConstr.qCond.filters];
+  entConstr.query.binds = entConstr.qCond.binds;
+
+  entConstr.bindsVars = entConstr.qCond.bindsVars;
+  const bindsVarsTriples = Object.keys(entConstr.qCond.bindsVars).map((key) => {
+    const varName = entConstr.qCond.bindsVars[key];
+    return triple(entConstr.subj, namedNode(localUrn(key)), variable(varName));
+  });
+  const { bgps: bgps2 } = getWhereProps(entConstr, true);
+
+  entConstr.query.templates = fixPropPath([
+    ...entConstr.qTypeConds,
+    ...entConstr.query.templates,
+    ...entConstr.qCond.bgps, // conditionsBeforeSeparation
+    ...entConstr.qCond.options, // conditionsBeforeSeparation
+    ...bgps2,
+    ...bindsVarsTriples,
+  ]);
+}
 
 /**
  *
@@ -446,22 +508,13 @@ function constructQueryFromEntConstrs(entConstrs: EntConstrInternal[], collConst
   entConstrs.forEach((entConstr, index) => {
     if (entConstr.schema.properties) {
       if (entConstr.variables) {
-        //TODO: it could be an array property conflicted with LIMIT
         copyUniqueObjectProps(entConstr.query.variables, entConstr.variables);
       } else {
-        const entConstrJs = collConstrJs.entConstrs[index];
-        if (entConstrJs.limit) {
-          copyUniqueObjectProps(
-            entConstr.query.variables,
-            copyObjectPropsWithRenameOrFilter(entConstr.schemaPropsWithoutArrays, entConstr.ignoredProperties),
-          );
-        } else {
-          //copy the rest
-          copyUniqueObjectProps(
-            entConstr.query.variables,
-            copyObjectPropsWithRenameOrFilter(entConstr.schema.properties, entConstr.ignoredProperties),
-          );
-        }
+        //copy the rest
+        copyUniqueObjectProps(
+          entConstr.query.variables,
+          copyObjectPropsWithRenameOrFilter(entConstr.schema.properties, entConstr.ignoredProperties),
+        );
       }
     }
     if (entConstr.resolveType) {
@@ -472,88 +525,34 @@ function constructQueryFromEntConstrs(entConstrs: EntConstrInternal[], collConst
     }
     renumerateEntConstrVariables(entConstr, index);
   });
-  // form partial query patterns (bgps, options, filters, binds)
-  entConstrs.forEach((entConstr, index) => {
-    const { bgps, options } = getWhereVar(entConstr);
+  let isSubqueries = false;
+  // if LIMIT extract 1:1 cardinality sub-query in each LIMITed entConstr
+  entConstrs = entConstrs.map((entConstr, index) => {
     const entConstrJs = collConstrJs.entConstrs[index];
-    //let conditions: any = {};
-    if (entConstrJs.limit) {
-      //TODO: In case of array props, make subquery for every proptrty from entConstr.schemaPropsWithoutArrays
-      entConstr.qCond = processConditions(entConstr, entConstr.conditionsWithoutArrays, true);
-      //if array conditions are also relations, push-down bgps
-      Object.entries(entConstr.conditionsWithArrays).forEach((c) => {
-        const toEntConstrIndex: number | undefined = entConstr.relatedTo[c[0]];
-        if (toEntConstrIndex) {
-          const toEntConstr = entConstrs[toEntConstrIndex];
-          const conditionWithArrays = processConditions(entConstr, { [c[0]]: c[1] }, true);
-          conditionWithArrays.bgps = fixPropPath(conditionWithArrays.bgps);
-          toEntConstr.query.bgps = [...toEntConstr.query.bgps, ...conditionWithArrays.bgps];
-          toEntConstr.query.templates = [...toEntConstr.query.templates, ...conditionWithArrays.bgps];
-        }
-      });
-    } else {
-      //entConstr.qCond = processConditions(entConstr, entConstr.conditions);
-      entConstr.qCond = processConditions(entConstr, entConstr.conditions);
-      // push-down relation bgp to the child (object) group but preserve it in parent (subject) template (for style)
-      if (entConstrs.length > 1) {
-        const condBgpsSeparation = separateReferencedQuads(entConstr.qCond.bgps);
-        entConstr.qCond.bgps = condBgpsSeparation.nonRefs;
-        condBgpsSeparation.refs.forEach((r) => {
-          // if child entity (very rough)
-          if (r.index > index) {
-            const toEntConstr = entConstrs[r.index];
-            toEntConstr.query.bgps = [...toEntConstr.query.bgps, r.quad];
-            entConstr.query.templates = [...entConstr.query.templates, r.quad];
-          } else {
-            entConstr.qCond.bgps = [...entConstr.qCond.bgps, r.quad];
-          }
-        });
-        const condOptsSeparation = separateReferencedQuads(entConstr.qCond.options);
-        entConstr.qCond.options = condOptsSeparation.nonRefs;
-        // make optional condition required in optional block
-        condOptsSeparation.refs.forEach((r) => {
-          // if child entity (very rough)
-          if (r.index > index) {
-            const toEntConstr = entConstrs[r.index];
-            toEntConstr.query.bgps = [...toEntConstr.query.bgps, r.quad];
-            entConstr.query.templates = [...entConstr.query.templates, r.quad];
-          } else {
-            entConstr.qCond.options = [...entConstr.qCond.options, r.quad];
-          }
-        });
-      }
+    if (!entConstrJs.limit || Object.keys(entConstr.schemaPropsWithoutArrays).length === 0) {
+      entConstr.props = entConstr.query.variables;
+      processEntConstr(entConstr, index);
+      return entConstr;
     }
-    // make all conditions mandatory
-    entConstr.qCond.bgps = [...entConstr.qCond.bgps, ...entConstr.qCond.options];
-    entConstr.qCond.options = [];
-
-    if (entConstr.resolveType) {
-      entConstr.qTypeFilters = genSuperTypesFilter(entConstr, index);
-      entConstr.qTypeConds = [...entConstr.qTypeConds, ...genTypeCondition(entConstr), entConstr.qTypeFilters[0]];
-    } else {
-      entConstr.qTypeConds = genTypeCondition(entConstr);
-    }
-
-    entConstr.query.bgps = [...entConstr.qTypeConds, ...entConstr.query.bgps, ...entConstr.qCond.bgps, ...bgps];
-    entConstr.query.options = [...entConstr.query.options, ...entConstr.qCond.options, ...options];
-    entConstr.query.filters = [...entConstr.query.filters, ...entConstr.qTypeFilters, ...entConstr.qCond.filters];
-    entConstr.query.binds = entConstr.qCond.binds;
-
-    entConstr.bindsVars = entConstr.qCond.bindsVars;
-    const bindsVarsTriples = Object.keys(entConstr.qCond.bindsVars).map((key) => {
-      const varName = entConstr.qCond.bindsVars[key];
-      return triple(entConstr.subj, namedNode(localUrn(key)), variable(varName));
-    });
-    const { bgps: bgps2 } = getWhereVar(entConstr, true);
-
-    entConstr.query.templates = [
-      ...entConstr.qTypeConds,
-      ...entConstr.query.templates,
-      ...entConstr.qCond.bgps, // conditionsBeforeSeparation
-      ...entConstr.qCond.options, // conditionsBeforeSeparation
-      ...bgps2,
-      ...bindsVarsTriples,
-    ];
+    isSubqueries = true;
+    const subEntConstr: EntConstrInternal = cloneDeep(entConstr);
+    subEntConstr.query.variables = {};
+    copyUniqueObjectProps(
+      subEntConstr.query.variables,
+      copyObjectPropsWithRenameOrFilter(entConstr.schemaPropsWithoutArrays, entConstr.ignoredProperties),
+    );
+    subEntConstr.props = subEntConstr.query.variables;
+    subEntConstr.conditions = entConstr.conditionsWithoutArrays;
+    copyUniqueObjectProps(
+      entConstr.props,
+      copyObjectPropsWithRenameOrFilter(entConstr.schemaPropsWithArrays, entConstr.ignoredProperties),
+    );
+    entConstr.conditions = entConstr.conditionsWithArrays;
+    entConstr.resolveType = false;
+    entConstr.subEntConstr = subEntConstr;
+    processEntConstr(subEntConstr, index);
+    processEntConstr(entConstr, index, false);
+    return entConstr;
   });
 
   const query: ConstructQuery & {
@@ -570,21 +569,36 @@ function constructQueryFromEntConstrs(entConstrs: EntConstrInternal[], collConst
     template: [],
   };
   let allOptions: any[] = [];
-  let isSubqueries = false;
 
   entConstrs.forEach((entConstr, index) => {
     const entConstrJs = collConstrJs.entConstrs[index];
-    if (entConstrJs.limit) {
+    if (entConstr.subEntConstr) {
       // LIMIT exists, use SELECT subquery
       // array fields breaks LIMIT due to results denormalization
-      isSubqueries = true;
-      const { variables, where, options } = selectQueryFromEntConstr(entConstr);
-      let where2: any[] = [...where, ...options];
+      const {
+        variables: variables2,
+        where: where2,
+        options: options2,
+      } = selectQueryFromEntConstr(entConstr.subEntConstr);
+      let whereAll2: any[] = [...where2, ...options2];
+      const { variables: variables1, where: where1, options: options1 } = selectQueryFromEntConstr(entConstr);
+      let whereAll1: any[] = [...where1, ...options1];
       if (entConstrJs.service) {
-        where2 = [
+        whereAll2 = [
           {
             type: 'service',
-            patterns: where2,
+            patterns: whereAll2,
+            name: {
+              termType: 'NamedNode',
+              value: entConstrJs.service,
+            },
+            silent: false,
+          },
+        ];
+        whereAll1 = [
+          {
+            type: 'service',
+            patterns: whereAll1,
             name: {
               termType: 'NamedNode',
               value: entConstrJs.service,
@@ -593,24 +607,39 @@ function constructQueryFromEntConstrs(entConstrs: EntConstrInternal[], collConst
           },
         ];
       }
-      const subQuery: SelectQuery = {
+      const subQuery2: SelectQuery = {
         type: 'query',
         queryType: 'SELECT',
         prefixes: {},
-        variables,
-        where: where2,
+        variables: variables2,
+        where: whereAll2,
       };
-      if (entConstrJs.orderBy) subQuery.order = entConstrJs.orderBy;
-      if (entConstrJs.limit) subQuery.limit = entConstrJs.limit;
-      if (entConstrJs.offset) subQuery.offset = entConstrJs.offset;
-      if (entConstrJs.distinct) subQuery.distinct = entConstrJs.distinct;
+      if (entConstrJs.orderBy) subQuery2.order = entConstrJs.orderBy;
+      if (entConstrJs.limit) subQuery2.limit = entConstrJs.limit;
+      if (entConstrJs.offset) subQuery2.offset = entConstrJs.offset;
+      if (entConstrJs.distinct) subQuery2.distinct = entConstrJs.distinct;
+      const subQuery1: SelectQuery = {
+        type: 'query',
+        queryType: 'SELECT',
+        prefixes: {},
+        variables: variables1,
+        //where: whereAll1,
+        where: [
+          {
+            type: 'group',
+            patterns: [subQuery2],
+          },
+          ...whereAll1,
+        ],
+      };
       query.where = [
         ...(query.where || []),
         {
           type: 'group',
-          patterns: [subQuery],
+          patterns: [subQuery1],
         },
       ];
+      entConstr.query.templates = [...entConstr.subEntConstr.query.templates, ...entConstr.query.templates];
     } else {
       // no LIMIT, proceed with CONSTRUCT (without a subquery)
       entConstr.query.bgps =

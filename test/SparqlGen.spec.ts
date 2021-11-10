@@ -703,13 +703,17 @@ describe('constructObjectsQuery', () => {
         ?eIri0 rdf:type hs:HSObservation ;
           hs:product <https://www.wildberries.ru/catalog/10322023/detail.aspx> ;
           hs:parsedAt ?parsedAt0 ;
-          hs:price ?price0 .
+          hs:price ?price0 ;
+          hs:totalSales ?totalSales0 ;
+          hs:categoryPopularity ?categoryPopularity0 .
       } WHERE {
         ?eIri0 rdf:type hs:HSObservation ;
           hs:product <https://www.wildberries.ru/catalog/10322023/detail.aspx> ;
           hs:parsedAt ?parsedAt0 ;
-          hs:price ?price0 .
+          hs:totalSales ?totalSales0 .
         filter(?parsedAt0 >= "2021-07-01T00:00:00"^^xsd:dateTime)
+        OPTIONAL { ?eIri0 hs:price ?price0. }
+        OPTIONAL { ?eIri0 hs:categoryPopularity ?categoryPopularity0. }
       }
       ORDER BY (?parsedAt0)`;
     const parser = new Parser();
@@ -767,6 +771,57 @@ describe('constructObjectsQuery', () => {
     expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery as any);
   });
 
+  it('construct with array property and limit should generate subquery correctly', async () => {
+    const client = new SparqlClientImplMock();
+    const collConstrJs = {
+      entConstrs: [
+        {
+          schema: ProductCardShapeSchema,
+          orderBy: [{ expression: variable('lastMonthSalesValue0'), descending: true }],
+          limit: 2,
+        },
+      ],
+    };
+    const coll = await constructObjectsQuery(collConstrJs, testNs, client);
+    expect(coll).not.toBeUndefined();
+    //expect(coll.length).toBe(0);
+    const genQueryStr = client.sparqlConstructParams.query;
+    //console.log(genQueryStr);
+    const correctQuery = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+      PREFIX hs: <https://huntersales.ru/schema#>
+      CONSTRUCT {
+        ?eIri0 rdf:type hs:ProductCard.
+        ?eIri0 hs:name ?name0.
+        ?eIri0 hs:lastMonthSalesValue ?lastMonthSalesValue0.
+        ?eIri0 hs:saleValue ?saleValue0.
+        ?eIri0 hs:brand ?brand0.
+        ?eIri0 hs:seller ?seller0.
+        ?eIri0 hs:imageUrl ?imageUrl0.
+      }
+      WHERE {
+        {
+          SELECT ?eIri0 ?name0 ?lastMonthSalesValue0 ?saleValue0 ?brand0 ?seller0 ?imageUrl0 WHERE {
+            {
+              SELECT ?eIri0 ?name0 ?lastMonthSalesValue0 ?saleValue0 ?brand0 ?seller0 WHERE {
+                ?eIri0 rdf:type hs:ProductCard;
+                  hs:name ?name0;
+                  hs:lastMonthSalesValue ?lastMonthSalesValue0;
+                  hs:seller ?seller0.
+                OPTIONAL { ?eIri0 hs:saleValue ?saleValue0. }
+                OPTIONAL { ?eIri0 hs:brand ?brand0. }
+              }
+              ORDER BY DESC (?lastMonthSalesValue0)
+              LIMIT 2
+            }
+            OPTIONAL { ?eIri0 hs:imageUrl ?imageUrl0. }
+          }
+        }
+      }`;
+    const parser = new Parser();
+    const correctParsedQuery = parser.parse(correctQuery);
+    expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery as any);
+  });
+
   it('construct subquery should generate correctly', async () => {
     const client = new SparqlClientImplMock();
     const collConstrJs = {
@@ -805,25 +860,41 @@ describe('constructObjectsQuery', () => {
       ?eIri0 rdf:type hs:ProductCard .
       ?eIri0 hs:name ?name0 .
       ?eIri0 hs:lastMonthSalesValue ?lastMonthSalesValue0 .
+      ?eIri0 hs:saleValue ?saleValue0 .
+      ?eIri0 hs:brand ?brand0 .
+      ?eIri0 hs:seller ?seller0 .
+      ?eIri0 hs:imageUrl ?imageUrl0 .
       ?eIri1 rdf:type hs:HSObservation .
       ?eIri1 hs:product ?eIri0 .
       ?eIri1 hs:parsedAt ?parsedAt1 .
       ?eIri1 hs:price ?price1 .
+      ?eIri1 hs:totalSales ?totalSales1.
+      ?eIri1 hs:categoryPopularity ?categoryPopularity1.
     } WHERE {
       {
-        SELECT ?eIri0 ?name0 ?lastMonthSalesValue0 WHERE {
-          ?eIri0 rdf:type hs:ProductCard ;
-            hs:name ?name0 ;
-            hs:lastMonthSalesValue ?lastMonthSalesValue0 .
+        SELECT ?eIri0 ?name0 ?lastMonthSalesValue0 ?saleValue0 ?brand0 ?seller0 ?imageUrl0 WHERE {
+          {
+            SELECT ?eIri0 ?name0 ?lastMonthSalesValue0 ?saleValue0 ?brand0 ?seller0 WHERE {
+              ?eIri0 rdf:type hs:ProductCard ;
+                hs:name ?name0 ;
+                hs:lastMonthSalesValue ?lastMonthSalesValue0 ;
+                hs:seller ?seller0.
+              OPTIONAL { ?eIri0 hs:saleValue ?saleValue0. }
+              OPTIONAL { ?eIri0 hs:brand ?brand0. }
+            }
+            ORDER BY DESC(?lastMonthSalesValue0)
+            LIMIT 2
+          }
+          OPTIONAL { ?eIri0 hs:imageUrl ?imageUrl0. }
         }
-        ORDER BY DESC(?lastMonthSalesValue0)
-        LIMIT 2
       } . {
         ?eIri1 rdf:type hs:HSObservation ;
           hs:product ?eIri0 ;
           hs:parsedAt ?parsedAt1 ;
-          hs:price ?price1 .
-        filter(?parsedAt1 >= "2021-07-01T00:00:00"^^xsd:dateTime)
+          hs:totalSales ?totalSales1 .
+        FILTER(?parsedAt1 >= "2021-07-01T00:00:00"^^xsd:dateTime)
+        OPTIONAL { ?eIri1 hs:price ?price1. }
+        OPTIONAL { ?eIri1 hs:categoryPopularity ?categoryPopularity1. }
       }
     }
     ORDER BY DESC(?lastMonthSalesValue0) ?parsedAt1`;
@@ -864,7 +935,7 @@ describe('constructObjectsQuery', () => {
     expect(coll).not.toBeUndefined();
     //expect(coll.length).toBe(0);
     const genQueryStr = client.sparqlConstructParams.query;
-    //console.log(genQueryStr);
+    console.log(genQueryStr);
     const correctQuery = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
     PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
     PREFIX hs: <https://huntersales.ru/schema#>
@@ -885,7 +956,7 @@ describe('constructObjectsQuery', () => {
         }
         ORDER BY DESC(?lastMonthSalesValue0)
         LIMIT 2
-      } . {
+    } . {
         ?eIri1 rdf:type hs:HSObservation ;
           hs:product ?eIri0 ;
           hs:parsedAt ?parsedAt1 ;

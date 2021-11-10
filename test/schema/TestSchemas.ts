@@ -624,6 +624,22 @@ export const ProductCardShapeSchema: JSONSchema6forRdf = {
       '@id': 'hs:lastMonthSalesValue',
       '@type': 'xsd:int',
     },
+    saleValue: {
+      '@id': 'hs:saleValue',
+      '@type': 'xsd:int',
+    },
+    brand: {
+      '@id': 'hs:brand',
+      '@type': 'hs:Brand',
+    },
+    seller: {
+      '@id': 'hs:seller',
+      '@type': 'hs:Seller',
+    },
+    imageUrl: {
+      '@id': 'hs:imageUrl',
+      '@type': '@id',
+    },
   },
   properties: {
     '@id': {
@@ -636,14 +652,42 @@ export const ProductCardShapeSchema: JSONSchema6forRdf = {
       type: 'string',
       format: 'iri',
     },
+    // mandatory str
     name: {
       type: 'string',
     },
+    // mandatory int
     lastMonthSalesValue: {
       type: 'integer',
     },
+    // optional int
+    saleValue: {
+      title: 'Размер скидки',
+      type: 'integer',
+    },
+    // optional reference
+    brand: {
+      title: 'Бренд товара',
+      type: 'string',
+      format: 'iri',
+    },
+    // mandatory ref
+    seller: {
+      title: 'Продавец',
+      type: 'string',
+      format: 'iri',
+    },
+    // optional array
+    imageUrl: {
+      title: 'Изображение товара',
+      type: 'array',
+      items: {
+        type: 'string',
+        format: 'iri',
+      },
+    },
   },
-  required: ['@id', '@type', 'name', 'lastMonthSalesValue'],
+  required: ['@id', '@type', 'name', 'lastMonthSalesValue', 'seller'],
 };
 
 export const HSObservationShapeSchema: JSONSchema6forRdf = {
@@ -731,6 +775,18 @@ export const ProductCardShapeSchemaForCardsList: JSONSchema6forRdf = {
     hasObservations: {
       '@reverse': 'hs:product',
     },
+    saleValue: {
+      '@id': 'hs:saleValue',
+      '@type': 'xsd:int',
+    },
+    seller: {
+      '@id': 'hs:seller',
+      '@type': 'hs:Seller',
+    },
+    imageUrl: {
+      '@id': 'hs:imageUrl',
+      '@type': '@id',
+    },
   },
   properties: {
     '@id': {
@@ -749,10 +805,31 @@ export const ProductCardShapeSchemaForCardsList: JSONSchema6forRdf = {
     lastMonthSalesValue: {
       type: 'integer',
     },
+    // mandatory reverse array
     hasObservations: {
       type: 'array',
       items: {
         type: 'object',
+      },
+    },
+    // optional int
+    saleValue: {
+      title: 'Размер скидки',
+      type: 'integer',
+    },
+    // optional reference
+    seller: {
+      title: 'Продавец',
+      type: 'string',
+      format: 'iri',
+    },
+    // array
+    imageUrl: {
+      title: 'Изображение товара',
+      type: 'array',
+      items: {
+        type: 'string',
+        format: 'iri',
       },
     },
   },

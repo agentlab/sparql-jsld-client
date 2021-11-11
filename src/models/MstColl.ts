@@ -375,6 +375,26 @@ export const MstColl = types
         }
         return null;
       },
+      testOnUpdateObj(objId: string, conditions: { [key: string]: unknown }) {
+        const i = self.dataIntrnl.findIndex((e: any) => e.get('@id') === objId);
+        if (i >= 0) {
+          const elem = getSnapshot<JsObject>(self.dataIntrnl[i]);
+          const newElem = { ...elem, ...conditions };
+          self.dataIntrnl.splice(i, 1, newElem);
+        }
+      },
+      testOnAddObjs(objs: JsObject[]) {
+        const objWithIds = objs.map((obj) => ({ ...obj, '@id': Math.random() }));
+        self.dataIntrnl.push(...objWithIds);
+      },
+      testOnDeleteObjs(ids: string[]) {
+        ids.forEach((id) => {
+          const idx = self.dataIntrnl.findIndex((e: any) => e.get('@id') === id);
+          if (idx !== -1) {
+            self.dataIntrnl.splice(idx, 1);
+          }
+        });
+      },
     };
   });
 export type IColl = Instance<typeof MstColl>;

@@ -428,6 +428,7 @@ export async function constructObjectsQuery(
   const collConstrJs: ICollConstrJsOpt = cloneDeep(collConstrJs2);
   const entConstrs: EntConstrInternal[] = getInternalCollConstrs(collConstrJs, nsJs);
   const query = constructQueryFromEntConstrs(entConstrs, collConstrJs);
+  //console.log('constructObjectsQuery  query=', query);
   const queryStr = gen.stringify(query);
   //console.log('constructObjectsQuery  query=', queryStr);
   const results: JsObject[] = await client.sparqlConstruct(queryStr, collConstrJs.options);

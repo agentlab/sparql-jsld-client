@@ -777,6 +777,10 @@ describe('constructObjectsQuery', () => {
       entConstrs: [
         {
           schema: ProductCardShapeSchema,
+          conditions: {
+            '@id': 'mktp:ProductCards_in_Category_Coll_Ent0_con',
+            seller: 'https://www.example.ru',
+          },
           orderBy: [{ expression: variable('lastMonthSalesValue0'), descending: true }],
           limit: 2,
         },
@@ -786,27 +790,27 @@ describe('constructObjectsQuery', () => {
     expect(coll).not.toBeUndefined();
     //expect(coll.length).toBe(0);
     const genQueryStr = client.sparqlConstructParams.query;
-    //console.log(genQueryStr);
+    console.log(genQueryStr);
     const correctQuery = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
       PREFIX hs: <https://huntersales.ru/schema#>
       CONSTRUCT {
         ?eIri0 rdf:type hs:ProductCard.
+        ?eIri0 hs:seller <https://www.example.ru>.
         ?eIri0 hs:name ?name0.
         ?eIri0 hs:lastMonthSalesValue ?lastMonthSalesValue0.
         ?eIri0 hs:saleValue ?saleValue0.
         ?eIri0 hs:brand ?brand0.
-        ?eIri0 hs:seller ?seller0.
         ?eIri0 hs:imageUrl ?imageUrl0.
       }
       WHERE {
         {
-          SELECT ?eIri0 ?name0 ?lastMonthSalesValue0 ?saleValue0 ?brand0 ?seller0 ?imageUrl0 WHERE {
+          SELECT ?eIri0 ?name0 ?lastMonthSalesValue0 ?saleValue0 ?brand0 ?imageUrl0 WHERE {
             {
-              SELECT ?eIri0 ?name0 ?lastMonthSalesValue0 ?saleValue0 ?brand0 ?seller0 WHERE {
+              SELECT ?eIri0 ?name0 ?lastMonthSalesValue0 ?saleValue0 ?brand0 WHERE {
                 ?eIri0 rdf:type hs:ProductCard;
+                  hs:seller  <https://www.example.ru> ;
                   hs:name ?name0;
-                  hs:lastMonthSalesValue ?lastMonthSalesValue0;
-                  hs:seller ?seller0.
+                  hs:lastMonthSalesValue ?lastMonthSalesValue0 .
                 OPTIONAL { ?eIri0 hs:saleValue ?saleValue0. }
                 OPTIONAL { ?eIri0 hs:brand ?brand0. }
               }

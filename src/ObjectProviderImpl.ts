@@ -81,9 +81,16 @@ function propertyShapeToJsonSchemaProperty(
     const shapePropKey = propertyNameShapeToSchema(shapePropUri);
     schemaProps[shapePropKey] = {};
     let schemaProp: JsObject = schemaProps[shapePropKey];
+    //labels
+    if (shapeProp.name) schemaProp.title = shapeProp.name;
+    if (shapeProp.description) schemaProp.description = shapeProp.description;
+    //modifiability
+    if (shapeProp.shapeModifiability) schemaProp.shapeModifiability = shapeProp.shapeModifiability;
+    //if (shapeProp.valueModifiability) schemaProp.valueModifiability = shapeProp.valueModifiability;
     //cardinality
-    if (shapeProp.maxCount > 1) {
+    if (shapeProp.maxCount === undefined || shapeProp.maxCount > 1) {
       schemaProp.type = 'array';
+      schemaProp.items = {};
       schemaProp = schemaProp.items;
     }
     if (shapeProp.minCount) {
@@ -155,12 +162,6 @@ function propertyShapeToJsonSchemaProperty(
       //TODO: handle sh:or ( [ sh:datatype xsd:string ] [ sh:datatype rdf:langString ] ) ;
       schemaProp.type = 'string';
     }
-    //labels
-    if (shapeProp.name) schemaProp.title = shapeProp.name;
-    if (shapeProp.description) schemaProp.description = shapeProp.description;
-    //modifiability
-    if (shapeProp.shapeModifiability) schemaProp.shapeModifiability = shapeProp.shapeModifiability;
-    //if (shapeProp.valueModifiability) schemaProp.valueModifiability = shapeProp.valueModifiability;
     return shapePropKey;
   }
   return undefined;

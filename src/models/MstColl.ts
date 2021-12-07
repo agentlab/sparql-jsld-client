@@ -134,6 +134,8 @@ export const MstColl = types
      */
     isLoading: types.optional(types.boolean, false),
 
+    isLoaded: types.optional(types.boolean, false),
+
     pageSize: types.optional(types.number, 10),
     /**
      * Add colls to the repository for the discovered in dataIntrnl CollConstrs.
@@ -265,6 +267,7 @@ export const MstColl = types
             self.dataIntrnl = objects;
             //schema: {},
             //selectQuery: '',
+            if (objects.length < self.pageSize) self.isLoaded = true;
             self.isLoading = false;
             self.lastSynced = moment.now();
             //console.log('loadColl', objects.length);
@@ -295,6 +298,7 @@ export const MstColl = types
             rep.ns.currentJs,
             client,
           );
+          if (objects.length < self.pageSize) self.isLoaded = true;
           self.dataIntrnl.push(...objects);
           //const objectsToAdd: any[] = [];
           //objects.forEach((o) => {

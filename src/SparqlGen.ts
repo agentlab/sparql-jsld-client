@@ -966,6 +966,48 @@ export function getExtendedFilter(
           literal(`${filterProperty.value[0]}`, getFullIriNamedNode('xsd:integer', entConstr.prefixes)),
         ];
         break;
+      case 'between':
+        filter.operator = '&&';
+        filter.args = [
+          {
+            args: [
+              variable,
+              literal(`${filterProperty.value[0]}`, getFullIriNamedNode('xsd:integer', entConstr.prefixes)),
+            ],
+            operator: '>=',
+            type: 'operation',
+          },
+          {
+            args: [
+              variable,
+              literal(`${filterProperty.value[1]}`, getFullIriNamedNode('xsd:integer', entConstr.prefixes)),
+            ],
+            operator: '<',
+            type: 'operation',
+          },
+        ];
+        break;
+      case 'between-incl-both':
+        filter.operator = '&&';
+        filter.args = [
+          {
+            args: [
+              variable,
+              literal(`${filterProperty.value[0]}`, getFullIriNamedNode('xsd:integer', entConstr.prefixes)),
+            ],
+            operator: '>=',
+            type: 'operation',
+          },
+          {
+            args: [
+              variable,
+              literal(`${filterProperty.value[1]}`, getFullIriNamedNode('xsd:integer', entConstr.prefixes)),
+            ],
+            operator: '<=',
+            type: 'operation',
+          },
+        ];
+        break;
       case 'any':
         buildEnumFilter(filter, variable, entConstr.prefixes, filterProperty.value, 'integer');
         break;

@@ -433,40 +433,68 @@ describe('RetrieveWithParent', () => {
   });
 });
 
-/*describe('LoadMore', () => {
+describe('LoadMore', () => {
   it('should sync load incrementally additional data into Coll', async () => {
-    const coll = repository.addColl({
-      entConstrs: [
-        {
-          schema: 'rm:ArtifactShape',
-        },
-      ],
-      limit: 10,
-    });
-    expect(coll).not.toBeUndefined();
-    await coll.loadColl();
-    const data: any = coll && coll.data !== undefined ? getSnapshot(coll.data) : [];
-    expect(data.length).toBe(10);
+    const objects = [{ '@id': 'same' }, { '@id': 'other1' }];
+    const dataIntrnl = [{ '@id': 'same' }, { '@id': 'other2' }];
 
-    await coll.loadMore();
-    const data2: any = coll && coll.data !== undefined ? getSnapshot(coll.data) : [];
-    expect(data2.length).toBe(15);
-    repository.removeColl(coll);
+    /*const objectsToAdd: any[] = objects.filter((o: any) => {
+      const ret1 = dataIntrnl.some((d: any) => {
+        const ret2 = d['@id'] === o['@id'];
+        return ret2;
+      });
+      return !ret1;
+    });*/
 
-    data.forEach((el: any, i: any) => expect(data2[i]).toEqual(el));
-    data2.slice(data.length).forEach((el: any) => expect(data).not.toContainEqual(el));
-  });
-
-  it('should async load incrementally additional data into Coll', () => {
-    return new Promise<void>((done) => {
-      const coll = repository.addColl({
+    const coll = repository.addColl(
+      {
         entConstrs: [
           {
             schema: 'rm:ArtifactShape',
           },
         ],
-        limit: 10,
-      });
+        limit: 2,
+      },
+      { pageSize: 10 },
+    );
+    expect(coll).not.toBeUndefined();
+    await coll.loadColl();
+    const data: any = coll && coll.data !== undefined ? getSnapshot(coll.data) : [];
+    expect(data.length).toBe(2);
+
+    // load another page=10
+    await coll.loadMore();
+    const data2: any = coll && coll.data !== undefined ? getSnapshot(coll.data) : [];
+    expect(data2.length).toBe(12);
+    data.forEach((el: any, i: any) => expect(data2[i]).toEqual(el));
+    data2.slice(data.length).forEach((el: any) => expect(data).not.toContainEqual(el));
+
+    // load another 5 (the rest of it)
+    await coll.loadMore();
+    const data3: any = coll && coll.data !== undefined ? getSnapshot(coll.data) : [];
+    expect(data3.length).toBe(15);
+
+    // check empty load
+    await coll.loadMore();
+    const data4: any = coll && coll.data !== undefined ? getSnapshot(coll.data) : [];
+    expect(data4.length).toBe(15);
+
+    repository.removeColl(coll);
+  });
+
+  it('should async load incrementally additional data into Coll', () => {
+    return new Promise<void>((done) => {
+      const coll = repository.addColl(
+        {
+          entConstrs: [
+            {
+              schema: 'rm:ArtifactShape',
+            },
+          ],
+          limit: 10,
+        },
+        { pageSize: 10 },
+      );
       expect(coll).not.toBeUndefined();
 
       const disp1 = when(
@@ -487,4 +515,4 @@ describe('RetrieveWithParent', () => {
       coll.loadColl();
     });
   });
-});*/
+});

@@ -8,6 +8,7 @@
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
 import moment from 'moment';
+import { isEqual } from 'lodash-es';
 import { reaction } from 'mobx';
 import {
   types,
@@ -134,9 +135,7 @@ export const MstColl = types
      */
     isLoading: types.optional(types.boolean, false),
 
-    isLoaded: types.optional(types.boolean, false),
-
-    pageSize: types.optional(types.number, 10),
+    pageSize: types.optional(types.number, 100),
     /**
      * Add colls to the repository for the discovered in dataIntrnl CollConstrs.
      */
@@ -203,11 +202,19 @@ export const MstColl = types
             return collConstrJs;
           },
           (newVal: any, oldVal: any) => {
-            //console.log('MstColl.collConstr changed, reload data', { newVal, oldVal });
-            setImmediate(() => {
-              //@ts-ignore
-              self.loadColl();
-            });
+            // ignore if its internal loadMore()
+            if (
+              !self.isLoading &&
+              (!isEqual(newVal.entConstrs, oldVal.entConstrs) ||
+                !isEqual(newVal.orderBy, oldVal.orderBy) ||
+                (newVal.limit !== oldVal.limit && self.dataIntrnl.length !== newVal.limit))
+            ) {
+              //console.log('MstColl.collConstr changed, reload data', { newVal, oldVal });
+              setImmediate(() => {
+                //@ts-ignore
+                self.loadColl();
+              });
+            }
           },
           { fireImmediately: false, name: 'MstColl-Attach' },
         );
@@ -227,6 +234,7 @@ export const MstColl = types
         if (dispose) dispose();
       },
       loadColl: flow(function* loadColl() {
+        if (self.isLoading) return; // do not mess with other loading process in this coll
         self.isLoading = true;
         //console.log('loadColl START');
         if (self.collConstr) {
@@ -267,7 +275,6 @@ export const MstColl = types
             self.dataIntrnl = objects;
             //schema: {},
             //selectQuery: '',
-            if (objects.length < self.pageSize) self.isLoaded = true;
             self.isLoading = false;
             self.lastSynced = moment.now();
             //console.log('loadColl', objects.length);
@@ -282,7 +289,8 @@ export const MstColl = types
       }),
 
       loadMore: flow(function* loadMore() {
-        if (!self.isLoading) self.isLoading = true;
+        if (self.isLoading) return; // do not mess with other loading process in this coll
+        self.isLoading = true;
         if (self.collConstr) {
           const collConstr = {
             ...getSnapshot<ICollConstrSnapshotOut>(self.collConstr),
@@ -298,15 +306,16 @@ export const MstColl = types
             rep.ns.currentJs,
             client,
           );
-          if (objects.length < self.pageSize) self.isLoaded = true;
-          self.dataIntrnl.push(...objects);
-          //const objectsToAdd: any[] = [];
-          //objects.forEach((o) => {
-          //
-          //});
-          //self.dataIntrnl.push(...objectsToAdd);
-          if (self.collConstr.limit) {
-            self.collConstr.setLimit(self.dataIntrnl.length);
+          // it seems, we could have some duplicates in loadMore series in case with concurrent updates
+          const objectsToAdd: any[] = objects.filter(
+            (o: any) => !self.dataIntrnl.some((d: any) => d.get('@id') === o['@id']), // d is a MapType object
+          );
+          if (objectsToAdd.length > 0) {
+            self.dataIntrnl.push(...objectsToAdd);
+            if (self.collConstr.limit) {
+              // triggers reaction from afterAttach but we filter it out there in that reaction
+              self.collConstr.setLimit(self.dataIntrnl.length);
+            }
           }
           self.isLoading = false;
         }

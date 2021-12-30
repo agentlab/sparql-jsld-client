@@ -365,19 +365,6 @@ export const MstRepository = types
               return false;
             });
           });
-          if (node) {
-            //console.log('editConn isLoading for node=', node['@id']);
-            node.isLoading = true;
-            //  console.log('editConn node found=', node);
-            //  let condition: any = getSnapshot(node);
-            //  condition = {
-            //    ...condition,
-            //  };
-            //  condition[conn.toProp] = value;
-            //  console.log('editConn new condition=', condition);
-            //  applySnapshot(node, condition);
-            //  console.log('editConn applied condition=', condition);
-          }
           //console.log('editConn END');
         });
       },

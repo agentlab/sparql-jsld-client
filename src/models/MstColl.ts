@@ -214,7 +214,9 @@ export const MstColl = types
                 //@ts-ignore
                 self.loadColl();
               });
-            }
+            } /*else {
+              console.log('MstColl.collConstr changed, skip', { newVal, oldVal });
+            }*/
           },
           { fireImmediately: false, name: 'MstColl-Attach' },
         );
@@ -234,9 +236,13 @@ export const MstColl = types
         if (dispose) dispose();
       },
       loadColl: flow(function* loadColl() {
-        if (self.isLoading) return; // do not mess with other loading process in this coll
-        self.isLoading = true;
+        // do not mess with other loading process in this coll
+        if (self.isLoading) {
+          //console.log('loadColl isLoading=true, Skip');
+          return;
+        }
         //console.log('loadColl START');
+        self.isLoading = true;
         if (self.collConstr) {
           const collConstr = getSnapshot<ICollConstrSnapshotOut>(self.collConstr);
           let parent: any | undefined = self.collConstr['@parent'];
@@ -259,8 +265,8 @@ export const MstColl = types
           if (nullEntConstr || nullEntConstrParent) {
             //console.log('loadColl ignore constr with nulls and undefs', collConstr['@id']);
             self.dataIntrnl = [];
-            self.isLoading = false;
             self.lastSynced = moment.now();
+            self.isLoading = false;
             return;
           }
 
@@ -275,7 +281,6 @@ export const MstColl = types
             self.dataIntrnl = objects;
             //schema: {},
             //selectQuery: '',
-            self.isLoading = false;
             self.lastSynced = moment.now();
             //console.log('loadColl', objects.length);
           } catch (e) {
@@ -283,13 +288,18 @@ export const MstColl = types
           }
         } else {
           console.warn('loadColl: self.collConstr is undefined');
-          if (self.isLoading) self.isLoading = false;
         }
+        if (self.isLoading) self.isLoading = false;
         //console.log('loadColl END');
       }),
 
       loadMore: flow(function* loadMore() {
-        if (self.isLoading) return; // do not mess with other loading process in this coll
+        // do not mess with other loading process in this coll
+        if (self.isLoading) {
+          //console.log('loadMore isLoading=true, Skip');
+          return;
+        }
+        //console.log('loadMore START');
         self.isLoading = true;
         if (self.collConstr) {
           const collConstr = {
@@ -317,8 +327,9 @@ export const MstColl = types
               self.collConstr.setLimit(self.dataIntrnl.length);
             }
           }
-          self.isLoading = false;
         }
+        self.isLoading = false;
+        //console.log('loadMore END');
       }),
 
       changeCollConstr(constr: any) {},

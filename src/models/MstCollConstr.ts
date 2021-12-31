@@ -473,15 +473,43 @@ export async function constructObjects(collConstr: ICollConstr) {
   return constructObjectsQuery(collConstrJs, collConstr.nsJs, collConstr.client);
 }
 
+/**
+ * Validates query and makes request to the server
+ * @param collConstr
+ * @param parentCollConstr
+ * @param schemas
+ * @param nsJs
+ * @param client
+ * @returns [] or null -- if incorrect query in validation and no actual request to the server had been made
+ */
 export async function constructObjectsSnapshot(
-  data: ICollConstrSnapshotOut,
-  parent: ICollConstrSnapshotOut | undefined,
+  collConstr: ICollConstrSnapshotOut,
+  parentCollConstr: ICollConstrSnapshotOut | undefined,
   schemas: ISchemas,
   nsJs: any,
   client: SparqlClient,
 ) {
+  //CollConstrs correctness pre-check (cond keys with undefined are signs of incorrectness)
+  const nullEntConstr = collConstr?.entConstrs?.find(
+    (entConstr) =>
+      entConstr.conditions &&
+      Object.keys(entConstr.conditions).find(
+        (condKey) => entConstr.conditions[condKey] === undefined || entConstr.conditions[condKey] === null,
+      ),
+  );
+  const nullEntConstrParent = parentCollConstr?.entConstrs?.find(
+    (entConstr: any) =>
+      entConstr.conditions &&
+      Object.keys(entConstr.conditions).find(
+        (condKey) => entConstr.conditions[condKey] === undefined || entConstr.conditions[condKey] === null,
+      ),
+  );
+  if (nullEntConstr || nullEntConstrParent) {
+    console.log('constructObjectsSnapshot ignore constr with nulls and undefs', collConstr['@id']);
+    return null;
+  }
   //TODO: performance
-  const collConstrJs = await resolveAndCloneSnapshot(data, parent, schemas);
+  const collConstrJs = await resolveAndCloneSnapshot(collConstr, parentCollConstr, schemas);
   return constructObjectsQuery(collConstrJs, nsJs, client);
 }
 

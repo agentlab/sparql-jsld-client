@@ -241,44 +241,23 @@ export const MstColl = types
           //console.log('loadColl isLoading=true, Skip');
           return;
         }
-        //console.log('loadColl START');
+        console.log('loadColl START');
         self.isLoading = true;
         if (self.collConstr) {
           const collConstr = getSnapshot<ICollConstrSnapshotOut>(self.collConstr);
           let parent: any | undefined = self.collConstr['@parent'];
           if (parent) parent = getSnapshot<ICollConstrSnapshotOut>(parent);
-          //CollConstrs correctness pre-check (cond keys with undefined are signs of incorrectness)
-          const nullEntConstr = collConstr?.entConstrs?.find(
-            (entConstr) =>
-              entConstr.conditions &&
-              Object.keys(entConstr.conditions).find(
-                (condKey) => entConstr.conditions[condKey] === undefined || entConstr.conditions[condKey] === null,
-              ),
-          );
-          const nullEntConstrParent = parent?.entConstrs?.find(
-            (entConstr: any) =>
-              entConstr.conditions &&
-              Object.keys(entConstr.conditions).find(
-                (condKey) => entConstr.conditions[condKey] === undefined || entConstr.conditions[condKey] === null,
-              ),
-          );
-          if (nullEntConstr || nullEntConstrParent) {
-            //console.log('loadColl ignore constr with nulls and undefs', collConstr['@id']);
-            self.dataIntrnl = [];
-            self.lastSynced = moment.now();
-            self.isLoading = false;
-            return;
-          }
-
+          console.log('loadColl query', { collConstr, parent });
           try {
-            const objects: any[] = yield constructObjectsSnapshot(
+            const objects: JsObject[] | null = yield constructObjectsSnapshot(
               collConstr,
               parent,
               rep.schemas,
               rep.ns.currentJs,
               client,
             );
-            self.dataIntrnl = objects;
+            if (objects === null) self.dataIntrnl = [];
+            else self.dataIntrnl = objects;
             //schema: {},
             //selectQuery: '',
             self.lastSynced = moment.now();
@@ -290,16 +269,16 @@ export const MstColl = types
           console.warn('loadColl: self.collConstr is undefined');
         }
         if (self.isLoading) self.isLoading = false;
-        //console.log('loadColl END');
+        console.log('loadColl END');
       }),
 
       loadMore: flow(function* loadMore() {
         // do not mess with other loading process in this coll
         if (self.isLoading) {
-          //console.log('loadMore isLoading=true, Skip');
+          console.log('loadMore isLoading=true, Skip');
           return;
         }
-        //console.log('loadMore START');
+        console.log('loadMore START');
         self.isLoading = true;
         if (self.collConstr) {
           const collConstr = {
@@ -309,27 +288,36 @@ export const MstColl = types
           };
           let parent: any = self.collConstr['@parent'];
           if (parent) parent = getSnapshot<ICollConstrSnapshotOut>(parent);
-          const objects: any[] = yield constructObjectsSnapshot(
-            collConstr,
-            parent,
-            rep.schemas,
-            rep.ns.currentJs,
-            client,
-          );
-          // it seems, we could have some duplicates in loadMore series in case with concurrent updates
-          const objectsToAdd: any[] = objects.filter(
-            (o: any) => !self.dataIntrnl.some((d: any) => d.get('@id') === o['@id']), // d is a MapType object
-          );
-          if (objectsToAdd.length > 0) {
-            self.dataIntrnl.push(...objectsToAdd);
-            if (self.collConstr.limit) {
-              // triggers reaction from afterAttach but we filter it out there in that reaction
-              self.collConstr.setLimit(self.dataIntrnl.length);
+          console.log('loadMore query', { collConstr, parent });
+          try {
+            const objects: JsObject[] | null = yield constructObjectsSnapshot(
+              collConstr,
+              parent,
+              rep.schemas,
+              rep.ns.currentJs,
+              client,
+            );
+            if (objects !== null) {
+              // it seems, we could have some duplicates in loadMore series in case with concurrent updates
+              const objectsToAdd: any[] = objects.filter(
+                (o: any) => !self.dataIntrnl.some((d: any) => d.get('@id') === o['@id']), // d is a MapType object
+              );
+              if (objectsToAdd.length > 0) {
+                self.dataIntrnl.push(...objectsToAdd);
+                if (self.collConstr.limit) {
+                  // triggers reaction from afterAttach but we filter it out there in that reaction
+                  self.collConstr.setLimit(self.dataIntrnl.length);
+                }
+              }
             }
+          } catch (e) {
+            console.error(e);
           }
+        } else {
+          console.warn('loadMore: self.collConstr is undefined');
         }
-        self.isLoading = false;
-        //console.log('loadMore END');
+        if (self.isLoading) self.isLoading = false;
+        console.log('loadMore END');
       }),
 
       changeCollConstr(constr: any) {},

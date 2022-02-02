@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
 import uuid62 from 'uuid62';
-import { cloneDeep } from 'lodash-es';
+import { cloneDeep, isArray } from 'lodash-es';
 import { Quad, Variable } from 'rdf-js';
 import { namedNode, triple, variable } from '@rdfjs/data-model';
 import { ConstructQuery, Ordering, SelectQuery } from 'sparqljs';
@@ -871,7 +871,7 @@ function convertSimpleTypes(val: string, type?: string) {
 function convertAnyTypes(val: any, type?: string, ctxs?: JsStrObjObj[]) {
   if (typeof val === 'string') {
     val = convertSimpleTypes(val, type);
-  } else if (Array.isArray(val)) {
+  } else if (isArray(val)) {
     val = val.map((subVal) => convertAnyTypes(subVal, type, ctxs));
   } else {
     val = convertPropValues(val, ctxs);
@@ -933,7 +933,7 @@ function nestObjs(jsonLdObjs: JsObject[], entConstrs: EntConstrInternal[]) {
           const fullPropIri = deAbbreviateIri(propIri as string, entConstr.prefixes);
           entsObjs[entConstrFromIndex].forEach((entObjFrom) => {
             const entObjFromPropVals = entObjFrom[fullPropIri];
-            if (Array.isArray(entObjFromPropVals)) {
+            if (isArray(entObjFromPropVals)) {
               entObjFromPropVals.forEach((entObjFromPropVal, opvIndex) => {
                 const refIri = entObjFromPropVal['@id'];
                 if (refIri) {

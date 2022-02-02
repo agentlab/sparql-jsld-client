@@ -128,14 +128,14 @@ export function addToBgp(triples: any[]): any[] {
 export function toBgp(data: any): BgpPattern {
   return {
     type: 'bgp',
-    triples: Array.isArray(data) ? data : [data],
+    triples: isArray(data) ? data : [data],
   };
 }
 
 export function toOptional(data: any): OptionalPattern {
   return {
     type: 'optional',
-    patterns: Array.isArray(data) ? data : [data],
+    patterns: isArray(data) ? data : [data],
   };
 }
 
@@ -801,7 +801,7 @@ export function getDataTriples(entConstr: EntConstrInternal): any[] {
               // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
               ...(<any>property.items),
             };
-            if (Array.isArray(value)) {
+            if (isArray(value)) {
               value.forEach((v) => {
                 triple = getConditionalTriple(prop, subj, v, propUri, entConstr.prefixes);
                 if (triple) triples.push(triple);
@@ -1155,8 +1155,8 @@ export function getInternalCollConstrs(
   addData?: JsObject | JsObject[],
 ) {
   const internalCollConstrs: EntConstrInternal[] = [];
-  if (addConditions && !Array.isArray(addConditions)) addConditions = [addConditions];
-  if (addData && !Array.isArray(addData)) addData = [addData];
+  if (addConditions && !isArray(addConditions)) addConditions = [addConditions];
+  if (addData && !isArray(addData)) addData = [addData];
 
   for (let index = 0; index < collConstr.entConstrs.length; index++) {
     const constr = collConstr.entConstrs[index] as EntConstrData;

@@ -7,8 +7,9 @@
  *
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
-import { JSONSchema6forRdf } from '../ObjectProvider';
 import moment from 'moment';
+import { isArray } from 'lodash-es';
+import { JSONSchema6forRdf } from '../ObjectProvider';
 
 interface FormatterAndDefaultAndTitle {
   propertyFormatter?: (value: any) => any;
@@ -23,7 +24,7 @@ export function getPropertyFormatterAndDefault(
   const properties = schema.properties;
   const contexts = schema['@context'];
   const result: FormatterAndDefaultAndTitle = {};
-  if (properties && contexts && typeof contexts !== 'string' && !Array.isArray(contexts)) {
+  if (properties && contexts && typeof contexts !== 'string' && !isArray(contexts)) {
     const property = properties[propKey];
     const context = (contexts as any)[propKey];
     if (property && context) {

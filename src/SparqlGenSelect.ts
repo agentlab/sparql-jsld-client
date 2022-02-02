@@ -181,6 +181,51 @@ function analyseProps(entConstrs: EntConstrInternal[]) {
   });
 }
 
+function convertOrderBy(orderBy: any, entConstrs: any | any[] | undefined): any {
+  if (isArray(orderBy)) return orderBy.map((e) => convertOrderBy(e, entConstrs));
+  if (orderBy.expression || !orderBy.variable) return orderBy;
+  let entConstrVariable = orderBy.variable;
+  if (entConstrs) {
+    entConstrVariable =
+      (isArray(entConstrs) ? entConstrs.find((e) => e.props2vars[entConstrVariable]) : entConstrs)?.props2vars[
+        entConstrVariable
+      ] || orderBy.variable;
+  }
+  return {
+    expression: variable(entConstrVariable),
+    descending: orderBy?.descending || false,
+  };
+}
+
+function sortResults(objects: JsObject[], orderBy: any[]) {
+  return objects.sort((a: JsObject, b: JsObject) => {
+    const order = orderBy?.find((o) => o.variable && a[o.variable] != b[o.variable]);
+    if (!order) return 0;
+    let a1 = a[order.variable];
+    let b1 = b[order.variable];
+    if (!a1 && b1) {
+      if (order.descending) return 1;
+      return -1;
+    }
+    if (a1 && !b1) {
+      if (order.descending) return -1;
+      return 1;
+    }
+    if (typeof a1 === 'number' && typeof b1 === 'number') {
+      if (order.descending) return b1 - a1;
+      return a1 - b1;
+    }
+    if (typeof a1 === 'string' && typeof b1 === 'string') {
+      if (order.descending) return b1.localeCompare(a1);
+      return a1.localeCompare(b1);
+    }
+    a1 = typeof a1 === 'string' ? a1 : a1.toString();
+    b1 = typeof b1 === 'string' ? b1 : b1.toString();
+    if (order.descending) return b1.localeCompare(a1);
+    return a1.localeCompare(b1);
+  });
+}
+
 /**
  * SELECT
  */
@@ -296,7 +341,7 @@ function selectQueryFromEntConstrs(entConstrs: EntConstrInternal[], collConstrJs
   });
   // options should be the latest in WHERE (SPARQL performance optimizations)
   query.where = [...(query.where || []), ...allOptions];
-  if (collConstrJs.orderBy) query.order = collConstrJs.orderBy;
+  if (collConstrJs.orderBy) query.order = convertOrderBy(collConstrJs.orderBy, entConstrs);
   if (collConstrJs.limit) query.limit = collConstrJs.limit;
   if (collConstrJs.offset) query.offset = collConstrJs.offset;
   if (collConstrJs.distinct) query.distinct = collConstrJs.distinct;
@@ -434,7 +479,12 @@ export async function constructObjectsQuery(
   const results: JsObject[] = await client.sparqlConstruct(queryStr, collConstrJs.options);
   if (!results)
     throw new Error('Collection load error, no response for the CollConstr with @id=' + collConstrJs['@id']);
-  const objects: JsObject[] = await jsonLdToObjects(results, entConstrs);
+  let objects: JsObject[] = await jsonLdToObjects(results, entConstrs);
+  if (collConstrJs.orderBy && objects?.length > 1) {
+    //console.log('before sort', objects, collConstrJs.orderBy);
+    objects = sortResults(objects, collConstrJs.orderBy);
+    //console.log('after sort', objects, collConstrJs.orderBy);
+  }
   return objects;
 }
 //TODO: replace getWhereVar
@@ -615,7 +665,7 @@ function constructQueryFromEntConstrs(entConstrs: EntConstrInternal[], collConst
         variables: variables2,
         where: whereAll2,
       };
-      if (entConstrJs.orderBy) subQuery2.order = entConstrJs.orderBy;
+      if (entConstrJs.orderBy) subQuery2.order = convertOrderBy(entConstrJs.orderBy, entConstr);
       if (entConstrJs.limit) subQuery2.limit = entConstrJs.limit;
       if (entConstrJs.offset) subQuery2.offset = entConstrJs.offset;
       if (entConstrJs.distinct) subQuery2.distinct = entConstrJs.distinct;
@@ -704,7 +754,7 @@ function constructQueryFromEntConstrs(entConstrs: EntConstrInternal[], collConst
 
   // options should be the latest in WHERE (SPARQL performance optimizations)
   query.where = [...(query.where || []), ...allOptions];
-  if (collConstrJs.orderBy) query.order = collConstrJs.orderBy;
+  if (collConstrJs.orderBy) query.order = convertOrderBy(collConstrJs.orderBy, entConstrs);
   if (collConstrJs.limit) query.limit = collConstrJs.limit;
   if (collConstrJs.offset) query.offset = collConstrJs.offset;
   if (collConstrJs.distinct) query.distinct = collConstrJs.distinct;

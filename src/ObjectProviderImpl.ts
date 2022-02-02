@@ -167,26 +167,6 @@ function propertyShapeToJsonSchemaProperty(
   return undefined;
 }
 
-export function makeOrderBy(orderBy: string): any {
-  let descending = false;
-  let variable1 = '';
-  if (orderBy.startsWith('ASC(')) {
-    variable1 = orderBy.substr(4, orderBy.length - 5);
-  } else if (orderBy.startsWith('DESC(')) {
-    variable1 = orderBy.substr(5, orderBy.length - 6);
-    descending = true;
-  } else {
-    variable1 = orderBy;
-  }
-  // if not ends with a digit, assume 0
-  const c = variable1.charAt(variable1.length - 1);
-  if (c < '0' || c > '9') variable1 += '0';
-  return {
-    expression: variable(variable1),
-    descending,
-  };
-}
-
 export const uiMapping: JsObject = {
   '@id': {
     'ui:widget': 'UriWithCopyWidget',

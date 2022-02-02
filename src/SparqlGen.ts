@@ -233,8 +233,8 @@ export interface EntConstrInternal extends EntConstrData {
   // internal properties, created and changed within SPARQL generation
   prefixes: JsStrObj;
   subj: NamedNode | Variable;
-  props2vars: JsStrObj;
-  vars2props: JsStrObj;
+  props2vars: JsStrObj; // MST property to indexed sparql var (e.g. name -> name0)
+  vars2props: JsStrObj; // indexed sparql var to MST property (e.g. name0 -> name)
   // pred-partial
   qCond: {
     bgps: Quad[];

@@ -868,43 +868,29 @@ export function getExtendedFilter(
           break;
       }
     } else if (schemaProperty.format === 'date-time') {
+      const first = filterProperty.value[0];
       switch (filterProperty.relation) {
         case 'equal':
           filter.operator = '=';
-          filter.args = [
-            variable,
-            literal(filterProperty.value[0], getFullIriNamedNode('xsd:dateTime', entConstr.prefixes)),
-          ];
+          filter.args = [variable, literal(first, getFullIriNamedNode('xsd:dateTime', entConstr.prefixes))];
           break;
         case 'notEqual':
           filter.operator = '!=';
-          filter.args = [
-            variable,
-            literal(filterProperty.value[0], getFullIriNamedNode('xsd:dateTime', entConstr.prefixes)),
-          ];
+          filter.args = [variable, literal(first, getFullIriNamedNode('xsd:dateTime', entConstr.prefixes))];
           break;
         case 'after':
           filter.operator = '>=';
-          filter.args = [
-            variable,
-            literal(filterProperty.value[0], getFullIriNamedNode('xsd:dateTime', entConstr.prefixes)),
-          ];
+          filter.args = [variable, literal(first, getFullIriNamedNode('xsd:dateTime', entConstr.prefixes))];
           break;
         case 'before':
           filter.operator = '<=';
-          filter.args = [
-            variable,
-            literal(filterProperty.value[0], getFullIriNamedNode('xsd:dateTime', entConstr.prefixes)),
-          ];
+          filter.args = [variable, literal(first, getFullIriNamedNode('xsd:dateTime', entConstr.prefixes))];
           break;
         case 'between':
           filter.operator = '&&';
           filter.args = [
             {
-              args: [
-                variable,
-                literal(filterProperty.value[0], getFullIriNamedNode('xsd:dateTime', entConstr.prefixes)),
-              ],
+              args: [variable, literal(first, getFullIriNamedNode('xsd:dateTime', entConstr.prefixes))],
               operator: '>=',
               type: 'operation',
             },
@@ -922,16 +908,17 @@ export function getExtendedFilter(
           break;
       }
     } else {
+      const first = `${filterProperty.value[0]}`;
       switch (filterProperty.relation) {
         case 'contains':
           filter.operator = 'contains';
-          filter.args = [variable, literal(`${filterProperty.value[0]}`)];
+          filter.args = [variable, literal(first)];
           break;
         case 'notContains':
           filter.operator = '!';
           filter.args = [
             {
-              args: [variable, literal(`${filterProperty.value[0]}`)],
+              args: [variable, literal(first)],
               operator: 'contains',
               type: 'operation',
             },
@@ -939,41 +926,48 @@ export function getExtendedFilter(
           break;
         case 'equal':
           filter.operator = '=';
-          filter.args = [variable, literal(`${filterProperty.value[0]}`)];
+          filter.args = [variable, literal(first)];
           break;
         case 'startWith':
           filter.operator = 'strstarts';
-          filter.args = [variable, literal(`${filterProperty.value[0]}`)];
+          filter.args = [variable, literal(first)];
           break;
         case 'endWith':
           filter.operator = 'strends';
-          filter.args = [variable, literal(`${filterProperty.value[0]}`)];
+          filter.args = [variable, literal(first)];
           break;
         case 'regEx':
           filter.operator = 'regex';
-          filter.args = [variable, literal(`${filterProperty.value[0]}`), literal('i')];
+          filter.args = [variable, literal(first), literal('i')];
           break;
         default:
           break;
       }
     }
   } else if (schemaProperty.type === 'integer') {
+    const first = `${filterProperty.value[0]}`;
     switch (filterProperty.relation) {
       case 'equal':
         filter.operator = '=';
-        filter.args = [
-          variable,
-          literal(`${filterProperty.value[0]}`, getFullIriNamedNode('xsd:integer', entConstr.prefixes)),
-        ];
+        filter.args = [variable, literal(first, getFullIriNamedNode('xsd:integer', entConstr.prefixes))];
+        break;
+      case 'notEqual':
+        filter.operator = '!=';
+        filter.args = [variable, literal(first, getFullIriNamedNode('xsd:integer', entConstr.prefixes))];
+        break;
+      case 'after':
+        filter.operator = '>=';
+        filter.args = [variable, literal(first, getFullIriNamedNode('xsd:integer', entConstr.prefixes))];
+        break;
+      case 'before':
+        filter.operator = '<=';
+        filter.args = [variable, literal(first, getFullIriNamedNode('xsd:integer', entConstr.prefixes))];
         break;
       case 'between':
         filter.operator = '&&';
         filter.args = [
           {
-            args: [
-              variable,
-              literal(`${filterProperty.value[0]}`, getFullIriNamedNode('xsd:integer', entConstr.prefixes)),
-            ],
+            args: [variable, literal(first, getFullIriNamedNode('xsd:integer', entConstr.prefixes))],
             operator: '>=',
             type: 'operation',
           },

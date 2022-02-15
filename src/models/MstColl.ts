@@ -135,7 +135,7 @@ export const MstColl = types
      */
     isLoading: types.optional(types.boolean, false),
 
-    pageSize: types.optional(types.number, 100),
+    pageSize: types.optional(types.number, 500),
     /**
      * Add colls to the repository for the discovered in dataIntrnl CollConstrs.
      */

@@ -191,6 +191,11 @@ export interface IEntConstrJsOpt {
   conditions?: JsObject;
   variables?: JsObject;
   data?: JsObject;
+  // if last digit not specified, we assuming '0' (identifier0)
+  orderBy?: any[];
+  limit?: number;
+  offset?: number;
+  distinct?: boolean;
   resolveType?: boolean;
 }
 

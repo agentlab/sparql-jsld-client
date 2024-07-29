@@ -7,7 +7,6 @@
  *
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
-import { JSONSchema6forRdf } from '../ObjectProvider';
 
 export const NopSchema: any /*JSONSchema6forRdf*/ = {
   $schema: 'http://json-schema.org/draft-07/schema#',

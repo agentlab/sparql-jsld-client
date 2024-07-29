@@ -98,7 +98,6 @@ export const PropertyShapeSchema: JSONSchema6forRdf = {
   type: 'object',
   '@context': {
     '@type': 'rdf:type',
-    description: 'sh:description',
     datatype: {
       '@id': 'sh:datatype',
       '@type': '@id',
@@ -113,6 +112,7 @@ export const PropertyShapeSchema: JSONSchema6forRdf = {
       '@type': 'xsd:integer',
     },
     name: 'sh:name',
+    description: 'sh:description',
     minCount: {
       '@id': 'sh:minCount',
       '@type': 'xsd:integer',

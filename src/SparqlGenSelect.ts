@@ -512,9 +512,42 @@ export function getWhereProps(
   return { bgps, options };
 }
 
-function processEntConstr(entConstr: EntConstrInternal, index: number, addType = true) {
+function processEntConstr(
+  entConstrs: EntConstrInternal[],
+  entConstr: EntConstrInternal,
+  index: number,
+  sepaRefQuads = true,
+  addType = true,
+) {
   const { bgps, options } = getWhereProps(entConstr);
   entConstr.qCond = processConditions(entConstr, entConstr.conditions);
+  if (sepaRefQuads) {
+    const condBgpsSeparation = separateReferencedQuads(entConstr.qCond.bgps);
+    entConstr.qCond.bgps = condBgpsSeparation.nonRefs;
+    condBgpsSeparation.refs.forEach((r) => {
+      // if child entity (very rough)
+      if (r.index > index) {
+        const toEntConstr = entConstrs[r.index];
+        toEntConstr.query.bgps = [...toEntConstr.query.bgps, r.quad];
+        entConstr.query.templates = [...entConstr.query.templates, r.quad];
+      } else {
+        entConstr.qCond.bgps = [...entConstr.qCond.bgps, r.quad];
+      }
+    });
+    const condOptsSeparation = separateReferencedQuads(entConstr.qCond.options);
+    entConstr.qCond.options = condOptsSeparation.nonRefs;
+    // make optional condition required in optional block
+    condOptsSeparation.refs.forEach((r) => {
+      // if child entity (very rough)
+      if (r.index > index) {
+        const toEntConstr = entConstrs[r.index];
+        toEntConstr.query.bgps = [...toEntConstr.query.bgps, r.quad];
+        entConstr.query.templates = [...entConstr.query.templates, r.quad];
+      } else {
+        entConstr.qCond.options = [...entConstr.qCond.options, r.quad];
+      }
+    });
+  }
   // make all conditions mandatory
   entConstr.qCond.bgps = [...entConstr.qCond.bgps, ...entConstr.qCond.options];
   entConstr.qCond.options = [];
@@ -582,7 +615,7 @@ function constructQueryFromEntConstrs(entConstrs: EntConstrInternal[], collConst
     const entConstrJs = collConstrJs.entConstrs[index];
     if (!entConstrJs.limit || Object.keys(entConstr.schemaPropsWithoutArrays).length === 0) {
       entConstr.props = entConstr.query.variables;
-      processEntConstr(entConstr, index);
+      processEntConstr(entConstrs, entConstr, index, entConstrs.length > 1);
       return entConstr;
     }
     isSubqueries = true;
@@ -601,8 +634,8 @@ function constructQueryFromEntConstrs(entConstrs: EntConstrInternal[], collConst
     entConstr.conditions = entConstr.conditionsWithArrays;
     entConstr.resolveType = false;
     entConstr.subEntConstr = subEntConstr;
-    processEntConstr(subEntConstr, index);
-    processEntConstr(entConstr, index, false);
+    processEntConstr(entConstrs, subEntConstr, index, false);
+    processEntConstr(entConstrs, entConstr, index, false, false);
     return entConstr;
   });
 

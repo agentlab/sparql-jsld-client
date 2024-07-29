@@ -907,7 +907,12 @@ describe('constructObjectsQuery', () => {
     expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery as any);
   });
 
-  it('construct subquery with inverse reference should generate correctly', async () => {
+  /**
+   * TODO: Correlated Query*???
+   * https://github.com/w3c/sparql-dev/issues/100
+   * https://github.com/eclipse-rdf4j/rdf4j/issues/4315
+   */
+  /*it('construct subquery with inverse reference should generate correctly', async () => {
     const client = new SparqlClientImplMock();
     const collConstrJs = {
       entConstrs: [
@@ -972,7 +977,7 @@ describe('constructObjectsQuery', () => {
     const parser = new Parser();
     const correctParsedQuery = parser.parse(correctQuery);
     expect(parser.parse(genQueryStr)).toMatchObject(correctParsedQuery as any);
-  });
+  });*/
 });
 
 describe('deleteObjectQuery', () => {

@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
 import axios, { AxiosResponse } from 'axios';
-import { Term } from 'rdf-js';
+import { Term } from '@rdfjs/types/data-model';
 
 import { JsObject, json2str, JsStrObj } from './ObjectProvider';
 

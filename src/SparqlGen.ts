@@ -10,8 +10,8 @@
 import _isUrl from 'is-url';
 import { isArray } from 'lodash-es';
 
-import { Quad, NamedNode, Variable } from 'rdf-js';
-import { literal, namedNode, triple, variable } from '@rdfjs/data-model';
+import { Quad, NamedNode, Variable } from '@rdfjs/types/data-model';
+import { DataFactory } from 'rdf-data-factory';
 import { BgpPattern, Generator, OptionalPattern } from 'sparqljs';
 
 import { Bindings } from './SparqlClient';
@@ -22,6 +22,8 @@ import {
   copyObjectPropsWithRenameOrFilter,
   JsStrObj,
 } from './ObjectProvider';
+
+export const factory: DataFactory = new DataFactory();
 
 export function isUrl(str: string): boolean {
   if (_isUrl(str) === true) return true;
@@ -63,7 +65,7 @@ export function propsToSparqlVars(entConstr: Pick<EntConstrInternal, 'props2vars
   const variables = Object.keys(entConstr.query.variables).map((key) => {
     const val = entConstr.props2vars[key];
     if (val !== undefined) key = val;
-    return variable(key);
+    return factory.variable(key);
   });
   return variables;
 }
@@ -366,7 +368,7 @@ export function getFullIriNamedNode(uri: string | NamedNode, prefixes: JsStrObj)
   if (typeof uri === 'object') {
     uri = uri.value;
   }
-  return namedNode(deAbbreviateIri(uri, prefixes));
+  return factory.namedNode(deAbbreviateIri(uri, prefixes));
 }
 
 /**
@@ -380,7 +382,7 @@ export function genEntConstrSparqlSubject(
   prefixes: JsStrObj,
 ): NamedNode | Variable {
   if (uri === undefined) {
-    return variable(varName);
+    return factory.variable(varName);
   }
   return getFullIriNamedNode(uri, prefixes);
 }
@@ -424,7 +426,7 @@ export function getWhereVar(entConstr: EntConstrInternal, requireOptional = fals
       const propUri = getSchemaPropUri(entConstr.schema, key);
       const varName = entConstr.props2vars[key];
       if (propUri && varName) {
-        const option = getTripleWithPredOrPath(entConstr.subj, propUri, variable(varName), entConstr.prefixes);
+        const option = getTripleWithPredOrPath(entConstr.subj, propUri, factory.variable(varName), entConstr.prefixes);
         if ((entConstr.schema.required && entConstr.schema.required.includes(key)) || requireOptional) {
           bgps.push(option);
         } else {
@@ -447,7 +449,7 @@ export function getWhereVarFromDataWithoutOptionals(entConstr: EntConstrInternal
         const option = getTripleWithPredOrPath(
           entConstr.subj,
           propUri,
-          variable(entConstr.props2vars[propertyKey]),
+          factory.variable(entConstr.props2vars[propertyKey]),
           entConstr.prefixes,
         );
         bgp.push(option);
@@ -472,9 +474,9 @@ export function addToWhere(whereStatements: any[], query: any) {
 
 export function getTypeCondition(entConstr: EntConstrInternal): any[] {
   return [
-    triple(
+    factory.quad(
       entConstr.subj,
-      namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+      factory.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
       getFullIriNamedNode(entConstr.schema.targetClass, entConstr.prefixes),
     ),
   ];
@@ -542,7 +544,11 @@ export function genSuperTypesFilter(entConstr: EntConstrInternal, index: number)
   let typeFilter: any[] = [];
   if (entConstr.schema.properties) {
     typeFilter = [
-      triple(entConstr.subj as Variable, getFullIriNamedNode('rdf:type', entConstr.prefixes), variable('type' + index)),
+      factory.quad(
+        entConstr.subj as Variable,
+        getFullIriNamedNode('rdf:type', entConstr.prefixes),
+        factory.variable('type' + index),
+      ),
       {
         type: 'filter',
         expression: {
@@ -556,18 +562,18 @@ export function genSuperTypesFilter(entConstr: EntConstrInternal, index: number)
                   type: 'bgp',
                   triples: [
                     {
-                      subject: variable('subtype' + index),
+                      subject: factory.variable('subtype' + index),
                       predicate: {
                         type: 'path',
                         pathType: '^',
-                        items: [namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type')],
+                        items: [factory.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type')],
                       },
                       object: entConstr.subj,
                     },
-                    triple(
-                      variable('subtype' + index),
-                      namedNode('http://www.w3.org/2000/01/rdf-schema#subClassOf'),
-                      variable('type' + index),
+                    factory.quad(
+                      factory.variable('subtype' + index),
+                      factory.namedNode('http://www.w3.org/2000/01/rdf-schema#subClassOf'),
+                      factory.variable('type' + index),
                     ),
                   ],
                 },
@@ -576,7 +582,7 @@ export function genSuperTypesFilter(entConstr: EntConstrInternal, index: number)
                   expression: {
                     type: 'operation',
                     operator: '!=',
-                    args: [variable('subtype' + index), variable('type' + index)],
+                    args: [factory.variable('subtype' + index), factory.variable('type' + index)],
                   },
                 },
               ],
@@ -597,13 +603,13 @@ export function genSuperTypesFilter(entConstr: EntConstrInternal, index: number)
                   type: 'bgp',
                   triples: [
                     {
-                      subject: variable('type' + index),
+                      subject: factory.variable('type' + index),
                       predicate: {
                         type: 'path',
                         pathType: '*',
-                        items: [namedNode('http://www.w3.org/2000/01/rdf-schema#subClassOf')],
+                        items: [factory.namedNode('http://www.w3.org/2000/01/rdf-schema#subClassOf')],
                       },
-                      object: variable('supertype' + index),
+                      object: factory.variable('supertype' + index),
                     },
                   ],
                 },
@@ -613,7 +619,7 @@ export function genSuperTypesFilter(entConstr: EntConstrInternal, index: number)
                     type: 'operation',
                     operator: '=',
                     args: [
-                      variable('supertype' + index),
+                      factory.variable('supertype' + index),
                       getFullIriNamedNode(entConstr.schema.targetClass, entConstr.prefixes),
                     ],
                   },
@@ -632,9 +638,9 @@ export function genTypeCondition(entConstr: EntConstrInternal) {
   let result: Quad[] = [];
   if (entConstr.schema.targetClass) {
     result = [
-      triple(
+      factory.quad(
         entConstr.subj,
-        namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+        factory.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
         getFullIriNamedNode(entConstr.schema.targetClass, entConstr.prefixes),
       ),
     ];
@@ -651,25 +657,25 @@ export function getConditionalTriple(
 ): Quad {
   if (property.type === 'string') {
     if (property.format === undefined) {
-      value = literal(`${value}`, getFullIriNamedNode('xsd:string', prefixes));
+      value = factory.literal(`${value}`, getFullIriNamedNode('xsd:string', prefixes));
     } else if (property.format === 'iri') {
       value = getFullIriNamedNode(value, prefixes);
     } else if (property.format === 'date-time') {
       if (typeof value === 'object') {
-        value = literal(value.toISOString(), getFullIriNamedNode('xsd:dateTime', prefixes));
+        value = factory.literal(value.toISOString(), getFullIriNamedNode('xsd:dateTime', prefixes));
       } else {
-        value = literal(`${value}`, getFullIriNamedNode('xsd:dateTime', prefixes));
+        value = factory.literal(`${value}`, getFullIriNamedNode('xsd:dateTime', prefixes));
       }
     }
   } else if (property.type === 'integer') {
-    value = literal(`${value}`, getFullIriNamedNode('xsd:integer', prefixes));
+    value = factory.literal(`${value}`, getFullIriNamedNode('xsd:integer', prefixes));
   } else if (property.type === 'object') {
     if (property.format === 'date-time') {
       if (typeof value === 'object') {
         //value = `"1970-01-01T00:00:00-02:00"^^http://www.w3.org/2001/XMLSchema#dateTime`;
-        value = literal(value.toISOString(), getFullIriNamedNode('xsd:dateTime', prefixes));
+        value = factory.literal(value.toISOString(), getFullIriNamedNode('xsd:dateTime', prefixes));
       } else {
-        value = literal(`${value}`, getFullIriNamedNode('xsd:dateTime', prefixes));
+        value = factory.literal(`${value}`, getFullIriNamedNode('xsd:dateTime', prefixes));
       }
     } else {
       // IRI
@@ -683,7 +689,7 @@ export function getConditionalTriple(
 
 export function getTripleWithPredOrPath(subj: any, propUri: string | string[], value: any, prefixes: JsStrObj): Quad {
   if (isArray(propUri)) {
-    return triple(
+    return factory.quad(
       subj,
       {
         type: 'path',
@@ -693,7 +699,7 @@ export function getTripleWithPredOrPath(subj: any, propUri: string | string[], v
       value,
     );
   } else {
-    return triple(subj, getFullIriNamedNode(propUri, prefixes), value);
+    return factory.quad(subj, getFullIriNamedNode(propUri, prefixes), value);
   }
 }
 
@@ -704,26 +710,32 @@ export function getSimpleFilter(schemaProperty: any, filterProperty: any, variab
   };
   if (schemaProperty.type === 'string') {
     if (schemaProperty.format === undefined) {
-      filter.args = [variable, literal(`${filterProperty}`)];
+      filter.args = [variable, factory.literal(`${filterProperty}`)];
     } else if (schemaProperty.format === 'iri') {
       filter.args = [variable, getFullIriNamedNode(filterProperty, prefixes)];
     } else if (schemaProperty.format === 'date-time') {
       if (typeof filterProperty === 'object')
-        filter.args = [variable, literal(filterProperty.toISOString(), getFullIriNamedNode('xsd:dateTime', prefixes))];
-      else filter.args = [variable, literal(filterProperty, getFullIriNamedNode('xsd:dateTime', prefixes))];
+        filter.args = [
+          variable,
+          factory.literal(filterProperty.toISOString(), getFullIriNamedNode('xsd:dateTime', prefixes)),
+        ];
+      else filter.args = [variable, factory.literal(filterProperty, getFullIriNamedNode('xsd:dateTime', prefixes))];
     }
   } else if (schemaProperty.type === 'integer') {
-    filter.args = [variable, literal(`${filterProperty}`, getFullIriNamedNode('xsd:integer', prefixes))];
+    filter.args = [variable, factory.literal(`${filterProperty}`, getFullIriNamedNode('xsd:integer', prefixes))];
   } else if (schemaProperty.type === 'object') {
     if (schemaProperty.format === 'date-time') {
       if (typeof filterProperty === 'object')
-        filter.args = [variable, literal(filterProperty.toISOString(), getFullIriNamedNode('xsd:dateTime', prefixes))];
-      else filter.args = [variable, literal(`${filterProperty}`)];
+        filter.args = [
+          variable,
+          factory.literal(filterProperty.toISOString(), getFullIriNamedNode('xsd:dateTime', prefixes)),
+        ];
+      else filter.args = [variable, factory.literal(`${filterProperty}`)];
     } else {
       if (typeof filterProperty === 'string') filter.args = [variable, getFullIriNamedNode(filterProperty, prefixes)];
-      else filter.args = [variable, literal(`${filterProperty}`)];
+      else filter.args = [variable, factory.literal(`${filterProperty}`)];
     }
-  } else filter.args = [variable, literal(`${filterProperty}`)];
+  } else filter.args = [variable, factory.literal(`${filterProperty}`)];
   return {
     expression: filter,
     type: 'filter',
@@ -743,7 +755,7 @@ export function buildEnumFilter(
     filter.type = 'operation';
     filter.operator = compareOperator;
     if (type === 'integer') {
-      filter.args = [filterKey, literal(`${filterValues[0]}`, getFullIriNamedNode('xsd:integer', prefixes))];
+      filter.args = [filterKey, factory.literal(`${filterValues[0]}`, getFullIriNamedNode('xsd:integer', prefixes))];
     } else {
       filter.args = [filterKey, getFullIriNamedNode(filterValues[0], prefixes)];
     }
@@ -784,7 +796,7 @@ export function getDataTriples(entConstr: EntConstrInternal): any[] {
   if (entConstr.subj.termType && entConstr.subj.termType === 'NamedNode')
     subj = getFullIriNamedNode(entConstr.subj, entConstr.prefixes);
   /*triples.push(
-    triple(
+    factory.quad(
       subj,
       namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
       getFullIriNamedNode(entConstr.schema['@id']),
@@ -877,32 +889,32 @@ export function getExtendedFilter(
       switch (filterProperty.relation) {
         case 'equal':
           filter.operator = '=';
-          filter.args = [variable, literal(first, getFullIriNamedNode('xsd:dateTime', entConstr.prefixes))];
+          filter.args = [variable, factory.literal(first, getFullIriNamedNode('xsd:dateTime', entConstr.prefixes))];
           break;
         case 'notEqual':
           filter.operator = '!=';
-          filter.args = [variable, literal(first, getFullIriNamedNode('xsd:dateTime', entConstr.prefixes))];
+          filter.args = [variable, factory.literal(first, getFullIriNamedNode('xsd:dateTime', entConstr.prefixes))];
           break;
         case 'after':
           filter.operator = '>=';
-          filter.args = [variable, literal(first, getFullIriNamedNode('xsd:dateTime', entConstr.prefixes))];
+          filter.args = [variable, factory.literal(first, getFullIriNamedNode('xsd:dateTime', entConstr.prefixes))];
           break;
         case 'before':
           filter.operator = '<=';
-          filter.args = [variable, literal(first, getFullIriNamedNode('xsd:dateTime', entConstr.prefixes))];
+          filter.args = [variable, factory.literal(first, getFullIriNamedNode('xsd:dateTime', entConstr.prefixes))];
           break;
         case 'between':
           filter.operator = '&&';
           filter.args = [
             {
-              args: [variable, literal(first, getFullIriNamedNode('xsd:dateTime', entConstr.prefixes))],
+              args: [variable, factory.literal(first, getFullIriNamedNode('xsd:dateTime', entConstr.prefixes))],
               operator: '>=',
               type: 'operation',
             },
             {
               args: [
                 variable,
-                literal(filterProperty.value[1], getFullIriNamedNode('xsd:dateTime', entConstr.prefixes)),
+                factory.literal(filterProperty.value[1], getFullIriNamedNode('xsd:dateTime', entConstr.prefixes)),
               ],
               operator: '<',
               type: 'operation',
@@ -917,13 +929,13 @@ export function getExtendedFilter(
       switch (filterProperty.relation) {
         case 'contains':
           filter.operator = 'contains';
-          filter.args = [variable, literal(first)];
+          filter.args = [variable, factory.literal(first)];
           break;
         case 'notContains':
           filter.operator = '!';
           filter.args = [
             {
-              args: [variable, literal(first)],
+              args: [variable, factory.literal(first)],
               operator: 'contains',
               type: 'operation',
             },
@@ -931,19 +943,19 @@ export function getExtendedFilter(
           break;
         case 'equal':
           filter.operator = '=';
-          filter.args = [variable, literal(first)];
+          filter.args = [variable, factory.literal(first)];
           break;
         case 'startWith':
           filter.operator = 'strstarts';
-          filter.args = [variable, literal(first)];
+          filter.args = [variable, factory.literal(first)];
           break;
         case 'endWith':
           filter.operator = 'strends';
-          filter.args = [variable, literal(first)];
+          filter.args = [variable, factory.literal(first)];
           break;
         case 'regEx':
           filter.operator = 'regex';
-          filter.args = [variable, literal(first), literal('i')];
+          filter.args = [variable, factory.literal(first), factory.literal('i')];
           break;
         default:
           break;
@@ -954,32 +966,32 @@ export function getExtendedFilter(
     switch (filterProperty.relation) {
       case 'equal':
         filter.operator = '=';
-        filter.args = [variable, literal(first, getFullIriNamedNode('xsd:integer', entConstr.prefixes))];
+        filter.args = [variable, factory.literal(first, getFullIriNamedNode('xsd:integer', entConstr.prefixes))];
         break;
       case 'notEqual':
         filter.operator = '!=';
-        filter.args = [variable, literal(first, getFullIriNamedNode('xsd:integer', entConstr.prefixes))];
+        filter.args = [variable, factory.literal(first, getFullIriNamedNode('xsd:integer', entConstr.prefixes))];
         break;
       case 'after':
         filter.operator = '>=';
-        filter.args = [variable, literal(first, getFullIriNamedNode('xsd:integer', entConstr.prefixes))];
+        filter.args = [variable, factory.literal(first, getFullIriNamedNode('xsd:integer', entConstr.prefixes))];
         break;
       case 'before':
         filter.operator = '<=';
-        filter.args = [variable, literal(first, getFullIriNamedNode('xsd:integer', entConstr.prefixes))];
+        filter.args = [variable, factory.literal(first, getFullIriNamedNode('xsd:integer', entConstr.prefixes))];
         break;
       case 'between':
         filter.operator = '&&';
         filter.args = [
           {
-            args: [variable, literal(first, getFullIriNamedNode('xsd:integer', entConstr.prefixes))],
+            args: [variable, factory.literal(first, getFullIriNamedNode('xsd:integer', entConstr.prefixes))],
             operator: '>=',
             type: 'operation',
           },
           {
             args: [
               variable,
-              literal(`${filterProperty.value[1]}`, getFullIriNamedNode('xsd:integer', entConstr.prefixes)),
+              factory.literal(`${filterProperty.value[1]}`, getFullIriNamedNode('xsd:integer', entConstr.prefixes)),
             ],
             operator: '<',
             type: 'operation',
@@ -992,7 +1004,7 @@ export function getExtendedFilter(
           {
             args: [
               variable,
-              literal(`${filterProperty.value[0]}`, getFullIriNamedNode('xsd:integer', entConstr.prefixes)),
+              factory.literal(`${filterProperty.value[0]}`, getFullIriNamedNode('xsd:integer', entConstr.prefixes)),
             ],
             operator: '>=',
             type: 'operation',
@@ -1000,7 +1012,7 @@ export function getExtendedFilter(
           {
             args: [
               variable,
-              literal(`${filterProperty.value[1]}`, getFullIriNamedNode('xsd:integer', entConstr.prefixes)),
+              factory.literal(`${filterProperty.value[1]}`, getFullIriNamedNode('xsd:integer', entConstr.prefixes)),
             ],
             operator: '<=',
             type: 'operation',
@@ -1078,13 +1090,15 @@ export function processConditions(
           if (propUri) {
             // add FILTER statement
             if (filterProperty.value !== undefined && filterProperty.relation) {
-              filters.push(getExtendedFilter(entConstr, key, schemaProperty, filterProperty, variable(varName)));
+              filters.push(
+                getExtendedFilter(entConstr, key, schemaProperty, filterProperty, factory.variable(varName)),
+              );
             } else {
               filters.push(
                 getSimpleFilter(
                   schemaProperty,
                   filterProperty,
-                  variable(entConstr.props2vars[key]),
+                  factory.variable(entConstr.props2vars[key]),
                   entConstr.prefixes,
                 ),
               );
@@ -1106,7 +1120,7 @@ export function processConditions(
                       type: 'operation',
                     },
                     type: 'bind',
-                    variable: variable(varName),
+                    variable: factory.variable(varName),
                   };
                   binds.push(bind);
                   bindsVars[key] = varName;
@@ -1123,7 +1137,7 @@ export function processConditions(
             option = getTripleWithPredOrPath(
               entConstr.subj,
               propUri,
-              variable(filterProperty.substring(1)),
+              factory.variable(filterProperty.substring(1)),
               entConstr.prefixes,
             );
           } else {

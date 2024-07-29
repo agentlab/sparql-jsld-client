@@ -8,7 +8,6 @@
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
 import uuid62 from 'uuid62';
-import { variable } from '@rdfjs/data-model';
 import { IKeyValueMap } from 'mobx';
 import {
   types,
@@ -32,7 +31,7 @@ import {
 
 import { ClassSchema } from '../schema/RdfsSchema';
 import { ArtifactShapeSchema, PropertyShapeSchema } from '../schema/ArtifactShapeSchema';
-import { abbreviateIri } from '../SparqlGen';
+import { abbreviateIri, factory } from '../SparqlGen';
 import { constructObjectsQuery, selectObjectsQuery } from '../SparqlGenSelect';
 import { SparqlClient } from '../SparqlClient';
 
@@ -437,7 +436,7 @@ export async function resolveSchemaFromServer(conditions: JsObject, nsJs: any, c
           schema: PropertyShapeSchema,
         },
       ],
-      orderBy: [{ expression: variable('order1'), descending: false }],
+      orderBy: [{ expression: factory.variable('order1'), descending: false }],
     },
     nsJs,
     client,

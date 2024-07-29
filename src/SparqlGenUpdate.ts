@@ -21,6 +21,7 @@ import {
   addToBgp,
   addToResult,
   EntConstrInternal,
+  factory,
   gen,
   genUniqueVarName,
   getDataTriples,
@@ -108,12 +109,20 @@ function deleteObjectQueryFromEntConstrs(entConstrs: EntConstrInternal[]) {
     });
     const pVarName = genUniqueVarName('p', index, entConstrs);
     const oVarName = genUniqueVarName('o', index, entConstrs);
-    addTo(query.updates[0], 'delete', addToBgp([triple(entConstr.subj, variable(pVarName), variable(oVarName))]));
+    addTo(
+      query.updates[0],
+      'delete',
+      addToBgp([factory.quad(entConstr.subj, factory.variable(pVarName), factory.variable(oVarName))]),
+    );
 
     let { bgps, options } = getWhereVar(entConstr, true);
     let filters: any[] = [];
     let binds: any[] = [];
-    bgps = [...getTypeCondition(entConstr), triple(entConstr.subj, variable(pVarName), variable(oVarName)), ...bgps];
+    bgps = [
+      ...getTypeCondition(entConstr),
+      factory.quad(entConstr.subj, factory.variable(pVarName), factory.variable(oVarName)),
+      ...bgps,
+    ];
     // if element has URI -- its enough otherwise we need to add other conditions
     if (!entConstr.conditions['@id']) {
       const whereConditions = processConditions(entConstr, entConstr.conditions, true);

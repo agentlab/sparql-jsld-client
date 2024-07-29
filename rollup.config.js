@@ -36,5 +36,5 @@ export default {
       outDir: './es',
     }),
     //terser(), // minifies generated bundles
-  ] 
+  ],
 };

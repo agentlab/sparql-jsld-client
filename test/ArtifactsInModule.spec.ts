@@ -8,14 +8,14 @@
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
 import { afterAll, beforeAll, describe, expect, jest, it } from '@jest/globals';
-import { triple, variable, namedNode } from '@rdfjs/data-model';
 import { when } from 'mobx';
 import { getSnapshot } from 'mobx-state-tree';
 
 import { rootModelInitialState } from '../src/models/Model';
 import { MstRepository } from '../src/models/MstRepository';
-import { SparqlClientImpl } from '../src/SparqlClientImpl';
 import { JsObject } from '../src/ObjectProvider';
+import { factory } from '../src/SparqlGen';
+import { SparqlClientImpl } from '../src/SparqlClientImpl';
 import { uploadFiles } from '../src/FileUpload';
 
 import { rdfServerUrl, rmRepositoryParam, rmRepositoryType } from './config';
@@ -113,10 +113,10 @@ const usedInModuleCollConstrJs: any = {
           bind: {
             relation: 'exists',
             triples: [
-              triple(
-                variable('eIri2'),
-                namedNode('http://cpgu.kbpm.ru/ns/rm/user-types#parentBinding'),
-                variable('eIri1'),
+              factory.quad(
+                factory.variable('eIri2'),
+                factory.namedNode('http://cpgu.kbpm.ru/ns/rm/user-types#parentBinding'),
+                factory.variable('eIri1'),
               ),
             ],
           },
@@ -128,7 +128,7 @@ const usedInModuleCollConstrJs: any = {
   ],
   orderBy: [
     {
-      expression: variable('bookOrder0'),
+      expression: factory.variable('bookOrder0'),
       descending: false,
     },
   ],
@@ -200,7 +200,7 @@ describe('ArtifactsInModules query should return Module UsedInModules with assoc
         ...usedInModuleCollConstrJs,
         orderBy: [
           {
-            expression: variable('bookOrder0'),
+            expression: factory.variable('bookOrder0'),
             descending: false,
           },
         ],
@@ -378,10 +378,10 @@ const usedInModuleParentCollConstrJs: any = {
           bind: {
             relation: 'exists',
             triples: [
-              triple(
-                variable('eIri2'),
-                namedNode('http://cpgu.kbpm.ru/ns/rm/user-types#parentBinding'),
-                variable('eIri1'),
+              factory.quad(
+                factory.variable('eIri2'),
+                factory.namedNode('http://cpgu.kbpm.ru/ns/rm/user-types#parentBinding'),
+                factory.variable('eIri1'),
               ),
             ],
           },
@@ -392,7 +392,7 @@ const usedInModuleParentCollConstrJs: any = {
   ],
   orderBy: [
     {
-      expression: variable('bookOrder0'),
+      expression: factory.variable('bookOrder0'),
       descending: false,
     },
   ],

@@ -9,8 +9,7 @@
  ********************************************************************************/
 import uuid62 from 'uuid62';
 import { cloneDeep, isArray } from 'lodash-es';
-import { Quad, Variable } from 'rdf-js';
-import { namedNode, triple, variable } from '@rdfjs/data-model';
+import { Quad, Variable } from '@rdfjs/types/data-model';
 import { ConstructQuery, Ordering, SelectQuery } from 'sparqljs';
 import jsonld from 'jsonld';
 
@@ -29,6 +28,7 @@ import {
   conditionsValueToObject,
   genSuperTypesFilter,
   EntConstrInternal,
+  factory,
   getWhereVar,
   processConditions,
   propsToSparqlVars,
@@ -192,7 +192,7 @@ function convertOrderBy(orderBy: any, entConstrs: any | any[] | undefined): any 
       ] || orderBy.variable;
   }
   return {
-    expression: variable(entConstrVariable),
+    expression: factory.variable(entConstrVariable),
     descending: orderBy?.descending || false,
   };
 }
@@ -500,7 +500,7 @@ export function getWhereProps(
       const propUri = getSchemaPropUri(entConstr.schema, key);
       const varName = entConstr.props2vars[key];
       if (propUri && varName) {
-        const option = getTripleWithPredOrPath(entConstr.subj, propUri, variable(varName), entConstr.prefixes);
+        const option = getTripleWithPredOrPath(entConstr.subj, propUri, factory.variable(varName), entConstr.prefixes);
         if ((entConstr.schema.required && entConstr.schema.required.includes(key)) || requireOptional) {
           bgps.push(option);
         } else {
@@ -567,7 +567,7 @@ function processEntConstr(
   entConstr.bindsVars = entConstr.qCond.bindsVars;
   const bindsVarsTriples = Object.keys(entConstr.qCond.bindsVars).map((key) => {
     const varName = entConstr.qCond.bindsVars[key];
-    return triple(entConstr.subj, namedNode(localUrn(key)), variable(varName));
+    return factory.quad(entConstr.subj, factory.namedNode(localUrn(key)), factory.variable(varName));
   });
   const { bgps: bgps2 } = getWhereProps(entConstr, true);
 
@@ -797,7 +797,7 @@ function constructQueryFromEntConstrs(entConstrs: EntConstrInternal[], collConst
 function fixPropPath(templates: any[]) {
   return templates.map((t) =>
     t?.predicate?.type === 'path' && t?.predicate?.pathType === '^'
-      ? triple(t.object, t.predicate.items[0], t.subject)
+      ? factory.quad(t.object, t.predicate.items[0], t.subject)
       : t,
   );
 }

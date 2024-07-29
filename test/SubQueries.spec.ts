@@ -8,14 +8,14 @@
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
 import { afterAll, beforeAll, describe, expect, jest, it } from '@jest/globals';
-import { triple, variable, namedNode } from '@rdfjs/data-model';
 import { when } from 'mobx';
 import { getSnapshot } from 'mobx-state-tree';
 
 import { rootModelInitialState } from '../src/models/Model';
 import { MstRepository } from '../src/models/MstRepository';
-import { SparqlClientImpl } from '../src/SparqlClientImpl';
 import { JsObject } from '../src/ObjectProvider';
+import { factory } from '../src/SparqlGen';
+import { SparqlClientImpl } from '../src/SparqlClientImpl';
 import { uploadFiles } from '../src/FileUpload';
 
 import { rdfServerUrl, rmRepositoryParam, rmRepositoryType } from './config';
@@ -138,7 +138,7 @@ describe('Retrieve subqueries', () => {
           conditions: {
             hasObservations: '?eIri1',
           },
-          orderBy: [{ expression: variable('lastMonthSalesValue0'), descending: true }],
+          orderBy: [{ expression: factory.variable('lastMonthSalesValue0'), descending: true }],
           limit: 2,
         },
         {
@@ -149,12 +149,12 @@ describe('Retrieve subqueries', () => {
               value: ['2021-07-01T00:00:00'],
             },
           },
-          orderBy: [{ expression: variable('parsedAt1'), descending: false }],
+          orderBy: [{ expression: factory.variable('parsedAt1'), descending: false }],
         },
       ],
       orderBy: [
-        { expression: variable('lastMonthSalesValue0'), descending: true },
-        { expression: variable('parsedAt1'), descending: false },
+        { expression: factory.variable('lastMonthSalesValue0'), descending: true },
+        { expression: factory.variable('parsedAt1'), descending: false },
       ],
     });
     expect(coll1).not.toBeUndefined();
@@ -181,7 +181,7 @@ describe('Retrieve subqueries', () => {
           service: 'http://192.168.1.33:8090/sparql',
         },
       ],
-      orderBy: [{ expression: variable('parsedAt0'), descending: false }],
+      orderBy: [{ expression: factory.variable('parsedAt0'), descending: false }],
     });
     expect(coll1).not.toBeUndefined();
     await coll1.loadColl();
@@ -206,7 +206,7 @@ describe('Retrieve subqueries', () => {
           conditions: {
             hasObservations: '?eIri1',
           },
-          orderBy: [{ expression: variable('lastMonthSalesValue0'), descending: true }],
+          orderBy: [{ expression: factory.variable('lastMonthSalesValue0'), descending: true }],
           limit: 2,
         },
         {
@@ -217,12 +217,12 @@ describe('Retrieve subqueries', () => {
               value: ['2021-07-01T00:00:00'],
             },
           },
-          orderBy: [{ expression: variable('parsedAt1'), descending: false }],
+          orderBy: [{ expression: factory.variable('parsedAt1'), descending: false }],
         },
       ],
       orderBy: [
-        { expression: variable('lastMonthSalesValue0'), descending: true },
-        { expression: variable('parsedAt1'), descending: false },
+        { expression: factory.variable('lastMonthSalesValue0'), descending: true },
+        { expression: factory.variable('parsedAt1'), descending: false },
       ],
     });
     expect(coll1).not.toBeUndefined();

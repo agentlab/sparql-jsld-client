@@ -9,9 +9,11 @@
  ********************************************************************************/
 import { afterAll, beforeAll, beforeEach, describe, expect, jest, it } from '@jest/globals';
 import { Parser } from 'sparqljs';
-import { triple, variable } from '@rdfjs/data-model';
 
 import { JsObject, JSONSchema6forRdf } from '../src/ObjectProvider';
+import { factory, getFullIriNamedNode, ICollConstrJsOpt } from '../src/SparqlGen';
+import { constructObjectsQuery, selectObjectsQuery } from '../src/SparqlGenSelect';
+import { insertObjectQuery, deleteObjectQuery, updateObjectQuery } from '../src/SparqlGenUpdate';
 import { SparqlClientImplMock } from './SparqlClientImplMock';
 
 import {
@@ -23,10 +25,8 @@ import {
   usedInModuleSchema,
 } from './schema/TestSchemas';
 import { testNs } from './configTests';
-import { getFullIriNamedNode, ICollConstrJsOpt } from '../src/SparqlGen';
+
 import { ArtifactShapeSchema, PropertyShapeSchema } from '../src/schema/ArtifactShapeSchema';
-import { constructObjectsQuery, selectObjectsQuery } from '../src/SparqlGenSelect';
-import { insertObjectQuery, deleteObjectQuery, updateObjectQuery } from '../src/SparqlGenUpdate';
 
 // See https://stackoverflow.com/questions/49603939/async-callback-was-not-invoked-within-the-5000ms-timeout-specified-by-jest-setti
 jest.setTimeout(500000);
@@ -163,7 +163,7 @@ describe('SchemaWithoutArrayProperties', () => {
             },
           },
         ],
-        orderBy: [{ expression: variable('identifier0'), descending: true }],
+        orderBy: [{ expression: factory.variable('identifier0'), descending: true }],
         limit: 1,
       },
       `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -293,7 +293,11 @@ const usedInModuleCollConstrJs: any = {
           bind: {
             relation: 'exists',
             triples: [
-              triple(variable('eIri2'), getFullIriNamedNode('rmUserTypes:parentBinding', testNs), variable('eIri1')),
+              factory.quad(
+                factory.variable('eIri2'),
+                getFullIriNamedNode('rmUserTypes:parentBinding', testNs),
+                factory.variable('eIri1'),
+              ),
             ],
           },
         },
@@ -301,7 +305,7 @@ const usedInModuleCollConstrJs: any = {
       resolveType: true,
     },
   ],
-  orderBy: [{ expression: variable('bookOrder0'), descending: false }],
+  orderBy: [{ expression: factory.variable('bookOrder0'), descending: false }],
   limit: 10,
 };
 
@@ -413,7 +417,7 @@ describe('ArtifactSchema', () => {
           },
         ],
         limit: 1,
-        orderBy: [{ expression: variable('identifier0'), descending: true }],
+        orderBy: [{ expression: factory.variable('identifier0'), descending: true }],
         distinct: true,
       },
       `PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
@@ -453,9 +457,10 @@ describe('constructObjectsQuery', () => {
           },
           {
             schema: PropertyShapeSchema,
+            //orderBy: [{ expression: factory.variable('order1'), descending: false }],
           },
         ],
-        orderBy: [{ expression: variable('order1'), descending: false }],
+        orderBy: [{ expression: factory.variable('order1'), descending: false }],
       },
       `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
       PREFIX dcterms: <http://purl.org/dc/terms/>
@@ -532,7 +537,7 @@ describe('constructObjectsQuery', () => {
             schema: PropertyShapeSchema,
           },
         ],
-        orderBy: [{ expression: variable('order1'), descending: false }],
+        orderBy: [{ expression: factory.variable('order1'), descending: false }],
       },
       `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
       PREFIX dcterms: <http://purl.org/dc/terms/>
@@ -689,7 +694,7 @@ describe('constructObjectsQuery', () => {
           },
         },
       ],
-      orderBy: [{ expression: variable('parsedAt0'), descending: false }],
+      orderBy: [{ expression: factory.variable('parsedAt0'), descending: false }],
     };
     const coll = await constructObjectsQuery(collConstrJs, testNs, client);
     expect(coll).not.toBeUndefined();
@@ -737,7 +742,7 @@ describe('constructObjectsQuery', () => {
           service: 'http://192.168.1.33:8090/sparql',
         },
       ],
-      orderBy: [{ expression: variable('parsedAt0'), descending: false }],
+      orderBy: [{ expression: factory.variable('parsedAt0'), descending: false }],
     };
     const coll = await constructObjectsQuery(collConstrJs, testNs, client);
     expect(coll).not.toBeUndefined();
@@ -781,7 +786,7 @@ describe('constructObjectsQuery', () => {
             '@id': 'mktp:ProductCards_in_Category_Coll_Ent0_con',
             seller: 'https://www.example.ru',
           },
-          orderBy: [{ expression: variable('lastMonthSalesValue0'), descending: true }],
+          orderBy: [{ expression: factory.variable('lastMonthSalesValue0'), descending: true }],
           limit: 2,
         },
       ],
@@ -832,7 +837,7 @@ describe('constructObjectsQuery', () => {
       entConstrs: [
         {
           schema: ProductCardShapeSchema,
-          orderBy: [{ expression: variable('lastMonthSalesValue0'), descending: true }],
+          orderBy: [{ expression: factory.variable('lastMonthSalesValue0'), descending: true }],
           limit: 2,
         },
         {
@@ -844,12 +849,12 @@ describe('constructObjectsQuery', () => {
               value: ['2021-07-01T00:00:00'],
             },
           },
-          orderBy: [{ expression: variable('parsedAt1'), descending: false }],
+          orderBy: [{ expression: factory.variable('parsedAt1'), descending: false }],
         },
       ],
       orderBy: [
-        { expression: variable('lastMonthSalesValue0'), descending: true },
-        { expression: variable('parsedAt1'), descending: false },
+        { expression: factory.variable('lastMonthSalesValue0'), descending: true },
+        { expression: factory.variable('parsedAt1'), descending: false },
       ],
     };
     const coll = await constructObjectsQuery(collConstrJs, testNs, client);
@@ -921,7 +926,7 @@ describe('constructObjectsQuery', () => {
           conditions: {
             hasObservations: '?eIri1',
           },
-          orderBy: [{ expression: variable('lastMonthSalesValue0'), descending: true }],
+          orderBy: [{ expression: factory.variable('lastMonthSalesValue0'), descending: true }],
           limit: 2,
         },
         {
@@ -932,12 +937,12 @@ describe('constructObjectsQuery', () => {
               value: ['2021-07-01T00:00:00'],
             },
           },
-          orderBy: [{ expression: variable('parsedAt1'), descending: false }],
+          orderBy: [{ expression: factory.variable('parsedAt1'), descending: false }],
         },
       ],
       orderBy: [
-        { expression: variable('lastMonthSalesValue0'), descending: true },
-        { expression: variable('parsedAt1'), descending: false },
+        { expression: factory.variable('lastMonthSalesValue0'), descending: true },
+        { expression: factory.variable('parsedAt1'), descending: false },
       ],
     };
     const coll = await constructObjectsQuery(collConstrJs, testNs, client);

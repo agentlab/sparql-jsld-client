@@ -8,12 +8,12 @@
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
 import { afterAll, beforeAll, describe, expect, jest, it } from '@jest/globals';
-import { variable } from '@rdfjs/data-model';
 import { when } from 'mobx';
 import { getSnapshot } from 'mobx-state-tree';
 
 import { rootModelInitialState } from '../src/models/Model';
 import { MstRepository } from '../src/models/MstRepository';
+import { factory } from '../src/SparqlGen';
 import { SparqlClientImpl } from '../src/SparqlClientImpl';
 import { uploadFiles } from '../src/FileUpload';
 
@@ -305,7 +305,7 @@ describe('SimpleRetrieve', () => {
       ],
       // could be string or string[]. varname or property IRI?
       // ['?identifier0', 'DESC(?title0)']
-      orderBy: [{ expression: variable('identifier0'), descending: false }], // if last digit not specified, we assuming '0' (identifier0)
+      orderBy: [{ expression: factory.variable('identifier0'), descending: false }], // if last digit not specified, we assuming '0' (identifier0)
       limit: 4,
     };
 

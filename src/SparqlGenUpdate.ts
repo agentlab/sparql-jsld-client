@@ -93,6 +93,7 @@ function deleteObjectQueryFromEntConstrs(entConstrs: EntConstrInternal[]) {
         updateType: 'insertdelete',
         delete: [],
         insert: [],
+        where: [],
       },
     ],
   };
@@ -172,6 +173,7 @@ function updateObjectQueryFromEntConstrs(entConstrs: EntConstrInternal[]) {
         updateType: 'insertdelete',
         delete: [],
         insert: [],
+        where: [],
       },
     ],
   };

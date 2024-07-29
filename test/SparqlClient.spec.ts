@@ -599,4 +599,158 @@ describe('SparqlClient', () => {
     const results = await client.sparqlConstruct(query);
     expect(results).toHaveLength(8);
   });
+
+  //TODO: Federated Queries tests not working due to shut downed services
+  // it(`SparqlClient should get federated timeseries`, async () => {
+  //   const client = new SparqlClientImpl(rdfServerUrl);
+  //   client.setRepositoryId('mktp-fed');
+  //   const query = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+  //   PREFIX hs: <https://huntersales.ru/schema#>
+  //   CONSTRUCT {
+  //     ?eIri0 rdf:type hs:HSObservation.
+  //     ?eIri0 hs:product <https://www.wildberries.ru/catalog/10477061/detail.aspx>.
+  //     ?eIri0 hs:parsedAt ?parsedAt0.
+  //     ?eIri0 hs:categoryPopularity ?categoryPopularity0.
+  //     ?eIri0 hs:commentsCount ?commentsCount0.
+  //     ?eIri0 hs:price ?price0.
+  //     ?eIri0 hs:questionsCount ?questionsCount0.
+  //     ?eIri0 hs:saleValue ?saleValue0.
+  //     ?eIri0 hs:salesAmountDiff ?salesAmountDiff0.
+  //     ?eIri0 hs:stocksDiffOrders ?stocksDiffOrders0.
+  //     ?eIri0 hs:stocksDiffReturns ?stocksDiffReturns0.
+  //     ?eIri0 hs:stocks ?stocks0.
+  //     ?eIri0 hs:totalSalesDiff ?totalSalesDiff0.
+  //     ?eIri0 hs:totalSales ?totalSales0.
+  //   }
+  //   WHERE {
+  //     SERVICE <http://192.168.1.33:8090/sparql> {
+  //     ?eIri0 rdf:type hs:HSObservation;
+  //       hs:product <https://www.wildberries.ru/catalog/10477061/detail.aspx>;
+  //       hs:parsedAt ?parsedAt0;
+  //       hs:categoryPopularity ?categoryPopularity0;
+  //       hs:commentsCount ?commentsCount0;
+  //       hs:price ?price0;
+  //       hs:questionsCount ?questionsCount0;
+  //       hs:saleValue ?saleValue0;
+  //       hs:salesAmountDiff ?salesAmountDiff0;
+  //       hs:stocksDiffOrders ?stocksDiffOrders0;
+  //       hs:stocksDiffReturns ?stocksDiffReturns0;
+  //       hs:stocks ?stocks0;
+  //       hs:totalSalesDiff ?totalSalesDiff0;
+  //       hs:totalSales ?totalSales0.
+  //   }
+  //   }
+  //   ORDER BY (?parsedAt)`;
+  //   //const markerJsonLdStart = 'json-ld-start';
+  //   //const markerJsonLdStop = 'json-ld-stop';
+  //   //performance.mark(markerJsonLdStart);
+  //   //let results = await client.sparqlConstruct(query, {}, 'application/ld+json');
+  //   //performance.mark(markerJsonLdStop);
+  //   //performance.measure('json-ld measure', markerJsonLdStart, markerJsonLdStop);
+  //   //expect(results.length).toBeGreaterThan(50);
+
+  //   //const markerRdfXmlStart = 'rdf+xml-start';
+  //   //const markerRdfXmlStop = 'rdf+xml-stop';
+  //   //performance.mark(markerRdfXmlStart);
+  //   const results = await client.sparqlConstruct(query, {}, 'application/rdf+xml');
+  //   //performance.mark(markerRdfXmlStop);
+  //   //performance.measure('rdf+xml measure', markerRdfXmlStart, markerRdfXmlStop);
+
+  //   //const markerNTriplesStart = 'n-triples-start';
+  //   //const markerNTriplesStop = 'n-triples-stop';
+  //   //performance.mark(markerNTriplesStart);
+  //   //results = await client.sparqlConstruct(query, {}, 'text/plain');
+  //   //performance.mark(markerNTriplesStop);
+  //   //performance.measure('n-triples measure', markerNTriplesStart, markerNTriplesStop);
+
+  //   // Pull out all of the measurements.
+  //   //console.log(performance.getEntriesByType('measure'));
+  //   // Finally, clean up the entries.
+  //   //performance.clearMarks();
+  //   //performance.clearMeasures();
+  //   //
+  // });
+
+  // it(`SparqlClient should get LIMITed timeseries`, async () => {
+  //   const client = new SparqlClientImpl(rdfServerUrl);
+  //   client.setRepositoryId('mktp-fed');
+  //   /*const query = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+  //   PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+  //   PREFIX hs: <https://huntersales.ru/schema#>
+  //   CONSTRUCT {
+  //     ?eIri0 rdf:type hs:ProductCard .
+  //     ?eIri0 hs:name ?name0 .
+  //     ?eIri0 hs:lastMonthSalesValue ?lastMonthSalesValue0 .
+  //     ?eIri0 hs:saleValue ?saleValue0 .
+  //     ?eIri0 hs:brand ?brand0 .
+  //     ?eIri0 hs:seller ?seller0 .
+  //     ?eIri0 hs:imageUrl ?imageUrl0 .
+  //     ?eIri1 rdf:type hs:HSObservation .
+  //     ?eIri1 hs:product ?eIri0 .
+  //     ?eIri1 hs:parsedAt ?parsedAt1 .
+  //     ?eIri1 hs:price ?price1 .
+  //   } WHERE {
+  //     {
+  //       SELECT ?eIri0 ?name0 ?lastMonthSalesValue0 ?seller0 ?saleValue0 ?brand0 ?imageUrl0 WHERE {
+  //         {
+  //           SELECT ?eIri0 ?name0 ?lastMonthSalesValue0 ?seller0 ?saleValue0 ?brand0 WHERE {
+  //             ?eIri0 rdf:type hs:ProductCard ;
+  //               hs:name ?name0 ;
+  //               hs:lastMonthSalesValue ?lastMonthSalesValue0 ;
+  //               hs:seller ?seller0.
+  //             OPTIONAL { ?eIri0 hs:saleValue ?saleValue0. }
+  //             OPTIONAL { ?eIri0 hs:brand ?brand0. }
+  //           }
+  //           ORDER BY DESC(?lastMonthSalesValue0)
+  //           LIMIT 2
+  //         }
+  //         OPTIONAL { ?eIri0 hs:imageUrl ?imageUrl }
+  //       }
+  //     } {
+  //       ?eIri1 rdf:type hs:HSObservation ;
+  //         hs:product ?eIri0 ;
+  //         hs:parsedAt ?parsedAt1 ;
+  //         hs:price ?price1 .
+  //       filter(?parsedAt1 >= "2021-07-01T00:00:00"^^xsd:dateTime)
+  //     }
+  //   }
+  //   ORDER BY DESC(?lastMonthSalesValue0) ?parsedAt1`;*/
+  //   const query = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+  //   PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+  //   PREFIX hs: <https://huntersales.ru/schema#>
+  //   CONSTRUCT {
+  //     ?eIri0 rdf:type hs:ProductCard .
+  //     ?eIri0 hs:name ?name0 .
+  //     ?eIri0 hs:lastMonthSalesValue ?lastMonthSalesValue0 .
+  //     ?eIri0 hs:imageUrl ?imageUrl0 .
+  //     ?eIri1 rdf:type hs:HSObservation .
+  //     ?eIri1 hs:product ?eIri0 .
+  //     ?eIri1 hs:parsedAt ?parsedAt1 .
+  //     ?eIri1 hs:price ?price1 .
+  //   } WHERE {
+  //     {
+  //       SELECT ?eIri0 ?name0 ?lastMonthSalesValue0 ?imageUrl0 WHERE {
+  //         {
+  //           SELECT ?eIri0 ?name0 ?lastMonthSalesValue0 WHERE {
+  //             ?eIri0 rdf:type hs:ProductCard ;
+  //               hs:name ?name0 ;
+  //               hs:lastMonthSalesValue ?lastMonthSalesValue0 .
+  //           }
+  //           ORDER BY DESC(?lastMonthSalesValue0)
+  //           LIMIT 2
+  //         }
+  //         OPTIONAL { ?eIri0 hs:imageUrl ?imageUrl }
+  //       }
+  //     } {
+  //       ?eIri1 rdf:type hs:HSObservation ;
+  //         hs:product ?eIri0 ;
+  //         hs:parsedAt ?parsedAt1 ;
+  //         hs:price ?price1 .
+  //       filter(?parsedAt1 >= "2021-07-01T00:00:00"^^xsd:dateTime)
+  //     }
+  //   }
+  //   ORDER BY DESC(?lastMonthSalesValue0) ?parsedAt1`;
+  //   const results = await client.sparqlConstruct(query);
+  //   expect(results).toHaveLength(2);
+  // });
 });

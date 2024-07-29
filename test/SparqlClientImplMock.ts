@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
-import { AxiosResponse } from 'axios';
+import { AxiosHeaders, AxiosResponse } from 'axios';
 import { SparqlClient, Results } from '../src/SparqlClient';
 import { JsObject, JsStrObj } from '../src/ObjectProvider';
 
@@ -16,7 +16,9 @@ const HttpResponse200: AxiosResponse<any> = {
   status: 200,
   statusText: 'Ok',
   headers: {},
-  config: {},
+  config: {
+    headers: new AxiosHeaders(),
+  },
 };
 
 /**

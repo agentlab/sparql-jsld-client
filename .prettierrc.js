@@ -1,4 +1,4 @@
-module.exports = {
+const config = {
   printWidth: 120,
   tabWidth: 2,
   useTabs: false,
@@ -11,3 +11,5 @@ module.exports = {
   endOfLine: 'lf',
   //quoteProps: 'consistent',
 };
+
+export default config;

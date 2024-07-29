@@ -7,16 +7,14 @@
  *
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
-import fs from 'fs';
-import customEnv from 'custom-env';
-
-/* eslint-disable no-undef */
+import { existsSync } from 'fs';
+import { env } from 'custom-env';
 
 // emulate create-react-app behaviour witn .env files
-if (fs.existsSync('.env.test.local')) {
-  customEnv.env('test.local');
-} else if (fs.existsSync('.env.test')) {
-  customEnv.env('test');
+if (existsSync('.env.test.local')) {
+  env('test.local');
+} else if (existsSync('.env.test')) {
+  env('test');
 }
 
 /**

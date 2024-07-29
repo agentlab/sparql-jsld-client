@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
-import moment from 'moment';
+import dayjs from 'dayjs';
 import { isArray } from 'lodash-es';
 import { JSONSchema6forRdf } from '../ObjectProvider';
 
@@ -39,7 +39,7 @@ export function getPropertyFormatterAndDefault(
         }
       } else if (property.type === 'string') {
         if (property.format === 'date-time') {
-          result.propertyFormatter = (value: any): any => moment(value).format();
+          result.propertyFormatter = (value: any): any => dayjs(value).format();
           result.propertyDefault = '';
         } else {
           result.propertyFormatter = (value: any): any => value;

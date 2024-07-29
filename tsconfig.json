@@ -3,7 +3,7 @@
   "include": ["src", "stories", "test"],
   "exclude": ["es", "lib", "node_modules"],
   "compilerOptions": {
-    "module": "esnext",
+    "module": "ES2022",
     "target": "esnext",
     "lib": ["dom", "esnext"],
     "outDir": "./lib",
@@ -29,7 +29,8 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     // use Node's module resolution algorithm, instead of the legacy TS one
-    "moduleResolution": "node",
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
     //"baseUrl": "./",
     //"paths": {
     //  "*": ["src/*", "node_modules/*"]

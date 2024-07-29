@@ -50,7 +50,6 @@ beforeAll(async () => {
     //await sleep(5000); // give RDF classifier some time to classify resources after upload
     await repository.ns.reloadNs();
   } catch (err) {
-    // eslint-disable-next-line no-undef
     fail(err);
   }
 });
@@ -59,7 +58,6 @@ afterAll(async () => {
   try {
     await client.deleteRepository(rmRepositoryID);
   } catch (err) {
-    // eslint-disable-next-line no-undef
     fail(err);
   }
 });

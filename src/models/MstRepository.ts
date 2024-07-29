@@ -462,7 +462,7 @@ export const MstRepository = types
        */
       /*createObject: flow(function* createObject(data: any) {
         const collConstr = normalizeCollConstr(data);
-        //const now = moment().toISOString();
+        //const now = dayjs().toISOString();
         for (let index = 0; index < collConstr.entConstrs.length; index++) {
           const constr = collConstr.entConstrs[index];
           if (constr.schema && constr.data) {
@@ -518,7 +518,7 @@ export const MstRepository = types
        */
       /*updateObject: flow(function* updateObject(data: any) {
         if (data.entConstrs && isArray(data.entConstrs)) {
-          const now = moment().toISOString();
+          const now = dayjs().toISOString();
           data.entConstrs.forEach((s: any) => {
             if (s.schema && s.data) {
               let schema: any = s.schema;

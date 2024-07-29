@@ -11,7 +11,7 @@ import uuid62 from 'uuid62';
 import { cloneDeep, isArray } from 'lodash-es';
 import { Quad, Variable } from '@rdfjs/types/data-model';
 import { ConstructQuery, Ordering, SelectQuery } from 'sparqljs';
-import jsonld from 'jsonld';
+import { compact } from 'jsonld';
 
 import { Bindings, Results, SparqlClient } from './SparqlClient';
 import {
@@ -1064,7 +1064,7 @@ async function jsonLdToObjects(jsonLdObjs: JsObject[], entConstrs: EntConstrInte
   const jsonLdObjsNested = nestObjs(jsonLdObjs, entConstrs);
   const objects: JsObject[] = [];
   for (const jsonLdObj of jsonLdObjsNested) {
-    const compacted = await jsonld.compact(jsonLdObj, context);
+    const compacted = await compact(jsonLdObj, context);
     const converted = convertPropValues(compacted);
     delete converted['@context'];
     objects.push(converted);

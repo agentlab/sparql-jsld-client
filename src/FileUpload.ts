@@ -7,14 +7,14 @@
  *
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
-import fs from 'fs';
+import { readFileSync } from 'fs';
 import { FileUploadConfig, SparqlClient } from './SparqlClient';
 
 export async function uploadFiles(client: SparqlClient, files: FileUploadConfig[], rootFolder = ''): Promise<void> {
   //console.debug('uploadFiles ', files);
   let statements = '';
   files.forEach((f) => {
-    statements = statements + fs.readFileSync(rootFolder + f.file, 'utf8');
+    statements = statements + readFileSync(rootFolder + f.file, 'utf8');
   });
 
   if (statements.length > 0 && files.length > 0) {

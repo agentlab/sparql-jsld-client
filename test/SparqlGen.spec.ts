@@ -795,7 +795,7 @@ describe('constructObjectsQuery', () => {
     expect(coll).not.toBeUndefined();
     //expect(coll.length).toBe(0);
     const genQueryStr = client.sparqlConstructParams.query;
-    console.log(genQueryStr);
+    //console.log(genQueryStr);
     const correctQuery = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
       PREFIX hs: <https://huntersales.ru/schema#>
       CONSTRUCT {

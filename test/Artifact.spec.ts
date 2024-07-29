@@ -55,7 +55,6 @@ afterAll(async () => {
   try {
     await client.deleteRepository(rmRepositoryID);
   } catch (err) {
-    // eslint-disable-next-line no-undef
     fail(err);
   }
 });
@@ -90,7 +89,6 @@ describe('create-artifact-scenario', () => {
 
     //const element = data[1];
     for (const element of data) {
-      // eslint-disable-next-line no-await-in-loop
       await coll.delElem(element);
     }
     expect(coll.data.length).toBe(0);

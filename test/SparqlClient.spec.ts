@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
 import { afterAll, beforeAll, describe, expect, jest, it } from '@jest/globals';
-import jsonld from 'jsonld';
+import { compact, ContextDefinition } from 'jsonld';
 
 import { rootModelInitialState } from '../src/models/Model';
 import { MstRepository } from '../src/models/MstRepository';
@@ -65,7 +65,6 @@ beforeAll(async () => {
       // Something happened in setting up the request that triggered an Error
       console.log('Error', error.message);
     }
-    // eslint-disable-next-line no-undef
     fail(error);
   }
 });
@@ -74,7 +73,6 @@ afterAll(async () => {
   try {
     await client.deleteRepository(rmRepositoryID);
   } catch (err) {
-    // eslint-disable-next-line no-undef
     fail(err);
   }
 });
@@ -211,8 +209,9 @@ describe('SparqlClient', () => {
     const results = await client.sparqlConstruct(query);
     //expect(results).toHaveLength(1);
     //console.log('results', json2str(results));
-    const context = {
-      '@version': 1.1,
+    const context: ContextDefinition = {
+      // mismatch in property type, number 1.1 in jsonld.js vs string "1.1" in @types/jsonld
+      '@version': 1.1 as any,
       ...testNs,
       targetClass: {
         '@id': 'sh:targetClass',
@@ -307,7 +306,7 @@ describe('SparqlClient', () => {
       shapeModifiability: 'rm:shapeModifiability',
       valueModifiability: 'rm:valueModifiability',*/
     };
-    const compacted = await jsonld.compact(results, context);
+    const compacted = await compact(results, context);
     //console.log(JSON.stringify(compacted, null, 2));
     // replace native types
     // { @id: 'some-iri' } -> 'some-iri'
@@ -434,8 +433,9 @@ describe('SparqlClient', () => {
     const results = await client.sparqlConstruct(query);
     expect(results).toHaveLength(1);
     //console.log('results', json2str(results));
-    const context = {
-      '@version': 1.1,
+    const context: ContextDefinition = {
+      // mismatch in property type, number 1.1 in jsonld.js vs string "1.1" in @types/jsonld
+      '@version': 1.1 as any,
       ...testNs,
       targetClass: {
         '@id': 'sh:targetClass',
@@ -530,7 +530,7 @@ describe('SparqlClient', () => {
       shapeModifiability: 'rm:shapeModifiability',
       valueModifiability: 'rm:valueModifiability',*/
     };
-    const compacted = await jsonld.compact(results, context);
+    const compacted = await compact(results, context);
     //console.log(JSON.stringify(compacted, null, 2));
     // replace native types
     // { @id: 'some-iri' } -> 'some-iri'

@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
-import moment from 'moment';
+import dayjs from 'dayjs';
 import { isArray, isEqual } from 'lodash-es';
 import { reaction } from 'mobx';
 import {
@@ -260,7 +260,7 @@ export const MstColl = types
             else self.dataIntrnl = objects;
             //schema: {},
             //selectQuery: '',
-            self.lastSynced = moment.now();
+            self.lastSynced = dayjs().valueOf();
             //console.log('loadColl', objects.length);
           } catch (e) {
             console.error(e);

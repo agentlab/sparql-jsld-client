@@ -815,7 +815,6 @@ export function getDataTriples(entConstr: EntConstrInternal): any[] {
           } else if (property.type === 'array') {
             const prop = {
               ...property,
-              // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
               ...(<any>property.items),
             };
             if (isArray(value)) {

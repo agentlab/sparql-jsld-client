@@ -9,13 +9,12 @@
  ********************************************************************************/
 import { expect } from '@jest/globals';
 import { getSnapshot } from 'mobx-state-tree';
-import moment from 'moment';
+import dayjs from 'dayjs';
 
 export function genTimestampedName(name: string): string {
-  return name + '_' + moment().format('YYYYMMDD_HHmmssSSSS');
+  return name + '_' + dayjs().format('YYYYMMDD_HHmmssSSSS');
 }
 
-// eslint-disable-next-line no-undef
 export function sleep(ms: number): Promise<NodeJS.Timeout> {
   return new Promise((resolve: (value: any) => void) => setTimeout(resolve, ms));
 }

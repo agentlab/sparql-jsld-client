@@ -8,9 +8,7 @@
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
 import { cloneDeep } from 'lodash-es';
-import { AxiosResponse } from 'axios';
 
-import { triple, variable } from '@rdfjs/data-model';
 import { Update } from 'sparqljs';
 
 import { JsObject } from './ObjectProvider';
@@ -46,8 +44,7 @@ export async function deleteObjectQuery(
   const query = deleteObjectQueryFromEntConstrs(entConstrs);
   const queryStr = gen.stringify(query);
   //console.debug('deleteObject', queryStr);
-  const response: AxiosResponse<any> = await client.sparqlUpdate(queryStr, collConstrJs.options);
-  //console.debug('deleteObject', response);
+  return client.sparqlUpdate(queryStr, collConstrJs.options);
 }
 
 export async function insertObjectQuery(
@@ -62,7 +59,7 @@ export async function insertObjectQuery(
   const query = insertObjectQueryFromEntConstrs(entConstrs);
   const queryStr = gen.stringify(query);
   //console.debug('createObject query=', queryStr);
-  const response: AxiosResponse<any> = await client.sparqlUpdate(queryStr, collConstrJs.options);
+  return client.sparqlUpdate(queryStr, collConstrJs.options);
 }
 
 export async function updateObjectQuery(
@@ -78,7 +75,7 @@ export async function updateObjectQuery(
   const query = updateObjectQueryFromEntConstrs(entConstrs);
   const queryStr = gen.stringify(query);
   //console.debug('createObject query=', queryStr);
-  const response: AxiosResponse<any> = await client.sparqlUpdate(queryStr, collConstrJs.options);
+  return client.sparqlUpdate(queryStr, collConstrJs.options);
 }
 
 /**

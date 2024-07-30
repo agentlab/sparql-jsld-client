@@ -15,7 +15,10 @@ const jestConfig: JestConfigWithTsJest = {
     '/node_modules/',
     '/src/',
   ],
-  transformIgnorePatterns: ['node_modules/(?!(lodash-es)/)'],
+  transformIgnorePatterns: [
+    /*'node_modules/(?!(lodash-es)/)',*/ // for yarn
+    '<rootdir>/node_modules/.pnpm/(?!(lodash-es)@)', // for pnpm
+  ],
   collectCoverageFrom: ['./src/**/*.{js,jsx,ts,tsx}'],
   coverageProvider: 'v8',
   extensionsToTreatAsEsm: ['.ts'],

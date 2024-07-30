@@ -7,7 +7,6 @@
  *
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
-import { isArray } from 'lodash-es';
 import { values } from 'mobx';
 import { types, getSnapshot, applySnapshot, getEnv, Instance } from 'mobx-state-tree';
 
@@ -94,7 +93,7 @@ export const MstRepository = types
               },
             ],
           };
-        } else if (isArray(data)) {
+        } else if (Array.isArray(data)) {
           collConstr = { entConstrs: [...data] }; // data as IEntityConstr[]
         } else {
           if (data.$schema === undefined) {

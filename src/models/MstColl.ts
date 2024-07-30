@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
 import dayjs from 'dayjs';
-import { isArray, isEqual } from 'lodash-es';
+import { isEqual } from 'lodash-es';
 import { reaction } from 'mobx';
 import {
   types,
@@ -328,7 +328,7 @@ export const MstColl = types
        */
       addElems(elems: JsObject | JsObject[]) {
         if (!elems) return;
-        if (!isArray(elems)) elems = [elems];
+        if (!Array.isArray(elems)) elems = [elems];
         elems = elems.filter((elem: any) => !self.dataIntrnl.find((e: any) => e['@id'] === elem['@id']));
         self.dataIntrnl.push(elems);
       },

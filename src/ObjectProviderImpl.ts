@@ -7,8 +7,6 @@
  *
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
-import { isArray } from 'lodash-es';
-
 import {
   JSONSchema6forRdf,
   JsObject,
@@ -24,7 +22,7 @@ function combineProperties(oldObj: any, newObj: any, schema: JSONSchema6forRdf):
   Object.keys(oldObj).forEach((key) => {
     if (schema.properties && oldObj[key] !== newObj[key]) {
       if (schema.properties[key] && schema.properties[key].type === 'array') {
-        newData[key] = isArray(oldObj[key]) ? [...oldObj[key], newObj[key]] : [oldObj[key], newObj[key]];
+        newData[key] = Array.isArray(oldObj[key]) ? [...oldObj[key], newObj[key]] : [oldObj[key], newObj[key]];
         return;
       }
     }
@@ -265,10 +263,10 @@ export function propertyShapesToSchemaProperties(
  */
 export function addToSchemaParentSchema(schema: JSONSchema6forRdf, parentSchema: JSONSchema6forRdf): JSONSchema6forRdf {
   const parentCtx = parentSchema['@context'];
-  if (parentCtx && typeof parentCtx !== 'string' && !isArray(parentCtx)) {
+  if (parentCtx && typeof parentCtx !== 'string' && !Array.isArray(parentCtx)) {
     if (!schema['@context']) schema['@context'] = {};
     const schemaCtx = schema['@context'];
-    if (typeof schemaCtx !== 'string' && !isArray(schemaCtx)) {
+    if (typeof schemaCtx !== 'string' && !Array.isArray(schemaCtx)) {
       copyObjectProps(schemaCtx, parentCtx);
     }
   }

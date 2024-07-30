@@ -8,7 +8,6 @@
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
 import _isUrl from 'is-url';
-import { isArray } from 'lodash-es';
 
 import { Quad, NamedNode, Variable } from '@rdfjs/types/data-model';
 import { DataFactory } from 'rdf-data-factory';
@@ -130,14 +129,14 @@ export function addToBgp(triples: any[]): any[] {
 export function toBgp(data: any): BgpPattern {
   return {
     type: 'bgp',
-    triples: isArray(data) ? data : [data],
+    triples: Array.isArray(data) ? data : [data],
   };
 }
 
 export function toOptional(data: any): OptionalPattern {
   return {
     type: 'optional',
-    patterns: isArray(data) ? data : [data],
+    patterns: Array.isArray(data) ? data : [data],
   };
 }
 
@@ -688,7 +687,7 @@ export function getConditionalTriple(
 }
 
 export function getTripleWithPredOrPath(subj: any, propUri: string | string[], value: any, prefixes: JsStrObj): Quad {
-  if (isArray(propUri)) {
+  if (Array.isArray(propUri)) {
     return factory.quad(
       subj,
       {
@@ -817,7 +816,7 @@ export function getDataTriples(entConstr: EntConstrInternal): any[] {
               ...property,
               ...(<any>property.items),
             };
-            if (isArray(value)) {
+            if (Array.isArray(value)) {
               value.forEach((v) => {
                 triple = getConditionalTriple(prop, subj, v, propUri, entConstr.prefixes);
                 if (triple) triples.push(triple);
@@ -1167,8 +1166,8 @@ export function getInternalCollConstrs(
   addData?: JsObject | JsObject[],
 ) {
   const internalCollConstrs: EntConstrInternal[] = [];
-  if (addConditions && !isArray(addConditions)) addConditions = [addConditions];
-  if (addData && !isArray(addData)) addData = [addData];
+  if (addConditions && !Array.isArray(addConditions)) addConditions = [addConditions];
+  if (addData && !Array.isArray(addData)) addData = [addData];
 
   for (let index = 0; index < collConstr.entConstrs.length; index++) {
     const constr = collConstr.entConstrs[index] as EntConstrData;

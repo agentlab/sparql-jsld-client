@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
 import uuid62 from 'uuid62';
-import { cloneDeep, isArray } from 'lodash-es';
+import { cloneDeep } from 'lodash-es';
 import { Quad, Variable } from '@rdfjs/types/data-model';
 import { ConstructQuery, Ordering, SelectQuery } from 'sparqljs';
 import { compact } from 'jsonld';
@@ -182,12 +182,12 @@ function analyseProps(entConstrs: EntConstrInternal[]) {
 }
 
 function convertOrderBy(orderBy: any, entConstrs: any | any[] | undefined): any {
-  if (isArray(orderBy)) return orderBy.map((e) => convertOrderBy(e, entConstrs));
+  if (Array.isArray(orderBy)) return orderBy.map((e) => convertOrderBy(e, entConstrs));
   if (orderBy.expression || !orderBy.variable) return orderBy;
   let entConstrVariable = orderBy.variable;
   if (entConstrs) {
     entConstrVariable =
-      (isArray(entConstrs) ? entConstrs.find((e) => e.props2vars[entConstrVariable]) : entConstrs)?.props2vars[
+      (Array.isArray(entConstrs) ? entConstrs.find((e) => e.props2vars[entConstrVariable]) : entConstrs)?.props2vars[
         entConstrVariable
       ] || orderBy.variable;
   }
@@ -954,7 +954,7 @@ function convertSimpleTypes(val: string, type?: string) {
 function convertAnyTypes(val: any, type?: string, ctxs?: JsStrObjObj[]) {
   if (typeof val === 'string') {
     val = convertSimpleTypes(val, type);
-  } else if (isArray(val)) {
+  } else if (Array.isArray(val)) {
     val = val.map((subVal) => convertAnyTypes(subVal, type, ctxs));
   } else {
     val = convertPropValues(val, ctxs);
@@ -1016,7 +1016,7 @@ function nestObjs(jsonLdObjs: JsObject[], entConstrs: EntConstrInternal[]) {
           const fullPropIri = deAbbreviateIri(propIri as string, entConstr.prefixes);
           entsObjs[entConstrFromIndex].forEach((entObjFrom) => {
             const entObjFromPropVals = entObjFrom[fullPropIri];
-            if (isArray(entObjFromPropVals)) {
+            if (Array.isArray(entObjFromPropVals)) {
               entObjFromPropVals.forEach((entObjFromPropVal, opvIndex) => {
                 const refIri = entObjFromPropVal['@id'];
                 if (refIri) {

@@ -8,7 +8,6 @@
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
 import dayjs from 'dayjs';
-import { isArray } from 'lodash-es';
 import { JSONSchema6forRdf } from '../ObjectProvider';
 
 interface FormatterAndDefaultAndTitle {
@@ -24,7 +23,7 @@ export function getPropertyFormatterAndDefault(
   const properties = schema.properties;
   const contexts = schema['@context'];
   const result: FormatterAndDefaultAndTitle = {};
-  if (properties && contexts && typeof contexts !== 'string' && !isArray(contexts)) {
+  if (properties && contexts && typeof contexts !== 'string' && !Array.isArray(contexts)) {
     const property = properties[propKey];
     const context = (contexts as any)[propKey];
     if (property && context) {

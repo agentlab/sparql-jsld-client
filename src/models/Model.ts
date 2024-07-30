@@ -7,7 +7,6 @@
  *
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
-import { isArray } from 'lodash-es';
 import { when } from 'mobx';
 
 import { ResourceSchema, ClassSchema } from '../schema/RdfsSchema';
@@ -127,7 +126,7 @@ export const createModelFromState = (
             }
           }
           // If CollConstr with '@id' existed, adds data to the Coll's dataIntrnl
-          if (existedColl !== undefined && collState.data && isArray(collState.data)) {
+          if (existedColl !== undefined && collState.data && Array.isArray(collState.data)) {
             existedColl.addElems(collState.data);
           }
         });

@@ -2,10 +2,10 @@
   // see https://www.typescriptlang.org/tsconfig to better understand tsconfigs
   "extends": "./tsconfig",
   "include": ["src"],
-  "exclude": ["cypress", "es", "lib", "node_modules", "stories", "test"],
+  "exclude": ["es", "lib", "node_modules", "test"],
   "compilerOptions": {
-    "module": "es2020",
-    "target": "es2019",
+    "module": "es2022",
+    "target": "esnext",
     //"lib": ["dom", "dom.iterable", "esnext"]
     "types": []
   }

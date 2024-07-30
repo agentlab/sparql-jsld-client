@@ -79,8 +79,11 @@
   ],
   "cSpell.language": "en,ru",
   "terminal.integrated.scrollback": 10000,
-  "jest.jestCommandLine": "yarn test",
+  "jest.jestCommandLine": "node_modules/.bin/jest --detectOpenHandles",
   "jest.runMode": "on-demand",
-  "jest.shell": "powershell",
-  "eslint.useFlatConfig": true
+  "jest.shell": "/bin/zsh",
+  "eslint.useFlatConfig": true,
+  "stylelint.packageManager": "pnpm",
+  "js/ts.implicitProjectConfig.module": "ES2022",
+  "js/ts.implicitProjectConfig.target": "ESNext",
 }

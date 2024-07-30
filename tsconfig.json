@@ -31,11 +31,6 @@
     // use Node's module resolution algorithm, instead of the legacy TS one
     "moduleResolution": "Bundler",
     "resolveJsonModule": true,
-    //"baseUrl": "./",
-    //"paths": {
-    //  "*": ["src/*", "node_modules/*"]
-    //},
-    //"jsx": "react",
     // interop between ESM and CJS modules. Recommended by TS
     "esModuleInterop": true,
     "isolatedModules": true,
@@ -43,7 +38,6 @@
     "skipLibCheck": true,
     // error out if import and file system have a casing mismatch. Recommended by TS
     "forceConsistentCasingInFileNames": true,
-    // `tsdx build` ignores this option, but it is commonly used when type-checking separately with `tsc`
     "noEmit": true
   }
 }

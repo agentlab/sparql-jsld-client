@@ -909,7 +909,7 @@ function genContextRecursive(entConstrs: EntConstrInternal[], index = 0): JsObje
  * @param ctxs
  */
 function getPropFromCtxs(key: string, ctxs?: JsStrObjObj[]) {
-  let prop = undefined;
+  let prop: string | JsStrObjObj | undefined;
   if (ctxs) {
     for (let index = ctxs.length - 1; index > -1; index--) {
       const ctx = ctxs[index];

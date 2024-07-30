@@ -8,13 +8,13 @@
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
 import { existsSync } from 'fs';
-import { env } from 'custom-env';
+import customEnv from 'custom-env';
 
-// emulate create-react-app behaviour witn .env files
+// emulate create-react-app behavior with .env files
 if (existsSync('.env.test.local')) {
-  env('test.local');
+  customEnv.env('test.local');
 } else if (existsSync('.env.test')) {
-  env('test');
+  customEnv.env('test');
 }
 
 /**

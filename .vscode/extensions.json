@@ -5,9 +5,7 @@
   // List of extensions which should be recommended for users of this workspace.
   "recommendations": [
     "yzhang.markdown-all-in-one",
-    "joaompinto.asciidoctor-vscode",
-    "cmstead.jsrefactor",
-    "eg2.vscode-npm-script",
+    "asciidoctor.asciidoctor-vscode",
     "esbenp.prettier-vscode",
     "dbaeumer.vscode-eslint",
     "eamodio.gitlens",

@@ -129,7 +129,7 @@
       "eslint"
     ]
   },
-  "packageManager": "^pnpm@9.6.0",
+  "packageManager": "pnpm@9.6.0",
   "browser": {
     "_process": false,
     "fs": false,

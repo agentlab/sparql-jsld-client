@@ -1,12 +1,12 @@
 {
   // see https://www.typescriptlang.org/tsconfig to better understand tsconfigs
-  "include": ["src", "stories", "test"],
-  "exclude": ["es", "lib", "node_modules"],
+  "include": ["src", "test"],
+  "exclude": ["es", "dist", "node_modules"],
   "compilerOptions": {
     "module": "ES2022",
     "target": "esnext",
-    "lib": ["dom", "esnext"],
-    "outDir": "./lib",
+    "lib": ["esnext"],
+    "outDir": "./",
     "allowJs": true,
     "importHelpers": true,
     // output .d.ts declaration files for consumers
@@ -38,6 +38,15 @@
     "skipLibCheck": true,
     // error out if import and file system have a casing mismatch. Recommended by TS
     "forceConsistentCasingInFileNames": true,
-    "noEmit": true
+    "noEmit": true,
+    //additional
+    "experimentalDecorators": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "stripInternal": true,
+    "downlevelIteration": true,
+    "useDefineForClassFields": true
   }
 }

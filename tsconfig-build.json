@@ -2,7 +2,7 @@
   // see https://www.typescriptlang.org/tsconfig to better understand tsconfigs
   "extends": "./tsconfig",
   "include": ["src"],
-  "exclude": ["es", "lib", "node_modules", "test"],
+  "exclude": ["es", "dist", "node_modules", "test"],
   "compilerOptions": {
     "module": "es2022",
     "target": "esnext",

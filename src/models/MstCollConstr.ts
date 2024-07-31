@@ -28,7 +28,6 @@ import { SparqlClient } from '../SparqlClient';
 
 export const MstJsObject = types.frozen<any>();
 export const MstMapOfJsObject = types.map(MstJsObject);
-//export interface IJsObject2 extends Instance<typeof JsObject2> {}
 
 /**
  * Entity Constraint, part of Collection Constraint (CollConstr)

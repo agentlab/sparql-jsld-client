@@ -1,5 +1,7 @@
 /.vscode
 /dist
+/es
+/lib
 /docs
 /node_modules
 /public

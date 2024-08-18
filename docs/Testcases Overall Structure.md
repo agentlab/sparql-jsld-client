@@ -8,7 +8,7 @@ Suitable for quick test-based diagnostics in case you have many errors from seve
 The list blow is sorted from simple unit tests to more and more complex integration tests (i.e. complexity increases):
 
 ## Without SPARQL Generation
-DONE SparqlClientUpload.spec.ts -- REST rdf file upload
+SparqlClientUpload.spec.ts -- REST rdf file upload
 ```bash
 yarn test SparqlClientUpload.spec.ts
 ```

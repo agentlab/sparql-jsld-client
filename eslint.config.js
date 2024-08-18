@@ -13,7 +13,9 @@ export default [
       '/.github/*',
       '/.husky/*',
       '/.vscode/*',
+      '/dist/*',
       '/es/*',
+      '/lib/*',
       '/example/*'
     ],
   },

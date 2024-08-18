@@ -16,6 +16,7 @@ const jestConfig: JestConfigWithTsJest = {
     '/src/',
   ],
   transformIgnorePatterns: [
+    // https://jestjs.io/docs/configuration#transformignorepatterns-arraystring
     /*'node_modules/(?!(lodash-es)/)',*/ // for yarn
     '<rootdir>/node_modules/.pnpm/(?!(lodash-es)@)', // for pnpm
   ],

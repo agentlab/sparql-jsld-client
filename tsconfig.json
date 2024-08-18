@@ -6,7 +6,8 @@
     "module": "ES2022",
     "target": "esnext",
     "lib": ["esnext"],
-    "outDir": "./",
+    // could not be '' or '.' due to Jest
+    "outDir": "./lib",
     "allowJs": true,
     "importHelpers": true,
     // output .d.ts declaration files for consumers

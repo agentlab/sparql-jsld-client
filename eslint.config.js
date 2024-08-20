@@ -37,16 +37,6 @@ export default [
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-empty-function': 'off',
       '@typescript-eslint/ban-ts-comment': 'off',
-      '@typescript-eslint/ban-types': [
-        'error',
-        {
-          extendDefaults: true,
-          types: {
-            '{}': false,
-            Function: false,
-          },
-        },
-      ],
       'import/no-anonymous-default-export': 'off',
       'import/prefer-default-export': 'off',
       '@typescript-eslint/naming-convention': [

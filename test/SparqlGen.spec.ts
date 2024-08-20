@@ -27,6 +27,7 @@ import {
 import { testNs } from './configTests';
 
 import { ArtifactShapeSchema, PropertyShapeSchema } from '../src/schema/ArtifactShapeSchema';
+import { expectToBeDefined } from './TestHelpers';
 
 // See https://stackoverflow.com/questions/49603939/async-callback-was-not-invoked-within-the-5000ms-timeout-specified-by-jest-setti
 jest.setTimeout(500000);
@@ -697,7 +698,7 @@ describe('constructObjectsQuery', () => {
       orderBy: [{ expression: factory.variable('parsedAt0'), descending: false }],
     };
     const coll = await constructObjectsQuery(collConstrJs, testNs, client);
-    expect(coll).not.toBeUndefined();
+    expectToBeDefined(coll);
     //expect(coll.length).toBe(0);
     const genQueryStr = client.sparqlConstructParams.query;
     //console.log(genQueryStr);
@@ -745,7 +746,7 @@ describe('constructObjectsQuery', () => {
       orderBy: [{ expression: factory.variable('parsedAt0'), descending: false }],
     };
     const coll = await constructObjectsQuery(collConstrJs, testNs, client);
-    expect(coll).not.toBeUndefined();
+    expectToBeDefined(coll);
     //expect(coll.length).toBe(0);
     const genQueryStr = client.sparqlConstructParams.query;
     //console.log(genQueryStr);
@@ -792,7 +793,7 @@ describe('constructObjectsQuery', () => {
       ],
     };
     const coll = await constructObjectsQuery(collConstrJs, testNs, client);
-    expect(coll).not.toBeUndefined();
+    expectToBeDefined(coll);
     //expect(coll.length).toBe(0);
     const genQueryStr = client.sparqlConstructParams.query;
     //console.log(genQueryStr);
@@ -858,7 +859,7 @@ describe('constructObjectsQuery', () => {
       ],
     };
     const coll = await constructObjectsQuery(collConstrJs, testNs, client);
-    expect(coll).not.toBeUndefined();
+    expectToBeDefined(coll);
     //expect(coll.length).toBe(0);
     const genQueryStr = client.sparqlConstructParams.query;
     //console.log(genQueryStr);
@@ -946,7 +947,7 @@ describe('constructObjectsQuery', () => {
       ],
     };
     const coll = await constructObjectsQuery(collConstrJs, testNs, client);
-    expect(coll).not.toBeUndefined();
+    expectToBeDefined(coll);
     //expect(coll.length).toBe(0);
     const genQueryStr = client.sparqlConstructParams.query;
     console.log(genQueryStr);
@@ -1175,7 +1176,7 @@ describe('updateObjectQuery', () => {
 async function selectTestHelper(collConstrJs: ICollConstrJsOpt, correctQuery: string) {
   const client = new SparqlClientImplMock();
   const coll = await selectObjectsQuery(collConstrJs, testNs, client);
-  expect(coll).not.toBeUndefined();
+  expectToBeDefined(coll);
   //expect(coll.length).toBe(0);
   const genQueryStr = client.sparqlSelectParams.query;
   //console.log(genQueryStr);
@@ -1187,7 +1188,7 @@ async function selectTestHelper(collConstrJs: ICollConstrJsOpt, correctQuery: st
 async function constructTestHelper(collConstrJs: ICollConstrJsOpt, correctQuery: string) {
   const client = new SparqlClientImplMock();
   const coll = await constructObjectsQuery(collConstrJs, testNs, client);
-  expect(coll).not.toBeUndefined();
+  expectToBeDefined(coll);
   //expect(coll.length).toBe(0);
   const genQueryStr = client.sparqlConstructParams.query;
   //console.log(genQueryStr);

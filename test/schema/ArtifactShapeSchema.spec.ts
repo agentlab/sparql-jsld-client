@@ -7,6 +7,9 @@
  *
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
+import { afterAll, beforeAll, describe, expect, jest, it } from '@jest/globals';
+import assert from 'assert';
+
 import { rootModelInitialState } from '../../src/models/Model';
 import { MstRepository } from '../../src/models/MstRepository';
 import { createSchemaWithSubClassOf, resolveSchemaFromServer } from '../../src/models/MstSchemas';
@@ -42,16 +45,16 @@ beforeAll(async () => {
     const files = vocabsFiles.concat(shapesFiles);
     await uploadFiles(client, files, rootFolder);
     await repository.ns.reloadNs();
-  } catch (err) {
-    fail(err);
+  } catch (err: any) {
+    assert.fail(err);
   }
 });
 
 afterAll(async () => {
   try {
     await client.deleteRepository(rmRepositoryID);
-  } catch (err) {
-    fail(err);
+  } catch (err: any) {
+    assert.fail(err);
   }
 });
 

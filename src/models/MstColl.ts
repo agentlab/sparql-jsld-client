@@ -11,6 +11,7 @@ import dayjs from 'dayjs';
 import { isEqual } from 'lodash-es';
 import { reaction } from 'mobx';
 import {
+  applySnapshot,
   types,
   Instance,
   flow,
@@ -144,7 +145,7 @@ export const MstColl = types
   /**
    * Views
    */
-  .views((self: any) => {
+  .views((self) => {
     return {
       /**
        * Returns collection objects
@@ -163,15 +164,15 @@ export const MstColl = types
         return self.dataIntrnl;
       },
       get dataJs() {
-        return getSnapshot(this.data);
+        return getSnapshot<JsObject[]>(this.data);
       },
       dataByIri(iri: string) {
-        return self.dataIntrnl.find((e: any) => {
+        return self.dataIntrnl.find((e) => {
           // should take care of different element type API differences
           const eType = getType(e);
           if (isMapType(eType)) return e.get('@id') === iri; // [] returns undef in MST Map
-          if (isModelType(eType)) return e['@id'] === iri; // .get() returns exception in MST Model
-          const eSnp: any = getSnapshot(e); // MST Frozen???
+          if (isModelType(eType)) return (e as any)['@id'] === iri; // .get() returns exception in MST Model
+          const eSnp = getSnapshot<JsObject>(e); // MST Frozen???
           return eSnp['@id'] === iri;
         });
       },
@@ -180,7 +181,7 @@ export const MstColl = types
   /**
    * Actions
    */
-  .actions((self: any) => {
+  .actions((self) => {
     const rep: IAnyStateTreeNode = getRoot(self);
     const client = getEnv(self).client;
     let dispose: any;
@@ -197,7 +198,7 @@ export const MstColl = types
         dispose = reaction(
           () => {
             const collConstr = self.collConstr;
-            const collConstrJs = getSnapshot(collConstr);
+            const collConstrJs = collConstr ? getSnapshot(collConstr) : undefined;
             //console.log('Coll reaction', collConstrJs);
             return collConstrJs;
           },
@@ -256,8 +257,8 @@ export const MstColl = types
               rep.ns.currentJs,
               client,
             );
-            if (objects === null) self.dataIntrnl = [];
-            else self.dataIntrnl = objects;
+            if (objects === null) applySnapshot(self.dataIntrnl, []);
+            else applySnapshot(self.dataIntrnl, objects);
             //schema: {},
             //selectQuery: '',
             self.lastSynced = dayjs().valueOf();

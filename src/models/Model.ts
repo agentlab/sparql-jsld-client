@@ -19,18 +19,18 @@ import { MstRepository } from './MstRepository';
 export const rootModelInitialState: any = {
   repId: '',
   user: {
-    //'@id': 'mailto:guest@example.com',//<mailto:guest@example.com>
     login: 'guest@example.com',
     name: 'Guest',
   },
   processArea: 'projects:gishbbProject',
   ns: {
     current: {
-      rdfs: 'http://www.w3.org/2000/01/rdf-schema#',
       rdf: 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
+      rdfs: 'http://www.w3.org/2000/01/rdf-schema#',
       xsd: 'http://www.w3.org/2001/XMLSchema#',
-      sesame: 'http://www.openrdf.org/schema/sesame#',
-      aldkg: 'https://agentlab.ru/ldkg/onto#',
+      sesame: 'http://www.openrdf.org/schema/sesame#', //rdf4j DirectType Inferencer sesame:directSubClassOf
+      rdf4j: 'http://rdf4j.org/schema/rdf4j#', //rdf4j Default Graph rdf4j:nil, rdf4j:SHACLShapeGraph
+      aldkg: 'https://agentlab.eu/ldkg/onto#',
     },
   },
   schemas: {

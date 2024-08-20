@@ -8,6 +8,7 @@
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
 import { afterAll, beforeAll, describe, expect, jest, it } from '@jest/globals';
+import assert from 'assert';
 import { compact, ContextDefinition } from 'jsonld';
 
 import { rootModelInitialState } from '../src/models/Model';
@@ -51,38 +52,38 @@ beforeAll(async () => {
     await uploadFiles(client, projectsFoldersFiles, rootFolder);
     await uploadFiles(client, samplesFiles, rootFolder);
     await uploadFiles(client, shapesFiles, rootFolder);
-  } catch (error: any) {
-    if (error.response) {
+  } catch (err: any) {
+    if (err.response) {
       // Request made and server responded
-      console.log(error.response.data);
-      console.log(error.response.status);
-      console.log(error.response.headers);
-    } else if (error.request) {
+      console.log(err.response.data);
+      console.log(err.response.status);
+      console.log(err.response.headers);
+    } else if (err.request) {
       // The request was made but no response was received
-      const s = error.request;
-      console.log(error.request);
+      const s = err.request;
+      console.log(err.request);
     } else {
       // Something happened in setting up the request that triggered an Error
-      console.log('Error', error.message);
+      console.log('Error', err.message);
     }
-    fail(error);
+    assert.fail(err);
   }
 });
 
 afterAll(async () => {
   try {
     await client.deleteRepository(rmRepositoryID);
-  } catch (err) {
-    fail(err);
+  } catch (err: any) {
+    assert.fail(err);
   }
 });
 
 describe('SparqlClient', () => {
   it(`SparqlClient should select namespaces`, async () => {
-    expect(repository.ns.current.size).toBe(5);
+    expect(repository.ns.current.size).toBe(6);
     await repository.ns.reloadNs();
     //console.log(getSnapshot(repository.ns.current));
-    expect(repository.ns.current.size).toBeGreaterThan(5);
+    expect(repository.ns.current.size).toBeGreaterThan(6);
 
     const ns = repository.ns.currentJs;
     expect(ns.rdf).toBe('http://www.w3.org/1999/02/22-rdf-syntax-ns#');

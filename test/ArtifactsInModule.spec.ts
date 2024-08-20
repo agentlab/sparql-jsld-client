@@ -8,6 +8,7 @@
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
 import { afterAll, beforeAll, describe, expect, jest, it } from '@jest/globals';
+import assert from 'assert';
 import { when } from 'mobx';
 import { getSnapshot } from 'mobx-state-tree';
 
@@ -21,7 +22,7 @@ import { uploadFiles } from '../src/FileUpload';
 import { rdfServerUrl, rmRepositoryParam, rmRepositoryType } from './config';
 import { vocabsFiles, shapesFiles, usersFiles, projectsFoldersFiles, samplesFiles, rootFolder } from './configTests';
 import { artifactSchema, usedInModuleSchema, usedInSchema } from './schema/TestSchemas';
-import { genTimestampedName } from './TestHelpers';
+import { expectToBeDefined, genTimestampedName } from './TestHelpers';
 
 // See https://stackoverflow.com/questions/49603939/async-callback-was-not-invoked-within-the-5000ms-timeout-specified-by-jest-setti
 jest.setTimeout(50000);
@@ -49,16 +50,16 @@ beforeAll(async () => {
     await uploadFiles(client, samplesFiles, rootFolder);
     //await sleep(5000); // give RDF classifier some time to classify resources after upload
     await repository.ns.reloadNs();
-  } catch (err) {
-    fail(err);
+  } catch (err: any) {
+    assert.fail(err);
   }
 });
 
 afterAll(async () => {
   try {
     await client.deleteRepository(rmRepositoryID);
-  } catch (err) {
-    fail(err);
+  } catch (err: any) {
+    assert.fail(err);
   }
 });
 
@@ -172,11 +173,11 @@ describe('ArtifactsInModules query should return Module UsedInModules with assoc
       //provider.addSchema(usedInModuleSchema);
 
       const coll = repository.addColl(usedInModuleCollConstrJs /*{ lazy: false }*/);
-      expect(coll).not.toBeUndefined();
+      expectToBeDefined(coll);
       when(
-        () => coll !== undefined && coll.data.length > 0,
+        () => coll.data.length > 0,
         () => {
-          const linksAndArtifacts: JsObject[] = getSnapshot(coll?.data);
+          const linksAndArtifacts: JsObject[] = coll.dataJs;
           expect(linksAndArtifacts.length).toBe(3);
           expect(linksAndArtifacts[0]).toMatchObject(moduleObject);
           repository.removeColl(coll);
@@ -203,11 +204,11 @@ describe('ArtifactsInModules query should return Module UsedInModules with assoc
           },
         ],
       });
-      expect(coll).not.toBeUndefined();
+      expectToBeDefined(coll);
       when(
-        () => coll !== undefined && coll.data.length > 0,
+        () => coll.data.length > 0,
         () => {
-          const linksAndArtifacts: JsObject[] = getSnapshot(coll?.data);
+          const linksAndArtifacts: JsObject[] = coll.dataJs;
           expect(linksAndArtifacts.length).toBe(3);
           expect(linksAndArtifacts[0]).toMatchObject({
             '@id': 'reqs:_M1HusThYEem2Z_XixsC3pQ',
@@ -278,11 +279,11 @@ describe('ArtifactsInModules query should return Module UsedInModules with assoc
         descending: true,
       }],
     });
-    expect(coll).not.toBeUndefined();
+    expectToBeDefined(coll);
     when(
-      () => coll !== undefined && coll.data.length > 0,
+      () => coll.data.length > 0,
       () => {
-        const linksAndArtifacts: JsObject[] = getSnapshot(coll?.data);
+        const linksAndArtifacts: JsObject[] = coll.dataJs;
         expect(linksAndArtifacts.length).toBe(3);
         expect(linksAndArtifacts[0]).toMatchObject({
           '@id': 'reqs:_N1HusThYEem2Z_XixsC3pQ',
@@ -330,11 +331,11 @@ describe('ArtifactsInModules query should return Module UsedInModules with assoc
         }
       ],
     });
-    expect(coll).not.toBeUndefined();
+    expectToBeDefined(coll);
     when(
-      () => coll !== undefined && coll.data.length > 0,
+      () => coll.data.length > 0,
       () => {
-        const linksAndArtifacts: JsObject[] = getSnapshot(coll?.data);
+        const linksAndArtifacts: JsObject[] = coll.dataJs;
         expect(linksAndArtifacts.length).toBe(3);
         expect(linksAndArtifacts[0]).toMatchObject({
           depth: 6,
@@ -418,13 +419,13 @@ const usedInModuleChildCollConstrJs: any = {
 describe('RetrieveModuleWithParent', () => {
   it('RetrieveModuleWithParent should sync load', async () => {
     const coll1 = repository.addColl(usedInModuleParentCollConstrJs);
-    expect(coll1).not.toBeUndefined();
+    expectToBeDefined(coll1);
 
     const coll2 = repository.addColl(usedInModuleChildCollConstrJs);
-    expect(coll2).not.toBeUndefined();
+    expectToBeDefined(coll2);
 
     await coll2.loadColl();
-    const data: any = coll2 && coll2.data !== undefined ? getSnapshot(coll2.data) : [];
+    const data: any = coll2.dataJs;
     expect(data.length).toBe(3);
     expect(data[0]).toMatchObject(moduleObject);
 

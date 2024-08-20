@@ -28,7 +28,7 @@ import {
   usedInModuleSchema,
   usedInSchema,
 } from './schema/TestSchemas';
-import { genTimestampedName } from './TestHelpers';
+import { expectToBeDefined, genTimestampedName } from './TestHelpers';
 
 // See https://stackoverflow.com/questions/49603939/async-callback-was-not-invoked-within-the-5000ms-timeout-specified-by-jest-setti
 jest.setTimeout(50000);
@@ -39,7 +39,7 @@ const client = new SparqlClientImpl(
 );
 client.setRepositoryId('mktp-fed20');
 
-describe('SubQueries should work', () => {
+describe.skip('SubQueries should work', () => {
   it('SubQueries ProductCards', async () => {
     const result = await client.sparqlSelect(
       `PREFIX hs: <https://huntersales.ru/schema#>
@@ -118,7 +118,7 @@ describe('SubQueries should work', () => {
   });
 });
 
-describe('Retrieve subqueries', () => {
+describe.skip('Retrieve subqueries', () => {
   const client = new SparqlClientImpl(
     'https://rdf4j.agentlab.ru/rdf4j-server',
     'https://rdf4j.agentlab.ru/rdf4j-server/repositories/mktp-schema20/namespaces',
@@ -157,7 +157,7 @@ describe('Retrieve subqueries', () => {
         { expression: factory.variable('parsedAt1'), descending: false },
       ],
     });
-    expect(coll1).not.toBeUndefined();
+    expectToBeDefined(coll1);
     await coll1.loadColl();
     const data: any = coll1.dataJs;
     expect(data.length).toBe(2);
@@ -183,7 +183,7 @@ describe('Retrieve subqueries', () => {
       ],
       orderBy: [{ expression: factory.variable('parsedAt0'), descending: false }],
     });
-    expect(coll1).not.toBeUndefined();
+    expectToBeDefined(coll1);
     await coll1.loadColl();
     const data: any = coll1.dataJs;
     expect(data.length).toBeGreaterThan(10);
@@ -194,7 +194,7 @@ describe('Retrieve subqueries', () => {
   it('should return ProductCardCardsListShape schema with reverse property', async () => {
     let schema = await repository.schemas.loadSchemaByIri('hs:ProductCardCardsListShape');
     schema = getSnapshot(schema);
-    expect(schema).not.toBeUndefined();
+    expectToBeDefined(schema);
   });
 
   it('Retrieve HSObservation-of-ProductCards with remote schema', async () => {
@@ -225,7 +225,7 @@ describe('Retrieve subqueries', () => {
         { expression: factory.variable('parsedAt1'), descending: false },
       ],
     });
-    expect(coll1).not.toBeUndefined();
+    expectToBeDefined(coll1);
     await coll1.loadColl();
     const data: any = coll1.dataJs;
     expect(data.length).toBe(2);

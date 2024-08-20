@@ -68,10 +68,10 @@ export const MstRepository = types
         if (!coll) return undefined;
         const id = self.selectedData.get(iri);
         if (id) {
-          let data = coll.dataByIri(id);
-          if (data) data = getSnapshot(data);
-          return data;
+          const data = coll.dataByIri(id);
+          if (data) return getSnapshot<JsObject>(data);
         }
+        return undefined;
       },
     };
   })

@@ -8,6 +8,7 @@
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
 import { afterAll, beforeAll, describe, expect, jest, it } from '@jest/globals';
+import assert from 'assert';
 import { when } from 'mobx';
 import { getSnapshot } from 'mobx-state-tree';
 
@@ -19,7 +20,7 @@ import { uploadFiles } from '../src/FileUpload';
 
 import { rdfServerUrl, rmRepositoryParam, rmRepositoryType } from './config';
 import { vocabsFiles, shapesFiles, usersFiles, projectsFoldersFiles, samplesFiles, rootFolder } from './configTests';
-import { genTimestampedName, selectHelper } from './TestHelpers';
+import { expectToBeDefined, genTimestampedName, selectHelper } from './TestHelpers';
 
 // See https://stackoverflow.com/questions/49603939/async-callback-was-not-invoked-within-the-5000ms-timeout-specified-by-jest-setti
 jest.setTimeout(5000000);
@@ -47,16 +48,16 @@ beforeAll(async () => {
     await uploadFiles(client, shapesFiles, rootFolder);
     //await sleep(5000); // give RDF classifier some time to classify resources after upload
     await repository.ns.reloadNs();
-  } catch (err) {
-    fail(err);
+  } catch (err: any) {
+    assert.fail(err);
   }
 });
 
 afterAll(async () => {
   try {
     await client.deleteRepository(rmRepositoryID);
-  } catch (err) {
-    fail(err);
+  } catch (err: any) {
+    assert.fail(err);
   }
 });
 
@@ -405,7 +406,7 @@ describe('RetrieveWithParent', () => {
         },
       ],
     });
-    expect(coll1).not.toBeUndefined();
+    expectToBeDefined(coll1);
 
     const coll2 = repository.addColl({
       '@id': 'rm:collConstr2',
@@ -419,10 +420,10 @@ describe('RetrieveWithParent', () => {
       ],
       limit: 10,
     });
-    expect(coll2).not.toBeUndefined();
+    expectToBeDefined(coll2);
 
     await coll2.loadColl();
-    const data: any = coll2 && coll2.data !== undefined ? getSnapshot(coll2.data) : [];
+    const data = coll2.dataJs;
     expect(data.length).toBe(1);
     expect(data[0]).toMatchObject(artifact30000Orig);
 
@@ -455,26 +456,26 @@ describe('LoadMore', () => {
       },
       { pageSize: 10 },
     );
-    expect(coll).not.toBeUndefined();
+    expectToBeDefined(coll);
     await coll.loadColl();
-    const data: any = coll && coll.data !== undefined ? getSnapshot(coll.data) : [];
+    const data = coll.dataJs;
     expect(data.length).toBe(2);
 
     // load another page=10
     await coll.loadMore();
-    const data2: any = coll && coll.data !== undefined ? getSnapshot(coll.data) : [];
+    const data2 = coll.dataJs;
     expect(data2.length).toBe(12);
-    data.forEach((el: any, i: any) => expect(data2[i]).toEqual(el));
+    data.forEach((el, i) => expect(data2[i]).toEqual(el));
     data2.slice(data.length).forEach((el: any) => expect(data).not.toContainEqual(el));
 
     // load another 5 (the rest of it)
     await coll.loadMore();
-    const data3: any = coll && coll.data !== undefined ? getSnapshot(coll.data) : [];
+    const data3 = coll.dataJs;
     expect(data3.length).toBe(15);
 
     // check empty load
     await coll.loadMore();
-    const data4: any = coll && coll.data !== undefined ? getSnapshot(coll.data) : [];
+    const data4 = coll.dataJs;
     expect(data4.length).toBe(15);
 
     repository.removeColl(coll);
@@ -493,14 +494,14 @@ describe('LoadMore', () => {
         },
         { pageSize: 10 },
       );
-      expect(coll).not.toBeUndefined();
+      expectToBeDefined(coll);
 
       const disp1 = when(
-        () => coll !== undefined && coll.data.length === 10,
+        () => coll.data.length === 10,
         () => {
           disp1();
           const disp2 = when(
-            () => coll !== undefined && coll.data.length === 15,
+            () => coll.data.length === 15,
             () => {
               disp2();
               repository.removeColl(coll);

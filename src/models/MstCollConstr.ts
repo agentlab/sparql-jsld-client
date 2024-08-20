@@ -88,7 +88,7 @@ export const MstEntConstr = types
      */
     resolveType: types.maybe(types.boolean),
   })
-  .views((self: any) => {
+  .views((self) => {
     return {
       get schemaJs() {
         return self.schema ? getSnapshot(self.schema) : undefined;
@@ -104,7 +104,7 @@ export const MstEntConstr = types
       },
     };
   })
-  .actions((self: any) => {
+  .actions((self) => {
     //let disp: any;
     return {
       /*afterAttach() {
@@ -166,7 +166,7 @@ export const MstCollConstr = types
   /**
    * Views
    */
-  .views((self: any) => {
+  .views((self) => {
     const rep: IAnyStateTreeNode = getRoot(self);
     const client = getEnv(self).client;
     return {
@@ -191,7 +191,7 @@ export const MstCollConstr = types
   /**
    * Actions
    */
-  .actions((self: any) => {
+  .actions((self) => {
     let disp: any;
     return {
       /*afterAttach() {

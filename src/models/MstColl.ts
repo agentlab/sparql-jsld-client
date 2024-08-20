@@ -323,14 +323,24 @@ export const MstColl = types
       changeCollConstr(constr: any) {},
 
       /**
-       * Adds single element or elements array into Coll's dataInternal
+       * Adds single element or elements array with unique @id into Coll's dataInternal
+       * Replaces elements with the same @id if values are different
        * @param elems -- element or element array
        */
       addElems(elems: JsObject | JsObject[]) {
         if (!elems) return;
         if (!Array.isArray(elems)) elems = [elems];
-        elems = elems.filter((elem: any) => !self.dataIntrnl.find((e: any) => e['@id'] === elem['@id']));
-        self.dataIntrnl.push(elems);
+        const newElems: JsObject[] = [];
+        elems.forEach((elem: JsObject) => {
+          const existedElemIndx = self.dataIntrnl.findIndex((e: any) => e.get('@id') === elem['@id']);
+          if (existedElemIndx === -1) {
+            newElems.push(elem);
+          } else {
+            //@ts-ignore
+            self.updElemByIndx(existedElemIndx, elem);
+          }
+        });
+        if (newElems.length > 0) self.dataIntrnl.push(...newElems);
       },
 
       /**
@@ -375,6 +385,19 @@ export const MstColl = types
       },
 
       /**
+       * Update element in Coll by index regardless its @id mismatch
+       * @param indx
+       * @param elem
+       * @returns
+       */
+      updElemByIndx(indx: number, elem: JsObject) {
+        const el = self.dataIntrnl[indx];
+        applySnapshot(self.dataIntrnl[indx], elem);
+        //self.dataIntrnl.spliceWithArray(indx, 1, [elem]);
+        return el;
+      },
+
+      /**
        * Update element in Coll with the same @id property as in elem object
        * @param elem -- object with @id property and other properties for update
        * @returns original object before modification or null if no update occurred
@@ -383,7 +406,8 @@ export const MstColl = types
         if (!elem || !elem['@id']) return null;
         const i = self.dataIntrnl.findIndex((e: any) => e.get('@id') === elem);
         if (i >= 0) {
-          return self.dataIntrnl.spliceWithArray(i, 1, elem);
+          //@ts-ignore
+          return self.updElemByIndx(i, elem);
         }
         return null;
       },

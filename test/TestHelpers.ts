@@ -19,12 +19,30 @@ export function sleep(ms: number): Promise<NodeJS.Timeout> {
   return new Promise((resolve: (value: any) => void) => setTimeout(resolve, ms));
 }
 
+/**
+ * Typescript assertion wrapper for the Jest's toBeDefined matcher
+ * See https://github.com/DefinitelyTyped/DefinitelyTyped/issues/41179#issuecomment-1920177478
+ * @param arg
+ */
+export function expectToBeDefined<T>(arg: T): asserts arg is Exclude<T, undefined> {
+  expect(arg).toBeDefined();
+}
+
+/**
+ * Typescript assertion wrapper for the Jest's toBeUndefined matcher
+ * See https://github.com/DefinitelyTyped/DefinitelyTyped/issues/41179#issuecomment-1920177478
+ * @param arg
+ */
+export function expectToBeUndefined(arg: unknown): asserts arg is undefined {
+  expect(arg).toBeUndefined();
+}
+
 export async function selectHelper(repository: any, data: any, testerFn: (data: any) => void) {
   const coll = repository.addColl(data);
   await coll.loadColl();
-  expect(coll).not.toBeUndefined();
+  expectToBeDefined(coll);
   //console.log('artifact30000', json2str(artifact30000));
-  const loadedData = coll && coll.data !== undefined ? getSnapshot(coll.data) : [];
+  const loadedData = coll.dataJs;
   testerFn(loadedData);
   repository.removeColl(coll);
 }

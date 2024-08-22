@@ -26,7 +26,7 @@ export const factory: DataFactory = new DataFactory();
 
 export function isUrl(str: string): boolean {
   if (_isUrl(str) === true) return true;
-  if (str.startsWith('cpgu:///')) return true;
+  if (str.startsWith('clss:///')) return true;
   return false;
 }
 
@@ -835,8 +835,8 @@ export function getDataTriples(entConstr: EntConstrInternal): any[] {
   return triples;
 }
 
-//TODO: упростить сигнатуру функции!
-//Гармонизировать сигнатуру с другими функциями (getSimpleFilter, getDataTriples)
+//TODO: Simplify function signature!
+//Harmonize signature with other functions (getSimpleFilter, getDataTriples)
 export function getExtendedFilter(
   entConstr: EntConstrInternal,
   filterKey: string,

@@ -1,0 +1,437 @@
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix oslc:    <http://open-services.net/ns/core#> .
+@prefix foaf:    <http://xmlns.com/foaf/0.1/> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix vann:    <http://purl.org/vocab/vann/> .
+@prefix vs:      <http://www.w3.org/2003/06/sw-vocab-status/ns#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix sh:      <http://www.w3.org/ns/shacl#> .
+
+@prefix rm:      <https://agentlab.eu/ns/rm/rdf#> .
+@prefix nav:     <https://agentlab.eu/ns/rm/navigation#> .
+@prefix pporoles: <https://agentlab.eu/ns/rm/ppo-roles#> .
+
+@prefix rmUserTypes: <https://agentlab.eu/ns/rm/user-types#> .
+
+# in context https://agentlab.eu/ns/rm/rdf#
+
+rm:ArtifactClassesShape
+  a                     sh:NodeShape ;
+  sh:targetClass        rm:ArtifactClasses ;
+  dcterms:title         "Artifact Types"^^xsd:string ;
+  dcterms:description   "Artifact Class of Classes."^^xsd:string ;
+  sh:property
+    rm:titleShape ,
+    rm:descriptionShape ,
+    rm:inCreationMenuShape .
+
+rm:LinkClassesShape
+  a                     sh:NodeShape ;
+  sh:targetClass        rm:LinkClasses ;
+  dcterms:title         "Link Types"^^xsd:string ;
+  dcterms:description   "Link Class of Classes."^^xsd:string ;
+  sh:property
+    rm:titleShape ,
+    rm:descriptionShape ,
+    rm:subjectToObjectLabelShape ,
+    rm:objectToSubjectLabelShape .
+
+
+rm:ArtifactShape
+  a                     sh:NodeShape ;
+  sh:targetClass        rm:Artifact ;
+  dcterms:title         "Artifact"^^xsd:string ;
+  dcterms:description   "Artifact"^^xsd:string ;
+  sh:property
+    rm:identifierShape ,
+    rm:titleShape ,
+    rm:descriptionShape ,
+    rm:xhtmlTextShape ,
+    rm:creatorShape ,
+    rm:createdShape ,
+    rm:modifiedByShape ,
+    rm:modifiedShape ,
+    nav:processAreaShape ,
+    rm:assetFolderShape ,
+    rm:formatShape .
+
+nav:folderShape
+  a                     sh:NodeShape ;
+  sh:targetClass        nav:folder ;
+  dcterms:title         "Folder"^^xsd:string ;
+  dcterms:description   "Abstraction of a directory containing Requirements and RequirementCollections."^^xsd:string ;
+  sh:property
+    rm:titleShape ,
+    rm:descriptionShape ,
+    nav:parentShape,
+    nav:processAreaShape ,
+    rm:creatorShape ,
+    rm:createdShape ,
+    rm:modifiedByShape ,
+    rm:modifiedShape ;
+  rm:defaultIndividNs     "https://agentlab.eu/ns/rm/folders#"^^xsd:anyURI .
+
+rm:ProjectAreaShape
+  a                     sh:NodeShape ;
+  sh:targetClass        nav:ProjectArea ;
+  dcterms:title         "Project Area"^^xsd:string ;
+  dcterms:description   "Project Area"^^xsd:string ;
+  sh:property
+    rm:titleShape ,
+    rm:creatorShape ,
+    rm:createdShape ,
+    rm:modifiedByShape ,
+    rm:modifiedShape ;
+  rm:defaultIndividNs     "https://agentlab.eu/ns/rm/projects#"^^xsd:anyURI .
+
+# Link Shapes
+rm:LinkShape
+  a                     sh:NodeShape ;
+  sh:targetClass        rm:Link ;
+  dcterms:title         "Link"^^xsd:string ;
+  dcterms:description   "Link."^^xsd:string ;
+  sh:property
+    rdf:objectShape ,
+    rdf:subjectShape ,
+    nav:processAreaShape ,
+    rm:creatorShape ,
+    rm:createdShape ,
+    rm:modifiedByShape ,
+    rm:modifiedShape .
+
+rmUserTypes:UsedInShape
+  a                     sh:NodeShape ;
+  sh:targetClass        rmUserTypes:UsedIn ;
+  dcterms:title         "UsedIn Link"^^xsd:string ;
+  dcterms:description   "Connects Artifacts in Collection."^^xsd:string .
+
+rmUserTypes:UsedInModuleShape
+  a                     sh:NodeShape ;
+  sh:targetClass        rmUserTypes:UsedInModule ;
+  dcterms:title         "UsedInModule Link"^^xsd:string ;
+  dcterms:description   "Connects Artifacts in Module."^^xsd:string ;
+  sh:property
+    rmUserTypes:parentBindingShape ,
+    rmUserTypes:depthShape ,
+    rmUserTypes:bookOrderShape ,
+    rmUserTypes:sectionNumberShape ,
+    rmUserTypes:isHeadingShape .
+
+# Enumeration Shapes
+rmUserTypes:_YwcOsRmREemK5LEaKhoOowShape
+  a                     sh:NodeShape ;
+  sh:targetClass        rmUserTypes:_YwcOsRmREemK5LEaKhoOow ;
+  dcterms:title         "Format"^^xsd:string ;
+  dcterms:description   "Artifact Format"^^xsd:string ;
+  sh:property
+    rm:titleShape ,
+    rm:descriptionShape ,
+    rm:valueShape .
+
+rmUserTypes:_YwrbNRmREemK5LEaKhoOowShape
+  a                     sh:NodeShape ;
+  sh:targetClass        rmUserTypes:_YwrbNRmREemK5LEaKhoOow ;
+  dcterms:title         "Status"^^xsd:string ;
+  dcterms:description   "Artifact Status"^^xsd:string ;
+  sh:property
+    rm:titleShape ,
+    rm:descriptionShape ,
+    rm:valueShape .
+
+# ******** Properties ********
+
+rm:inCreationMenuShape
+  a                     sh:PropertyShape ;
+  sh:name               "Show in menu Create"^^xsd:string ;
+  sh:description        "Show in menu Create"^^xsd:string ;
+  sh:path               rm:inCreationMenu ;
+# who could modify shape data
+  rm:shapeModifiability "system" ;
+# who could modify value data
+  rm:valueModifiability "system" ;
+  #sh:minCount           0 ;
+  sh:maxCount           1 ;
+  sh:datatype           xsd:boolean .
+
+rm:subjectToObjectLabelShape
+  a                     sh:PropertyShape ;
+  sh:name               "Object Label"^^xsd:string ;
+  sh:description        "Label of an Object of a Link"^^xsd:string ;
+  sh:path               rm:subjectToObjectLabel ;
+  sh:order              2 ;
+# who could modify shape data
+  rm:shapeModifiability "system" ;
+# who could modify value data
+  rm:valueModifiability "user" ;
+  #sh:minCount           1 ;
+  sh:maxCount           1 ;
+  sh:datatype           xsd:string .
+
+rm:objectToSubjectLabelShape
+  a                     sh:PropertyShape ;
+  sh:name               "Subject Label"^^xsd:string ;
+  sh:description        "Label of a Subject of a Link"^^xsd:string ;
+  sh:path               rm:objectToSubjectLabel ;
+  sh:order              2 ;
+# who could modify shape data
+  rm:shapeModifiability "system" ;
+# who could modify value data
+  rm:valueModifiability "user" ;
+  #sh:minCount           1 ;
+  sh:maxCount           1 ;
+  sh:datatype           xsd:string .
+
+rm:identifierShape
+  a                     sh:PropertyShape ;
+  sh:name               "Identifier"^^xsd:string ;
+  sh:description        "Numeric identifier, unique within a system"^^xsd:string ;
+  sh:path               dcterms:identifier ;
+  sh:order              2 ;
+# who could modify shape data
+  rm:shapeModifiability "system" ;
+# who could modify value data
+  rm:valueModifiability "system" ;
+  #sh:minCount           1 ;
+  sh:maxCount           1 ;
+  sh:datatype           xsd:integer .
+
+rm:titleShape
+  a                     sh:PropertyShape ;
+  sh:name               "Title"^^xsd:string ;
+  sh:description        "Title"^^xsd:string ;
+  sh:path               dcterms:title ;
+  sh:order              3 ;
+  rm:shapeModifiability "system" ;
+  rm:valueModifiability "user" ;
+  sh:minCount           1 ;
+  sh:maxCount           1 ;
+  sh:datatype           xsd:string .
+
+rm:descriptionShape
+  a                     sh:PropertyShape ;
+  sh:name               "Description"^^xsd:string ;
+  sh:description        "Description"^^xsd:string ;
+  sh:path               dcterms:description ;
+  sh:order              4 ;
+  rm:shapeModifiability "system" ;
+  rm:valueModifiability "user" ;
+  sh:maxCount           1 ;
+  sh:datatype           xsd:string .
+
+rm:xhtmlTextShape
+  a                     sh:PropertyShape ;
+  sh:name               "Text"^^xsd:string ;
+  sh:description        "Formatted text"^^xsd:string ;
+  sh:path               rm:xhtmlText ;
+  sh:order              4 ;
+  rm:shapeModifiability "system" ;
+  rm:valueModifiability "user" ;
+  sh:maxCount           1 ;
+  sh:datatype           rdf:HTML .
+
+rm:creatorShape
+  a                     sh:PropertyShape ;
+  sh:name               "Creator"^^xsd:string ;
+  sh:description        "An Agent, created an Artifact"^^xsd:string ;
+  sh:path               dcterms:creator ;
+  sh:order              5 ;
+  rm:shapeModifiability "system" ;
+  rm:valueModifiability "system" ;
+  #sh:minCount           1;
+  sh:maxCount           1;
+  sh:class              pporoles:User ;
+  sh:nodeKind           sh:BlankNodeOrIRI .
+
+rm:createdShape
+  a                     sh:PropertyShape ;
+  sh:name               "Created"^^xsd:string ;
+  sh:description        "When an Artifact was created"^^xsd:string ;
+  sh:path               dcterms:created ;
+  sh:order              6 ;
+  rm:shapeModifiability "system" ;
+  rm:valueModifiability "system" ;
+  #sh:minCount           1;
+  sh:maxCount           1;
+  sh:datatype           xsd:dateTime .
+
+rm:modifiedByShape
+  a                     sh:PropertyShape ;
+  sh:name               "Modified By"^^xsd:string ;
+  sh:description        "An Agent, modified an Artifact"^^xsd:string ;
+  sh:path               oslc:modifiedBy ;
+  sh:order              7 ;
+  rm:shapeModifiability "system" ;
+  rm:valueModifiability "system" ;
+  #sh:minCount           1;
+  sh:maxCount           1;
+  sh:class              pporoles:User ;
+  sh:nodeKind           sh:BlankNodeOrIRI .
+
+rm:modifiedShape
+  a                     sh:PropertyShape ;
+  sh:name               "Modified"^^xsd:string ;
+  sh:description        "When an Artifact was modified"^^xsd:string ;
+  sh:path               dcterms:modified ;
+  sh:order              8 ;
+  rm:shapeModifiability "system" ;
+  rm:valueModifiability "system" ;
+  #sh:minCount           1;
+  sh:maxCount           1;
+  sh:datatype           xsd:dateTime .
+
+nav:processAreaShape
+  a                     sh:PropertyShape ;
+  sh:name               "Process Area"^^xsd:string ;
+  sh:description        "Process Area"^^xsd:string ;
+  sh:path               nav:processArea ;
+  sh:order              9 ;
+  rm:shapeModifiability "system" ;
+  rm:valueModifiability "system" ;
+  sh:minCount           0 ;
+  sh:maxCount           1 ;
+  sh:nodeKind           sh:IRI ;
+  sh:class              nav:ProjectArea .
+
+rm:assetFolderShape
+  a                     sh:PropertyShape ;
+  sh:name               "Folder"^^xsd:string ;
+  sh:description        "Asset folder"^^xsd:string ;
+  sh:path               rm:assetFolder ;
+  sh:order              10 ;
+  rm:shapeModifiability "system" ;
+  rm:valueModifiability "user" ;
+  #sh:minCount           1 ;
+  sh:maxCount           1 ;
+  sh:nodeKind           sh:IRI ;
+  sh:class              nav:folder .
+
+rm:formatShape
+  a                     sh:PropertyShape ;
+  sh:name               "Format"^^xsd:string ;
+  sh:description        "Artifact Format"^^xsd:string ;
+  sh:path               rm:artifactFormat ;
+  sh:order              11 ;
+  rm:shapeModifiability "system" ;
+  rm:valueModifiability "user" ;
+  #sh:minCount           1 ;
+  sh:maxCount           1 ;
+  sh:nodeKind           sh:IRI ;
+  sh:class              rmUserTypes:_YwcOsRmREemK5LEaKhoOow .
+
+nav:parentShape
+  a                     sh:PropertyShape ;
+  sh:name               "Parent"^^xsd:string ;
+  sh:description        "Expresses a containment relationship between folders."^^xsd:string ;
+  sh:path               nav:parent ;
+  rm:shapeModifiability "system" ;
+  rm:valueModifiability "user" ;
+  sh:minCount           0 ;
+  sh:maxCount           1 ;
+  sh:nodeKind           sh:IRI ;
+  sh:class              nav:folder .
+
+rm:valueShape
+  a                     sh:PropertyShape ;
+  sh:name               "Value"^^xsd:string ;
+  sh:description        "Value"^^xsd:string ;
+  sh:path               rdf:value ;
+  rm:shapeModifiability "system" ;
+  rm:valueModifiability "user" ;
+  #sh:minCount           1 ;
+  sh:maxCount           1 ;
+  sh:datatype           xsd:string .
+
+rm:nameShape
+  a                     sh:PropertyShape ;
+  sh:name               "Name"^^xsd:string ;
+  sh:description        "Name"^^xsd:string ;
+  sh:path               foaf:name ;
+  rm:shapeModifiability "system" ;
+  rm:valueModifiability "system" ;
+  #sh:minCount           1 ;
+  sh:maxCount           1 ;
+  sh:datatype           xsd:string .
+
+# Property of Links
+
+rdf:objectShape
+  a                     sh:PropertyShape ;
+  sh:name               "Object"^^xsd:string ;
+  sh:description        "The object of the subject RDF statement."^^xsd:string ;
+  sh:path               rdf:object ;
+  rm:shapeModifiability "system" ;
+  rm:valueModifiability "user" ;
+  sh:minCount           1 ;
+  sh:maxCount           1 ;
+  sh:nodeKind           sh:IRI ;
+  sh:class              rm:Artifact .
+
+rdf:subjectShape
+  a                     sh:PropertyShape ;
+  sh:name               "Subject"^^xsd:string ;
+  sh:description        "The subject of the subject RDF statement."^^xsd:string ;
+  sh:path               rdf:subject ;
+  rm:shapeModifiability "system" ;
+  rm:valueModifiability "user" ;
+  sh:minCount           1 ;
+  sh:maxCount           1 ;
+  sh:nodeKind           sh:IRI ;
+  sh:class              rm:Artifact .
+
+rmUserTypes:parentBindingShape
+  a                     sh:PropertyShape ;
+  sh:name               "Parent Binding"^^xsd:string ;
+  sh:description        "Parent Binding."^^xsd:string ;
+  sh:path               rmUserTypes:parentBinding ;
+  rm:shapeModifiability "system" ;
+  rm:valueModifiability "user" ;
+  sh:minCount           1 ;
+  sh:maxCount           1 ;
+  sh:nodeKind           sh:IRI ;
+  sh:class              rm:Artifact .
+
+rmUserTypes:depthShape
+  a                     sh:PropertyShape ;
+  sh:name               "Depth"^^xsd:string ;
+  sh:description        "Depth"^^xsd:string ;
+  sh:path               rmUserTypes:depth ;
+  rm:shapeModifiability "system" ;
+  rm:valueModifiability "user" ;
+  sh:minCount           1 ;
+  sh:maxCount           1 ;
+  sh:datatype           xsd:integer .
+
+rmUserTypes:bookOrderShape
+  a                     sh:PropertyShape ;
+  sh:name               "Book Order"^^xsd:string ;
+  sh:description        "Book Order"^^xsd:string ;
+  sh:path               rmUserTypes:bookOrder ;
+  rm:shapeModifiability "system" ;
+  rm:valueModifiability "user" ;
+  sh:minCount           1 ;
+  sh:maxCount           1 ;
+  sh:datatype           xsd:integer .
+
+rmUserTypes:sectionNumberShape
+  a                     sh:PropertyShape ;
+  sh:name               "Section Number"^^xsd:string ;
+  sh:description        "Section Number"^^xsd:string ;
+  sh:path               rmUserTypes:sectionNumber ;
+  rm:shapeModifiability "system" ;
+  rm:valueModifiability "user" ;
+  sh:minCount           1 ;
+  sh:maxCount           1 ;
+  sh:datatype           xsd:string .
+
+rmUserTypes:isHeadingShape
+  a                     sh:PropertyShape ;
+  sh:name               "Is Heading"^^xsd:string ;
+  sh:description        "Is Heading"^^xsd:string ;
+  sh:path               rmUserTypes:isHeading ;
+  rm:shapeModifiability "system" ;
+  rm:valueModifiability "user" ;
+  #sh:minCount           1 ;
+  sh:maxCount           1 ;
+  sh:datatype           xsd:boolean .

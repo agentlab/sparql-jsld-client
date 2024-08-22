@@ -34,19 +34,19 @@ import { expectToBeDefined, genTimestampedName } from './TestHelpers';
 jest.setTimeout(50000);
 
 const client = new SparqlClientImpl(
-  'https://rdf4j.agentlab.ru/rdf4j-server',
-  'https://rdf4j.agentlab.ru/rdf4j-server/repositories/mktp-schema20/namespaces',
+  'https://rdf4j.agentlab.eu/rdf4j-server',
+  'https://rdf4j.agentlab.eu/rdf4j-server/repositories/mktp-schema20/namespaces',
 );
 client.setRepositoryId('mktp-fed20');
 
 describe.skip('SubQueries should work', () => {
   it('SubQueries ProductCards', async () => {
     const result = await client.sparqlSelect(
-      `PREFIX hs: <https://huntersales.ru/schema#>
+      `PREFIX iot: <https://agentlab.eu/ns/iot#>
       SELECT ?card ?name ?lastMonthSalesValue WHERE {
-        ?card a hs:ProductCard ;
-          hs:name ?name ;
-          hs:lastMonthSalesValue ?lastMonthSalesValue .
+        ?card a iot:ProductCard ;
+          iot:name ?name ;
+          iot:lastMonthSalesValue ?lastMonthSalesValue .
       }
       ORDER BY DESC(?lastMonthSalesValue)
       LIMIT 20`,
@@ -56,14 +56,14 @@ describe.skip('SubQueries should work', () => {
   });
   it('SubQueries HSObservation1', async () => {
     const result = await client.sparqlSelect(
-      `PREFIX hs: <https://huntersales.ru/schema#>
+      `PREFIX iot: <https://agentlab.eu/ns/iot#>
       SELECT DISTINCT ?obs ?parsedAt ?price ?saleValue ?totalSales WHERE {
-        ?obs a hs:HSObservation ;
-          hs:product <https://www.wildberries.ru/catalog/10322023/detail.aspx> ;
-          hs:parsedAt ?parsedAt ;
-          hs:price ?price ;
-          hs:saleValue ?saleValue ;
-          hs:totalSales ?totalSales .
+        ?obs a iot:HSObservation ;
+          iot:product <https://www.acme.com/catalog/10322023/detail.aspx> ;
+          iot:parsedAt ?parsedAt ;
+          iot:price ?price ;
+          iot:saleValue ?saleValue ;
+          iot:totalSales ?totalSales .
       }
       ORDER BY ?parsedAt
       LIMIT 20`,
@@ -73,14 +73,14 @@ describe.skip('SubQueries should work', () => {
   });
   it('SubQueries HSObservation2', async () => {
     const result = await client.sparqlSelect(
-      `PREFIX hs: <https://huntersales.ru/schema#>
+      `PREFIX iot: <https://agentlab.eu/ns/iot#>
       SELECT DISTINCT ?obs ?parsedAt ?price ?saleValue ?totalSales WHERE {
-        ?obs a hs:HSObservation ;
-          hs:product <https://www.wildberries.ru/catalog/10322023/detail.aspx> ;
-          hs:parsedAt ?parsedAt ;
-          hs:price ?price ;
-          hs:saleValue ?saleValue ;
-          hs:totalSales ?totalSales .
+        ?obs a iot:HSObservation ;
+          iot:product <https://www.acme.com/catalog/10322023/detail.aspx> ;
+          iot:parsedAt ?parsedAt ;
+          iot:price ?price ;
+          iot:saleValue ?saleValue ;
+          iot:totalSales ?totalSales .
         filter(?parsedAt >= "2021-07-01T00:00:00"^^xsd:dateTime)
       }
       ORDER BY ?parsedAt
@@ -91,20 +91,20 @@ describe.skip('SubQueries should work', () => {
   });
   it('SubQueries HSObservation-of-ProductCards', async () => {
     const result = await client.sparqlSelect(
-      `PREFIX hs: <https://huntersales.ru/schema#>
+      `PREFIX iot: <https://agentlab.eu/ns/iot#>
       PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
       SELECT ?card ?name ?lastMonthSalesValue ?obs ?parsedAt ?price ?saleValue ?totalSales WHERE {
-        ?obs a hs:HSObservation ;
-          hs:product ?card ;
-          hs:parsedAt ?parsedAt ;
-          hs:price ?price ;
-          hs:saleValue ?saleValue ;
-          hs:totalSales ?totalSales .
+        ?obs a iot:HSObservation ;
+          iot:product ?card ;
+          iot:parsedAt ?parsedAt ;
+          iot:price ?price ;
+          iot:saleValue ?saleValue ;
+          iot:totalSales ?totalSales .
         {
           SELECT ?card ?name ?lastMonthSalesValue WHERE {
-            ?card a hs:ProductCard ;
-              hs:name ?name ;
-              hs:lastMonthSalesValue ?lastMonthSalesValue .
+            ?card a iot:ProductCard ;
+              iot:name ?name ;
+              iot:lastMonthSalesValue ?lastMonthSalesValue .
           }
           ORDER BY DESC(?lastMonthSalesValue)
           LIMIT 2
@@ -120,8 +120,8 @@ describe.skip('SubQueries should work', () => {
 
 describe.skip('Retrieve subqueries', () => {
   const client = new SparqlClientImpl(
-    'https://rdf4j.agentlab.ru/rdf4j-server',
-    'https://rdf4j.agentlab.ru/rdf4j-server/repositories/mktp-schema20/namespaces',
+    'https://rdf4j.agentlab.eu/rdf4j-server',
+    'https://rdf4j.agentlab.eu/rdf4j-server/repositories/mktp-schema20/namespaces',
   );
   const repository = MstRepository.create({ ...rootModelInitialState, repId: 'mktp-fed20' }, { client });
 
@@ -172,7 +172,7 @@ describe.skip('Retrieve subqueries', () => {
         {
           schema: HSObservationShapeSchema,
           conditions: {
-            product: 'https://www.wildberries.ru/catalog/10322023/detail.aspx',
+            product: 'https://www.acme.com/catalog/10322023/detail.aspx',
             parsedAt: {
               relation: 'after',
               value: ['2021-07-01T00:00:00'],
@@ -192,7 +192,7 @@ describe.skip('Retrieve subqueries', () => {
   });
 
   it('should return ProductCardCardsListShape schema with reverse property', async () => {
-    let schema = await repository.schemas.loadSchemaByIri('hs:ProductCardCardsListShape');
+    let schema = await repository.schemas.loadSchemaByIri('iot:ProductCardCardsListShape');
     schema = getSnapshot(schema);
     expectToBeDefined(schema);
   });
@@ -202,7 +202,7 @@ describe.skip('Retrieve subqueries', () => {
       '@id': 'rm:collConstr1',
       entConstrs: [
         {
-          schema: 'hs:ProductCardCardsListShape',
+          schema: 'iot:ProductCardCardsListShape',
           conditions: {
             hasObservations: '?eIri1',
           },
@@ -210,7 +210,7 @@ describe.skip('Retrieve subqueries', () => {
           limit: 2,
         },
         {
-          schema: 'hs:HSObservationCardsListShape',
+          schema: 'iot:HSObservationCardsListShape',
           conditions: {
             parsedAt: {
               relation: 'after',

@@ -1,0 +1,102 @@
+@prefix rdf:       <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xsd:       <http://www.w3.org/2001/XMLSchema#> .
+@prefix dcterms:   <http://purl.org/dc/terms/> .
+@prefix oslc:      <http://open-services.net/ns/core#> .
+
+@prefix nav:       <https://agentlab.eu/ns/rm/navigation#> .
+
+#Data
+@prefix projects:  <https://agentlab.eu/ns/rm/projects#> .
+@prefix users:     <https://agentlab.eu/ns/rm/users#> .
+@prefix folders:   <https://agentlab.eu/ns/rm/folders#> .
+
+# in context https://agentlab.eu/ns/rm/folders#
+
+folders:root
+  a                       nav:folder ;
+  dcterms:title           "Requirement Project" ;
+  dcterms:description     "Requirement Project Description" ;
+#  nav:parent              folders:root ;
+  nav:processArea         projects:defaultProject ;
+  dcterms:created         "2019-01-16T13:21:08.720Z"^^xsd:dateTime ;
+  dcterms:creator         users:user1 ;
+  dcterms:modified        "2019-01-16T13:21:08.720Z"^^xsd:dateTime ;
+  oslc:modifiedBy         users:user1 .
+
+folders:imported
+  a                       nav:folder ;
+  dcterms:title           "Imported from documents" ;
+  dcterms:description     "Default folder for requirements, imported from documents" ;
+  nav:parent              folders:root ;
+  nav:processArea         projects:defaultProject ;
+  dcterms:created         "2019-05-29T13:21:08.720Z"^^xsd:dateTime ;
+  dcterms:creator         users:user1 ;
+  dcterms:modified        "2019-05-29T13:21:08.720Z"^^xsd:dateTime ;
+  oslc:modifiedBy         users:user1 .
+
+folders:samples
+  a                       nav:folder ;
+  dcterms:title           "Examples" ;
+  dcterms:description     "Examples, uploaded from files" ;
+  nav:parent              folders:root ;
+  nav:processArea         projects:defaultProject ;
+  dcterms:created         "2019-01-16T13:21:08.720Z"^^xsd:dateTime ;
+  dcterms:creator         users:user4 ;
+  dcterms:modified        "2019-01-16T13:21:08.720Z"^^xsd:dateTime ;
+  oslc:modifiedBy         users:user4 .
+
+folders:samples_module
+  a                       nav:folder ;
+  dcterms:title           "Module Example" ;
+  dcterms:description     "Module example, uploaded from file" ;
+  nav:parent              folders:samples ;
+  nav:processArea         projects:defaultProject ;
+  dcterms:created         "2019-01-16T13:21:08.720Z"^^xsd:dateTime ;
+  dcterms:creator         users:user3 ;
+  dcterms:modified        "2019-01-16T13:21:08.720Z"^^xsd:dateTime ;
+  oslc:modifiedBy         users:user3 .
+
+folders:samples_collection
+  a                       nav:folder ;
+  dcterms:title           "Collection Example" ;
+  dcterms:description     "Collection example, uploaded from file" ;
+  nav:parent              folders:samples ;
+  nav:processArea         projects:defaultProject ;
+  dcterms:created         "2019-01-16T13:21:08.720Z"^^xsd:dateTime ;
+  dcterms:creator         users:user3 ;
+  dcterms:modified        "2019-01-16T13:21:08.720Z"^^xsd:dateTime ;
+  oslc:modifiedBy         users:user3 .
+
+folders:folder1
+  a                       nav:folder ;
+  dcterms:title           "Folder1" ;
+  dcterms:description     "Folder1" ;
+  nav:parent              folders:root ;
+  nav:processArea         projects:defaultProject ;
+  dcterms:created         "2019-01-16T13:21:08.720Z"^^xsd:dateTime ;
+  dcterms:creator         users:user4 ;
+  dcterms:modified        "2019-01-16T13:21:08.720Z"^^xsd:dateTime ;
+  oslc:modifiedBy         users:user4 .
+
+
+folders:folder2
+  a                       nav:folder ;
+  dcterms:title           "Folder2" ;
+  dcterms:description     "Folder2" ;
+  nav:parent              folders:root ;
+  nav:processArea         projects:defaultProject ;
+  dcterms:created         "2019-01-16T13:21:08.720Z"^^xsd:dateTime ;
+  dcterms:creator         users:user2 ;
+  dcterms:modified        "2019-01-16T13:21:08.720Z"^^xsd:dateTime ;
+  oslc:modifiedBy         users:user2 .
+
+folders:folder1_1
+  a                       nav:folder ;
+  dcterms:title           "Folder1_1" ;
+  dcterms:description     "Folder1_1" ;
+  nav:parent              folders:folder1 ;
+  nav:processArea         projects:defaultProject ;
+  dcterms:created         "2019-01-16T13:21:08.720Z"^^xsd:dateTime ;
+  dcterms:creator         users:user3 ;
+  dcterms:modified        "2019-01-16T13:21:08.720Z"^^xsd:dateTime ;
+  oslc:modifiedBy         users:user3 .

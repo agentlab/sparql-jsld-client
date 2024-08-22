@@ -1,0 +1,367 @@
+@prefix rdf:         <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:        <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:         <http://www.w3.org/2001/XMLSchema#> .
+@prefix dcterms:     <http://purl.org/dc/terms/> .
+
+@prefix oslc:        <http://open-services.net/ns/core#> .
+@prefix oslc_asset:  <http://open-services.net/ns/asset#> .
+
+@prefix rm:          <https://agentlab.eu/ns/rm/rdf#> .
+@prefix nav:         <https://agentlab.eu/ns/rm/navigation#> .
+@prefix rmUserTypes: <https://agentlab.eu/ns/rm/user-types#> .
+@prefix clss:        <https://agentlab.eu/ns/rm/classifier#> .
+
+# Data
+@prefix projects:    <https://agentlab.eu/ns/rm/projects#> .
+@prefix users:       <https://agentlab.eu/ns/rm/users#> .
+@prefix folders:     <https://agentlab.eu/ns/rm/folders#> .
+@prefix reqs:        <https://agentlab.eu/ns/rm/reqs#> .
+
+# in context https://agentlab.eu/ns/rm/reqs#
+
+# root
+<file:///myfile.xml>
+  a                         clss:Classifier ;
+  dcterms:identifier        "30000"^^xsd:integer ;
+  dcterms:title             "Requirement Module 30000 Title"^^xsd:string ;
+  dcterms:description       "Requirement Module 30000 Description"^^xsd:string ;
+  rm:artifactFormat         rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Module ;
+  dcterms:abstract          "Requirement Module 30000 Abstract"^^xsd:string ;
+  dcterms:alternative       "Requirement Module 30000 Alternative"^^xsd:string ;
+  dcterms:creator           users:user1 ;
+  dcterms:created           "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;
+  oslc:modifiedBy           users:user1 ;
+  dcterms:modified          "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;
+  oslc_asset:guid           "E159CD38-5205-DA02-CDAE-560D10043BD5" ;
+  clss:status               rmUserTypes:_YwrbNRmREemK5LEaKhoOow_Draft ;
+  clss:uri                  <file:///urn-s2-iisvvt-infosystems-classifier-45950> ;
+  oslc_asset:version        "1.0"^^xsd:string ;
+  nav:processArea           projects:defaultProject ;
+  rm:assetFolder            folders:samples_module .
+
+# parent : <file:///myfile.xml>
+clss:_tHAikozUEeOiy8owVBW5pQ
+  a                         clss:Grouping ;
+  dcterms:identifier        "30001"^^xsd:integer ;
+  dcterms:title             "Requirement Module 30000 - Grouping 30001 Title"^^xsd:string ;
+  rm:xhtmlText              "Requirement Module 30000 - Grouping 30001 Text"^^rdf:HTML ;
+  rm:artifactFormat         rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Text ;
+  clss:format               "Text"^^xsd:string ;
+  clss:link                 <file:///meta_aVECQo2fEeOiy8owVBW5pQ.xml> ;
+  clss:status               rmUserTypes:_YwrbNRmREemK5LEaKhoOow_Draft ;
+  clss:uri                  clss:_tHAikozUEeOiy8owVBW5pQ ;
+  dcterms:creator           users:user1 ;
+  dcterms:created           "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;
+  oslc:modifiedBy           users:user1 ;
+  dcterms:modified          "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;
+  nav:processArea           projects:defaultProject ;
+  rm:assetFolder            folders:samples_module .
+
+reqs:_M1HusThYEem2Z_XixsC3pQ
+  a                         rmUserTypes:UsedInModule ;
+  rdf:object                <file:///myfile.xml> ;
+  rdf:subject               clss:_tHAikozUEeOiy8owVBW5pQ ;
+  rmUserTypes:parentBinding <file:///myfile.xml> ;
+  dcterms:creator           users:user1 ;
+  dcterms:created           "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;
+  oslc:modifiedBy           users:user1 ;
+  dcterms:modified          "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;
+  rmUserTypes:depth         1 ;
+  rmUserTypes:bookOrder     1 ;
+  rmUserTypes:sectionNumber "0-1"^^xsd:string ;
+  nav:processArea           projects:defaultProject .
+
+# parent : clss:_tHAikozUEeOiy8owVBW5pQ
+clss:_zYXy8ozUEeOiy8owVBW5pQ
+  a                         clss:Grouping ;
+  dcterms:identifier        "30002"^^xsd:integer ;
+  dcterms:title             "Requirement Module 30000 - Grouping 30002 Title"^^xsd:string ;
+  rm:xhtmlText              "Requirement Module 30000 - Grouping 30002 Text"^^rdf:HTML ;
+  rm:artifactFormat         rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Text ;
+  clss:format               "Text"^^xsd:string ;
+  clss:link                 clss:_alBJ0o2fEeOiy8owVBW5pQ ;
+  clss:status               rmUserTypes:_YwrbNRmREemK5LEaKhoOow_Draft ;
+  clss:uri                  clss:_zYXy8ozUEeOiy8owVBW5pQ ;
+  clss:dataType             "0" ;
+  dcterms:creator           users:user1 ;
+  dcterms:created           "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;
+  oslc:modifiedBy           users:user1 ;
+  dcterms:modified          "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;
+  nav:processArea           projects:defaultProject ;
+  rm:assetFolder            folders:samples_module .
+
+reqs:_M2HusThYEem2Z_XixsC3pQ
+  a                         rmUserTypes:UsedInModule ;
+  rdf:object                <file:///myfile.xml> ;
+  rdf:subject               clss:_zYXy8ozUEeOiy8owVBW5pQ ;
+  rmUserTypes:parentBinding clss:_tHAikozUEeOiy8owVBW5pQ ;
+  dcterms:creator           users:user1 ;
+  dcterms:created           "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;
+  oslc:modifiedBy           users:user1 ;
+  dcterms:modified          "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;
+  rmUserTypes:depth         2 ;
+  rmUserTypes:bookOrder     2 ;
+  rmUserTypes:sectionNumber "0-1.0-1"^^xsd:string ;
+  nav:processArea           projects:defaultProject .
+
+# parent : clss:_zYXy8ozUEeOiy8owVBW5pQ
+clss:_3AP4kYzUEeOiy8owVBW5pQ
+  a                         clss:Grouping ;
+  dcterms:identifier        "30003"^^xsd:integer ;
+  dcterms:title             "Requirement Module 30000 - Grouping 30003 Title"^^xsd:string ;
+  rm:xhtmlText              "Requirement Module 30000 - Grouping 30003 Text"^^rdf:HTML ;
+  rm:artifactFormat         rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Text ;
+  clss:format               "Text" ;
+  clss:link                 clss:_bD2a4o2fEeOiy8owVBW5pQ ;
+  clss:status               rmUserTypes:_YwrbNRmREemK5LEaKhoOow_Draft ;
+  clss:uri                  clss:_3AP4kYzUEeOiy8owVBW5pQ ;
+  clss:dataType             "0" ;
+  dcterms:creator           users:user1 ;
+  dcterms:created           "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;
+  oslc:modifiedBy           users:user1 ;
+  dcterms:modified          "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;
+  nav:processArea           projects:defaultProject ;
+  rm:assetFolder            folders:samples_module .
+
+reqs:_M3HusThYEem2Z_XixsC3pQ
+  a                         rmUserTypes:UsedInModule ;
+  rdf:object                <file:///myfile.xml> ;
+  rdf:subject               clss:_3AP4kYzUEeOiy8owVBW5pQ ;
+  rmUserTypes:parentBinding clss:_zYXy8ozUEeOiy8owVBW5pQ ;
+  dcterms:creator           users:user1 ;
+  dcterms:created           "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;
+  oslc:modifiedBy           users:user1 ;
+  dcterms:modified          "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;  
+  rmUserTypes:depth         3 ;
+  rmUserTypes:bookOrder     3 ;
+  rmUserTypes:sectionNumber "0-1.0-1.0-1"^^xsd:string ;
+  nav:processArea           projects:defaultProject .
+
+# parent : clss:_3AP4kYzUEeOiy8owVBW5pQ
+clss:_HmFCYozVEeOiy8owVBW5pQ
+  a                         clss:Grouping ;
+  dcterms:identifier        "30004"^^xsd:integer ;
+  dcterms:title             "Requirement Module 30000 - Grouping 30004 Title"^^xsd:string ;
+  rm:xhtmlText              "Requirement Module 30000 - Grouping 30004 Text"^^rdf:HTML ;
+  rm:artifactFormat         rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Text ;
+  clss:format               "Text"^^xsd:string ;
+  clss:link                 clss:_bs6mAY2fEeOiy8owVBW5pQ ;
+  clss:status               rmUserTypes:_YwrbNRmREemK5LEaKhoOow_Draft ;
+  clss:uri                  clss:_HmFCYozVEeOiy8owVBW5pQ ;
+  clss:dataType             "0" ;
+  dcterms:creator           users:user1 ;
+  dcterms:created           "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;
+  oslc:modifiedBy           users:user1 ;
+  dcterms:modified          "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;
+  nav:processArea           projects:defaultProject ;
+  rm:assetFolder            folders:samples_module .
+
+reqs:_M4HusThYEem2Z_XixsC3pQ
+  a                         rmUserTypes:UsedInModule ;
+  rdf:object                <file:///myfile.xml> ;
+  rdf:subject               clss:_HmFCYozVEeOiy8owVBW5pQ ;
+  rmUserTypes:parentBinding clss:_3AP4kYzUEeOiy8owVBW5pQ ;
+  dcterms:creator           users:user1 ;
+  dcterms:created           "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;
+  oslc:modifiedBy           users:user1 ;
+  dcterms:modified          "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;  
+  rmUserTypes:depth         4 ;
+  rmUserTypes:bookOrder     4 ;
+  rmUserTypes:sectionNumber "0-1.0-1.0-1.0-1"^^xsd:string ;
+  nav:processArea           projects:defaultProject .
+
+# parent : clss:_HmFCYozVEeOiy8owVBW5pQ
+clss:_L8Lf8YzVEeOiy8owVBW5pQ
+  a                         clss:Grouping ;
+  dcterms:identifier        "30005"^^xsd:integer ;
+  dcterms:title             "Requirement Module 30000 - Grouping 30005 Title"^^xsd:string ;
+  rm:xhtmlText              "Requirement Module 30000 - Grouping 30005 Text"^^rdf:HTML ;
+  rm:artifactFormat         rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Text ;
+  clss:format               "Text"^^xsd:string ;
+  clss:link                 clss:_crUH8Y2fEeOiy8owVBW5pQ ;
+  clss:status               rmUserTypes:_YwrbNRmREemK5LEaKhoOow_Draft ;
+  clss:uri                  clss:_L8Lf8YzVEeOiy8owVBW5pQ ;
+  clss:dataType             "0" ;
+  dcterms:creator           users:user1 ;
+  dcterms:created           "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;
+  oslc:modifiedBy           users:user1 ;
+  dcterms:modified          "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;
+  nav:processArea           projects:defaultProject ;
+  rm:assetFolder            folders:samples_module .
+
+  reqs:_M5HusThYEem2Z_XixsC3pQ
+  a                         rmUserTypes:UsedInModule ;
+  rdf:object                <file:///myfile.xml> ;
+  rdf:subject               clss:_L8Lf8YzVEeOiy8owVBW5pQ ;
+  rmUserTypes:parentBinding clss:_HmFCYozVEeOiy8owVBW5pQ ;
+  dcterms:creator           users:user1 ;
+  dcterms:created           "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;
+  oslc:modifiedBy           users:user1 ;
+  dcterms:modified          "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;  
+  rmUserTypes:depth         5 ;
+  rmUserTypes:bookOrder     5 ;
+  rmUserTypes:sectionNumber "0-1.0-1.0-1.0-1.0-1"^^xsd:string ;
+  nav:processArea           projects:defaultProject .
+
+# parent : clss:_L8Lf8YzVEeOiy8owVBW5pQ
+clss:_RxREAYzVEeOiy8owVBW5pQ
+  a                         clss:Grouping ;
+  dcterms:identifier        "30006"^^xsd:integer ;
+  dcterms:title             "Requirement Module 30000 - Grouping 30006 Title"^^xsd:string ;
+  rm:xhtmlText              "Requirement Module 30000 - Grouping 30006 Text"^^rdf:HTML ;
+  rm:artifactFormat         rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Text ;
+  clss:format               "Text"^^xsd:string ;
+  clss:status               rmUserTypes:_YwrbNRmREemK5LEaKhoOow_Draft ;
+  clss:uri                  clss:_RxREAYzVEeOiy8owVBW5pQ ;
+  clss:dataType             "0" ;
+  dcterms:creator           users:user1 ;
+  dcterms:created           "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;
+  oslc:modifiedBy           users:user1 ;
+  dcterms:modified          "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;
+  nav:processArea           projects:defaultProject ;
+  rm:assetFolder            folders:samples_module .
+
+reqs:_M6HusThYEem2Z_XixsC3pQ
+  a                         rmUserTypes:UsedInModule ;
+  rdf:object                <file:///myfile.xml> ;
+  rdf:subject               clss:_RxREAYzVEeOiy8owVBW5pQ ;
+  rmUserTypes:parentBinding clss:_L8Lf8YzVEeOiy8owVBW5pQ ;
+  dcterms:creator           users:user1 ;
+  dcterms:created           "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;
+  oslc:modifiedBy           users:user1 ;
+  dcterms:modified          "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;  
+  rmUserTypes:depth         6 ;
+  rmUserTypes:bookOrder     6 ;
+  rmUserTypes:sectionNumber "0-1.0-1.0-1.0-1.0-1.0-1"^^xsd:string ;
+  nav:processArea           projects:defaultProject .
+
+# parent : clss:_L8Lf8YzVEeOiy8owVBW5pQ
+clss:_TSp-QYzVEeOiy8owVBW5pQ
+  a                         clss:Grouping ;
+  dcterms:identifier        "30007"^^xsd:integer ;
+  dcterms:title             "Requirement Module 30000 - Grouping 30007 Title"^^xsd:string ;
+  rm:xhtmlText              "Requirement Module 30000 - Grouping 30007 Text"^^rdf:HTML ;
+  rm:artifactFormat         rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Text ;
+  clss:format               "Text"^^xsd:string ;
+  clss:status               rmUserTypes:_YwrbNRmREemK5LEaKhoOow_Draft ;
+  clss:uri                  clss:_TSp-QYzVEeOiy8owVBW5pQ ;
+  clss:dataType             "0" ;
+  dcterms:creator           users:user1 ;
+  dcterms:created           "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;
+  oslc:modifiedBy           users:user1 ;
+  dcterms:modified          "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;
+  nav:processArea           projects:defaultProject ;
+  rm:assetFolder            folders:samples_module .
+
+reqs:_M7HusThYEem2Z_XixsC3pQ
+  a                         rmUserTypes:UsedInModule ;
+  rdf:object                <file:///myfile.xml> ;
+  rdf:subject               clss:_TSp-QYzVEeOiy8owVBW5pQ ;
+  rmUserTypes:parentBinding clss:_L8Lf8YzVEeOiy8owVBW5pQ ;
+  dcterms:creator           users:user1 ;
+  dcterms:created           "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;
+  oslc:modifiedBy           users:user1 ;
+  dcterms:modified          "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;  
+  rmUserTypes:depth         6 ;
+  rmUserTypes:bookOrder     7 ;
+  rmUserTypes:sectionNumber "0-1.0-1.0-1.0-1.0-1.0-2"^^xsd:string ;
+  nav:processArea           projects:defaultProject .
+
+# parent : clss:_HmFCYozVEeOiy8owVBW5pQ
+clss:_OG314ozVEeOiy8owVBW5pQ
+  a                         clss:Grouping ;
+  dcterms:identifier        "30008"^^xsd:integer ;
+  dcterms:title             "Requirement Module 30000 - Grouping 30008 Title"^^xsd:string ;
+  rm:xhtmlText              "Requirement Module 30000 - Grouping 30008 Text"^^rdf:HTML ;
+  rm:artifactFormat         rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Text ;
+  clss:format               "Text"^^xsd:string ;
+  clss:link                 clss:_c-KygY2fEeOiy8owVBW5pQ ;
+  clss:status               rmUserTypes:_YwrbNRmREemK5LEaKhoOow_Draft ;
+  clss:uri                  clss:_OG314ozVEeOiy8owVBW5pQ ;
+  clss:dataType             "0" ;
+  dcterms:creator           users:user1 ;
+  dcterms:created           "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;
+  oslc:modifiedBy           users:user1 ;
+  dcterms:modified          "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;
+  nav:processArea           projects:defaultProject ;
+  rm:assetFolder            folders:samples_module .
+
+reqs:_M8HusThYEem2Z_XixsC3pQ
+  a                         rmUserTypes:UsedInModule ;
+  rdf:object                <file:///myfile.xml> ;
+  rdf:subject               clss:_OG314ozVEeOiy8owVBW5pQ ;
+  rmUserTypes:parentBinding clss:_HmFCYozVEeOiy8owVBW5pQ ;
+  dcterms:creator           users:user1 ;
+  dcterms:created           "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;
+  oslc:modifiedBy           users:user1 ;
+  dcterms:modified          "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;  
+  rmUserTypes:depth         5 ;
+  rmUserTypes:bookOrder     8 ;
+  rmUserTypes:sectionNumber "0-1.0-1.0-1.0-1.0-2"^^xsd:string ;
+  nav:processArea           projects:defaultProject .
+
+# parent : clss:_3AP4kYzUEeOiy8owVBW5pQ
+clss:_Jdny0YzVEeOiy8owVBW5pQ
+  a                         clss:Grouping ;
+  dcterms:identifier        "30009"^^xsd:integer ;
+  dcterms:title             "Requirement Module 30000 - Grouping 30009 Title"^^xsd:string ;
+  rm:xhtmlText              "Requirement Module 30000 - Grouping 30009 Text"^^rdf:HTML ;
+  rm:artifactFormat         rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Text ;
+  clss:format               "Text"^^xsd:string ;
+  clss:link                 clss:_cBl1gY2fEeOiy8owVBW5pQ ;
+  clss:status               rmUserTypes:_YwrbNRmREemK5LEaKhoOow_Draft ;
+  clss:uri                  clss:_Jdny0YzVEeOiy8owVBW5pQ ;
+  clss:dataType             "0" ;
+  dcterms:creator           users:user1 ;
+  dcterms:created           "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;
+  oslc:modifiedBy           users:user1 ;
+  dcterms:modified          "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;
+  nav:processArea           projects:defaultProject ;
+  rm:assetFolder            folders:samples_module .
+
+reqs:_M9HusThYEem2Z_XixsC3pQ
+  a                         rmUserTypes:UsedInModule ;
+  rdf:object                <file:///myfile.xml> ;
+  rdf:subject               clss:_Jdny0YzVEeOiy8owVBW5pQ ;
+  rmUserTypes:parentBinding clss:_3AP4kYzUEeOiy8owVBW5pQ ;
+  dcterms:creator           users:user1 ;
+  dcterms:created           "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;
+  oslc:modifiedBy           users:user1 ;
+  dcterms:modified          "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;  
+  rmUserTypes:depth         4 ;
+  rmUserTypes:bookOrder     9 ;
+  rmUserTypes:sectionNumber "0-1.0-1.0-1.0-2"^^xsd:string ;
+  nav:processArea           projects:defaultProject .
+
+# parent : clss:_zYXy8ozUEeOiy8owVBW5pQ
+clss:_Ep8ocYzVEeOiy8owVBW5pQ
+  a                         clss:Grouping ;
+  dcterms:identifier        "30010"^^xsd:integer ;
+  dcterms:title             "Requirement Module 30000 - Grouping 30010 Title"^^xsd:string ;
+  rm:xhtmlText              "Requirement Module 30000 - Grouping 30010 Text"^^rdf:HTML ;
+  rm:artifactFormat         rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Text ;
+  clss:format               "Text"^^xsd:string ;
+  clss:link                 clss:_bQ0f442fEeOiy8owVBW5pQ ;
+  clss:status               rmUserTypes:_YwrbNRmREemK5LEaKhoOow_Draft ;
+  clss:uri                  clss:_Ep8ocYzVEeOiy8owVBW5pQ ;
+  clss:dataType             "0" ;
+  dcterms:creator           users:user1 ;
+  dcterms:created           "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;
+  oslc:modifiedBy           users:user1 ;
+  dcterms:modified          "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;
+  nav:processArea           projects:defaultProject ;
+  rm:assetFolder            folders:samples_module .
+
+reqs:_N1HusThYEem2Z_XixsC3pQ
+  a                         rmUserTypes:UsedInModule ;
+  rdf:object                <file:///myfile.xml> ;
+  rdf:subject               clss:_Ep8ocYzVEeOiy8owVBW5pQ ;
+  rmUserTypes:parentBinding clss:_zYXy8ozUEeOiy8owVBW5pQ ;
+  dcterms:creator           users:user1 ;
+  dcterms:created           "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;
+  oslc:modifiedBy           users:user1 ;
+  dcterms:modified          "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;  
+  rmUserTypes:depth         3 ;
+  rmUserTypes:bookOrder     10 ;
+  rmUserTypes:sectionNumber "0-1.0-1.0-2"^^xsd:string ;
+  nav:processArea           projects:defaultProject .

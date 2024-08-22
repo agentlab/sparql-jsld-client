@@ -7,36 +7,43 @@ Suitable for quick test-based diagnostics in case you have many errors from seve
 
 The list blow is sorted from simple unit tests to more and more complex integration tests (i.e. complexity increases):
 
-## Without SPARQL Generation
+## MST Model CRUD Operations and Rx (without SPARQL Generation and client-server I/O)
+```bash
+pnpm test MstModel.spec.ts
+```
+
+## RDF4J Client data uploading & low level textual SPARQL queries (without SPARQL Generation)
 SparqlClientUpload.spec.ts -- REST rdf file upload
 ```bash
-yarn test SparqlClientUpload.spec.ts
+pnpm test SparqlClientUpload.spec.ts
 ```
 SparqlClient.spec.ts -- namespaces and basic SPARQL Select with RDFS and DT reasoners
 ```bash
-yarn test SparqlClient.spec.ts
+pnpm test SparqlClient.spec.ts
 ```
 
-## With SPARQL Generation
-SparqlGen.spec.ts -- without: mobx, client-server I/O
+## SPARQL Generation (without MST and client-server I/O)
+SparqlGen.spec.ts -- without: MST, client-server I/O
 ```bash
-yarn test SparqlGen.spec.ts
+pnpm test SparqlGen.spec.ts
 ```
+
+## SPARQL Generation with MST and client-server I/O
 ArtifactShapeSchema.spec.ts -- initial shapes, server shapes (simple parentless and with inheritance)
 ```bash
-yarn test ArtifactShapeSchema.spec.ts
+pnpm test ArtifactShapeSchema.spec.ts
 ```
 SimpleRetrieve.spec.ts -- upload all example files and all kind of selects with different conditions
 ```bash
-yarn test SimpleRetrieve.spec.ts
+pnpm test SimpleRetrieve.spec.ts
 ```
 Artifact.spec.ts -- Entity deletion and creation
 ```bash
-yarn test Artifact.spec.ts
+pnpm test Artifact.spec.ts
 ```
 ArtifactsInModule.spec.ts
 ```bash
-yarn test ArtifactsInModule.spec.ts
+pnpm test ArtifactsInModule.spec.ts
 ```
 
 In case of errors we recommend to check and fix errors in this order.

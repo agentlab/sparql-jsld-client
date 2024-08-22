@@ -1,0 +1,96 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix oslc:    <http://open-services.net/ns/core#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix vann:    <http://purl.org/vocab/vann/> .
+@prefix vs:      <http://www.w3.org/2003/06/sw-vocab-status/ns#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+
+@prefix rm:      <https://agentlab.eu/ns/rm/rdf#> .
+@prefix nav:     <https://agentlab.eu/ns/rm/navigation#> .
+
+# in context https://agentlab.eu/ns/rm/rdf#
+
+# The Requirements Management ontology
+rm:
+  a owl:Ontology ;
+  dcterms:title "The Requirements Management(RM) Vocabulary Extension" ;
+  dcterms:description "All vocabulary URIs defined in the AL Requirements Management (RM) namespace."^^xsd:string ;
+  vann:preferredNamespacePrefix "rm" ;
+  rdfs:label "AL Requirements Management(RM)" .
+
+# ******** Classes of Classes (meta-classes) ********
+rm:ArtifactClasses
+  a                   rdfs:Class ;
+  rdfs:subClassOf     rdfs:Class ;
+  rdfs:isDefinedBy    rm: ;
+  dcterms:title       "Artifact Types" ;
+  dcterms:description "Artifact Class of Classes." .
+
+rm:LinkClasses
+  a                   rdfs:Class ;
+  rdfs:subClassOf     rdfs:Class ;
+  rdfs:isDefinedBy    rm: ;
+  dcterms:title       "Link Types" ;
+  dcterms:description "Link Class of Classes." .
+
+# ******** Classes ********
+
+rm:Artifact
+  a                   rm:ArtifactClasses ;
+  rdfs:isDefinedBy    rm: ;
+  dcterms:title       "Artifact" ;
+  dcterms:description "Artifact." .
+
+rm:Link
+  a                   rm:LinkClasses ;
+  rdfs:isDefinedBy    rm: ;
+  dcterms:title       "Link" ;
+  dcterms:description "Link." ;
+  rm:subjectToObjectLabel "Smth. connected to" ;
+  rm:objectToSubjectLabel "Connected to smth." .
+
+# ******** Properties ********
+
+rm:artifactFormat
+  a                    rdf:Property ;
+  rdfs:isDefinedBy     rm: ;
+  rdfs:comment         "Artifact Format." ;
+  rdfs:label           "Format" .
+
+rm:defaultFormat
+  a                    rdf:Property ;
+  rdfs:isDefinedBy     rm: ;
+  rdfs:comment         "Default Artifact Format." ;
+  rdfs:label           "Default Format" .
+
+rm:inCreationMenu
+  a                    rdf:Property ;
+  rdfs:isDefinedBy     rm: ;
+  rdfs:comment         "Show in menu Create." ;
+  rdfs:label           "Show in menu Create" .
+
+rm:iconReference
+  a                    rdf:Property ;
+  rdfs:isDefinedBy     rm: ;
+  rdfs:comment         "Icon Reference." ;
+  rdfs:label           "Icon" .
+
+rm:subjectToObjectLabel
+  a                    rdf:Property ;
+  rdfs:isDefinedBy     rm: ;
+  rdfs:comment         "Label of an Object of a Link." ;
+  rdfs:label           "Object Label" .
+
+rm:objectToSubjectLabel
+  a                    rdf:Property ;
+  rdfs:isDefinedBy     rm: ;
+  rdfs:comment         "Label of a Subject of a Link." ;
+  rdfs:label           "Subject Label" .
+
+rm:assetFolder
+  a                    rdf:Property ;
+  rdfs:isDefinedBy     rm: ;
+  rdfs:comment         "Asset Folder." ;
+  rdfs:label           "Folder" .

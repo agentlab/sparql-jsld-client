@@ -1,0 +1,48 @@
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix sh:      <http://www.w3.org/ns/shacl#> .
+
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix rm:      <https://agentlab.eu/ns/rm/rdf#> .
+
+@prefix xsdsh: <https://agentlab.eu/ns/xsd#> .
+
+xsdsh:
+  rdfs:label "SHACL for XSD"@en ;
+  rdfs:comment "This shapes graph can be used to validate XSD Datatypes against a subset of the syntax rules."@en ;
+  sh:declare [
+    sh:prefix "xsdsh" ;
+    sh:namespace "https://agentlab.eu/ns/xsd#" ;
+  ] .
+
+	
+xsdsh:DatatypeShape
+  a                   sh:NodeShape ;
+  sh:targetClass      rdfs:Datatype ;
+  dcterms:title       "Datatype"^^xsd:string ;
+  dcterms:description "Data type"^^xsd:string ;
+  rdfs:seeAlso         <https://www.w3.org/TR/rdf11-concepts/#section-Datatypes> ;
+  sh:property [
+    sh:path           rdfs:label ;
+    sh:name           "Title"^^xsd:string ;
+    sh:description    "Data type title"^^xsd:string ;
+    sh:minCount       1 ;
+    #sh:maxCount       1 ;
+    #sh:datatype       xsd:string ;
+    sh:or ( [ sh:datatype xsd:string ] [ sh:datatype rdf:langString ] ) ;
+  ] ;
+  sh:property [
+    sh:path           rdfs:comment ;
+    sh:name           "Description"^^xsd:string ;
+    sh:description    "Data type description"^^xsd:string ;
+    sh:minCount       0 ;
+    sh:maxCount       1 ;
+    sh:datatype       xsd:string ;
+  ] ;
+  sh:property [
+    sh:path           rm:inCreationMenu ;
+    sh:minCount       0 ;
+    sh:maxCount       1 ;
+    sh:datatype       xsd:boolean ;
+  ] .

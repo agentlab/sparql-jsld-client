@@ -18,7 +18,7 @@ if (existsSync('.env.test.local')) {
 }
 
 /**
- * Sparql Endpoint URL (адрес веб-сервиса)
+ * Sparql Endpoint URL
  */
 export const rdfServerUrl = process.env.REACT_APP_SERVER_RDF_URL || 'http://localhost:8181/rdf4j-server';
 export const rmRepositoryParam = JSON.parse(process.env.REACT_APP_RM_REPOSITORY_PARAM || '{}');

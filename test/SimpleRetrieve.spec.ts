@@ -62,17 +62,17 @@ afterAll(async () => {
 });
 
 const artifact30000Orig = {
-  '@id': 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml',
-  '@type': 'cpgu:Classifier',
+  '@id': 'file:///myfile.xml',
+  '@type': 'clss:Classifier',
   assetFolder: 'folders:samples_module',
   created: '2014-02-10T10:12:16.000Z',
-  creator: 'users:amivanoff',
-  description: 'ТН ВЭД ТС',
+  creator: 'users:user1',
+  description: 'Requirement Module 30000 Description',
   artifactFormat: 'rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Module',
   identifier: 30000,
-  modifiedBy: 'users:amivanoff',
+  modifiedBy: 'users:user1',
   modified: '2014-02-10T10:12:16.000Z',
-  title: 'ТН ВЭД ТС',
+  title: 'Requirement Module 30000 Title',
 };
 
 describe('SimpleRetrieve', () => {
@@ -142,8 +142,8 @@ describe('SimpleRetrieve', () => {
   });
 
   it('should return Specific Artifacts with expected schema', async () => {
-    await repository.schemas.loadSchemaByClassIri('cpgu:Группировка');
-    const schema = repository.schemas.getOrLoadSchemaByClassIri('cpgu:Группировка');
+    await repository.schemas.loadSchemaByClassIri('clss:Grouping');
+    const schema = repository.schemas.getOrLoadSchemaByClassIri('clss:Grouping');
     await selectHelper(
       repository,
       {
@@ -154,8 +154,8 @@ describe('SimpleRetrieve', () => {
   });
 
   it('should return Specific Artifacts with id=30001 with expected schema', async () => {
-    await repository.schemas.loadSchemaByClassIri('cpgu:Группировка');
-    const schema = repository.schemas.getOrLoadSchemaByClassIri('cpgu:Группировка');
+    await repository.schemas.loadSchemaByClassIri('clss:Grouping');
+    const schema = repository.schemas.getOrLoadSchemaByClassIri('clss:Grouping');
     await selectHelper(
       repository,
       {
@@ -175,8 +175,8 @@ describe('SimpleRetrieve', () => {
   });
 
   it('should return NO Specific Artifacts with non-existed values', async () => {
-    await repository.schemas.loadSchemaByClassIri('cpgu:Группировка');
-    const schema = repository.schemas.getOrLoadSchemaByClassIri('cpgu:Группировка');
+    await repository.schemas.loadSchemaByClassIri('clss:Grouping');
+    const schema = repository.schemas.getOrLoadSchemaByClassIri('clss:Grouping');
     await selectHelper(
       repository,
       {
@@ -243,12 +243,12 @@ describe('SimpleRetrieve', () => {
       (data) => {
         artifactClasses0 = data;
         expect(data.length).toBeGreaterThan(0);
-        const classifierClass0 = data.find((e: any) => e['@id'] === 'cpgu:Classifier');
+        const classifierClass0 = data.find((e: any) => e['@id'] === 'clss:Classifier');
         expect(classifierClass0).toMatchObject({
-          '@id': 'cpgu:Classifier',
+          '@id': 'clss:Classifier',
           '@type': 'rm:ArtifactClasses',
-          title: 'Классификатор',
-          description: 'Классификатор или справочник. Описывает структуру классификатора (не данные из него).',
+          title: 'RequirementClass Title Classifier',
+          description: 'RequirementClass Description Classifier',
           inCreationMenu: true,
         });
       },
@@ -261,13 +261,13 @@ describe('SimpleRetrieve', () => {
         schema,
       },
       (data) => {
-        expect(data.length).toBeGreaterThan(10);
-        const classifierClass = data.find((e: any) => e['@id'] === 'cpgu:Classifier');
+        expect(data.length).toBeGreaterThan(7);
+        const classifierClass = data.find((e: any) => e['@id'] === 'clss:Classifier');
         expect(classifierClass).toMatchObject({
-          '@id': 'cpgu:Classifier',
+          '@id': 'clss:Classifier',
           '@type': 'rm:ArtifactClasses',
-          title: 'Классификатор',
-          description: 'Классификатор или справочник. Описывает структуру классификатора (не данные из него).',
+          title: 'RequirementClass Title Classifier',
+          description: 'RequirementClass Description Classifier',
           inCreationMenu: true,
         });
         expect(data).toEqual(expect.arrayContaining(artifactClasses0));
@@ -373,7 +373,7 @@ describe('SimpleRetrieve', () => {
           },
         ],
       },
-      (data) => expect(data.length).toBe(56),
+      (data) => expect(data.length).toBe(8),
     );
 
     await selectHelper(

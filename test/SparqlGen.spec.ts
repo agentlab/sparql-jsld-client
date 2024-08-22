@@ -34,7 +34,7 @@ jest.setTimeout(500000);
 
 const SchemaWithoutArrayProperties: JSONSchema6forRdf = {
   $schema: 'http://json-schema.org/draft-07/schema#',
-  //$id: 'http://cpgu.kbpm.ru/ns/rm/rdf#PropertyShapeWithoutArrayProperties',
+  //$id: 'https://agentlab.eu/ns/rm/rdf#PropertyShapeWithoutArrayProperties',
   '@id': 'rm:PropertyShapeWithoutArrayProperties',
   '@type': 'sh:NodeShape',
   targetClass: 'sh:PropertyShape',
@@ -50,15 +50,15 @@ const SchemaWithoutArrayProperties: JSONSchema6forRdf = {
       format: 'iri',
     },
     path: {
-      title: 'Путь',
+      title: 'Path',
       type: 'object',
     },
     name: {
-      title: 'Название',
+      title: 'Name',
       type: 'string',
     },
     minCount: {
-      title: 'Минимальный предел',
+      title: 'Min Count',
       type: 'integer',
     },
   },
@@ -88,8 +88,8 @@ describe('SchemaWithoutArrayProperties', () => {
           {
             schema: SchemaWithoutArrayProperties,
             conditions: {
-              path: 'cpgu:fileName',
-              name: 'Название',
+              path: 'clss:fileName',
+              name: 'File Name',
               minCount: 1,
             },
           },
@@ -97,11 +97,11 @@ describe('SchemaWithoutArrayProperties', () => {
       },
       `PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
       PREFIX sh:   <http://www.w3.org/ns/shacl#>
-      PREFIX cpgu: <http://cpgu.kbpm.ru/ns/rm/cpgu#>
+      PREFIX clss: <https://agentlab.eu/ns/rm/classifier#>
       SELECT ?eIri0 WHERE {
         ?eIri0 rdf:type sh:PropertyShape;
-          sh:path cpgu:fileName;
-          sh:name "Название";
+          sh:path clss:fileName;
+          sh:name "File Name";
           sh:minCount 1.
       }`,
     ));
@@ -113,7 +113,7 @@ describe('SchemaWithoutArrayProperties', () => {
           {
             schema: SchemaWithoutArrayProperties,
             conditions: {
-              '@_id': 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml',
+              '@_id': 'file:///myfile.xml',
             },
           },
         ],
@@ -121,10 +121,10 @@ describe('SchemaWithoutArrayProperties', () => {
       `PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
       PREFIX sh:   <http://www.w3.org/ns/shacl#>
       SELECT ?path0 ?name0 ?minCount0 WHERE {
-        <file:///urn-s2-iisvvt-infosystems-classifier-45950.xml> rdf:type sh:PropertyShape;
+        <file:///myfile.xml> rdf:type sh:PropertyShape;
           sh:path ?path0.
-        OPTIONAL { <file:///urn-s2-iisvvt-infosystems-classifier-45950.xml> sh:name ?name0. }
-        OPTIONAL { <file:///urn-s2-iisvvt-infosystems-classifier-45950.xml> sh:minCount ?minCount0. }
+        OPTIONAL { <file:///myfile.xml> sh:name ?name0. }
+        OPTIONAL { <file:///myfile.xml> sh:minCount ?minCount0. }
       }`,
     ));
 
@@ -135,7 +135,7 @@ describe('SchemaWithoutArrayProperties', () => {
           {
             schema: SchemaWithoutArrayProperties,
             conditions: {
-              '@_id': 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml',
+              '@_id': 'file:///myfile.xml',
             },
             variables: {
               path: null,
@@ -147,9 +147,9 @@ describe('SchemaWithoutArrayProperties', () => {
       `PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
       PREFIX sh:   <http://www.w3.org/ns/shacl#>
       SELECT ?path0 ?name0 WHERE {
-        <file:///urn-s2-iisvvt-infosystems-classifier-45950.xml> rdf:type sh:PropertyShape;
+        <file:///myfile.xml> rdf:type sh:PropertyShape;
           sh:path ?path0.
-        <file:///urn-s2-iisvvt-infosystems-classifier-45950.xml> sh:name ?name0.
+        <file:///myfile.xml> sh:name ?name0.
       }`,
     ));
 
@@ -169,7 +169,7 @@ describe('SchemaWithoutArrayProperties', () => {
       },
       `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
       PREFIX dcterms: <http://purl.org/dc/terms/>
-      PREFIX rm: <http://cpgu.kbpm.ru/ns/rm/rdf#>
+      PREFIX rm: <https://agentlab.eu/ns/rm/rdf#>
       SELECT ?identifier0 WHERE {
         ?eIri0 rdf:type rm:Artifact.
         ?eIri0 dcterms:identifier ?identifier0.
@@ -263,7 +263,7 @@ const usedInModuleCollConstrJs: any = {
     {
       schema: usedInModuleSchema,
       conditions: {
-        object: 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml',
+        object: 'file:///myfile.xml',
         subject: '?eIri1',
       },
     },
@@ -318,12 +318,12 @@ describe('ArtifactsInModules', () => {
       PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
       PREFIX dcterms: <http://purl.org/dc/terms/>
       PREFIX oslc: <http://open-services.net/ns/core#>
-      PREFIX nav: <http://cpgu.kbpm.ru/ns/rm/navigation#>
-      PREFIX rm: <http://cpgu.kbpm.ru/ns/rm/rdf#>
-      PREFIX rmUserTypes: <http://cpgu.kbpm.ru/ns/rm/user-types#>
+      PREFIX nav: <https://agentlab.eu/ns/rm/navigation#>
+      PREFIX rm: <https://agentlab.eu/ns/rm/rdf#>
+      PREFIX rmUserTypes: <https://agentlab.eu/ns/rm/user-types#>
       SELECT ?eIri0 ?creator0 ?created0 ?modifiedBy0 ?modified0 ?processArea0 ?parentBinding0 ?depth0 ?bookOrder0 ?sectionNumber0 ?isHeading0 ?eIri1 ?identifier1 ?title1 ?description1 ?creator1 ?created1 ?modifiedBy1 ?modified1 ?processArea1 ?assetFolder1 ?artifactFormat1 ?hasChild1 ?type1 WHERE {
         ?eIri0 rdf:type rmUserTypes:UsedInModule;
-          rdf:object <file:///urn-s2-iisvvt-infosystems-classifier-45950.xml>;
+          rdf:object <file:///myfile.xml>;
           rdf:subject ?eIri1;
           rmUserTypes:parentBinding ?parentBinding0;
           rmUserTypes:depth ?depth0;
@@ -379,8 +379,8 @@ describe('ArtifactSchema', () => {
       PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
       PREFIX dcterms: <http://purl.org/dc/terms/>
       PREFIX oslc: <http://open-services.net/ns/core#>
-      PREFIX nav: <http://cpgu.kbpm.ru/ns/rm/navigation#>
-      PREFIX rm: <http://cpgu.kbpm.ru/ns/rm/rdf#>
+      PREFIX nav: <https://agentlab.eu/ns/rm/navigation#>
+      PREFIX rm: <https://agentlab.eu/ns/rm/rdf#>
       SELECT DISTINCT ?eIri0 ?identifier0 ?title0 ?description0 ?creator0 ?created0 ?modifiedBy0 ?modified0 ?processArea0 ?assetFolder0 ?artifactFormat0 ?type0 WHERE {
         ?eIri0 dcterms:title ?title0.
         ?eIri0 rdf:type ?type0.
@@ -424,7 +424,7 @@ describe('ArtifactSchema', () => {
       `PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
       PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
       PREFIX dcterms: <http://purl.org/dc/terms/>
-      PREFIX rm:      <http://cpgu.kbpm.ru/ns/rm/rdf#>
+      PREFIX rm:      <https://agentlab.eu/ns/rm/rdf#>
       SELECT DISTINCT ?identifier0 WHERE {
         ?eIri0 dcterms:identifier ?identifier0.
         ?eIri0 rdf:type ?type0.
@@ -466,7 +466,7 @@ describe('constructObjectsQuery', () => {
       `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
       PREFIX dcterms: <http://purl.org/dc/terms/>
       PREFIX sh: <http://www.w3.org/ns/shacl#>
-      PREFIX rm: <http://cpgu.kbpm.ru/ns/rm/rdf#>
+      PREFIX rm: <https://agentlab.eu/ns/rm/rdf#>
       CONSTRUCT {
         ?eIri0 rdf:type sh:NodeShape.
         ?eIri0 sh:property ?eIri1.
@@ -523,7 +523,7 @@ describe('constructObjectsQuery', () => {
 
   it('construct one Classifier schema should generate correctly', async () => {
     //repository.schemas.addSchema(SchemaWithArrayProperty);
-    const targetClass = 'cpgu:Classifier';
+    const targetClass = 'clss:Classifier';
     await constructTestHelper(
       {
         entConstrs: [
@@ -543,8 +543,8 @@ describe('constructObjectsQuery', () => {
       `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
       PREFIX dcterms: <http://purl.org/dc/terms/>
       PREFIX sh: <http://www.w3.org/ns/shacl#>
-      PREFIX rm: <http://cpgu.kbpm.ru/ns/rm/rdf#>
-      PREFIX cpgu: <http://cpgu.kbpm.ru/ns/rm/cpgu#>
+      PREFIX rm: <https://agentlab.eu/ns/rm/rdf#>
+      PREFIX clss: <https://agentlab.eu/ns/rm/classifier#>
       CONSTRUCT {
         ?eIri0 rdf:type sh:NodeShape.
         ?eIri0 sh:property ?eIri1.
@@ -606,13 +606,13 @@ describe('constructObjectsQuery', () => {
       PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
       PREFIX dcterms: <http://purl.org/dc/terms/>
       PREFIX oslc: <http://open-services.net/ns/core#>
-      PREFIX nav: <http://cpgu.kbpm.ru/ns/rm/navigation#>
-      PREFIX rm: <http://cpgu.kbpm.ru/ns/rm/rdf#>
-      PREFIX rmUserTypes: <http://cpgu.kbpm.ru/ns/rm/user-types#>
+      PREFIX nav: <https://agentlab.eu/ns/rm/navigation#>
+      PREFIX rm: <https://agentlab.eu/ns/rm/rdf#>
+      PREFIX rmUserTypes: <https://agentlab.eu/ns/rm/user-types#>
       CONSTRUCT {
         ?eIri0 rdf:type rmUserTypes:UsedInModule.
         ?eIri0 rdf:subject ?eIri1.
-        ?eIri0 rdf:object <file:///urn-s2-iisvvt-infosystems-classifier-45950.xml>.
+        ?eIri0 rdf:object <file:///myfile.xml>.
         ?eIri0 dcterms:creator ?creator0.
         ?eIri0 dcterms:created ?created0.
         ?eIri0 oslc:modifiedBy ?modifiedBy0.
@@ -639,7 +639,7 @@ describe('constructObjectsQuery', () => {
       }
       WHERE {
         ?eIri0 rdf:type rmUserTypes:UsedInModule;
-          rdf:object <file:///urn-s2-iisvvt-infosystems-classifier-45950.xml>;
+          rdf:object <file:///myfile.xml>;
           rmUserTypes:parentBinding ?parentBinding0;
           rmUserTypes:depth ?depth0;
           rmUserTypes:bookOrder ?bookOrder0;
@@ -687,7 +687,7 @@ describe('constructObjectsQuery', () => {
         {
           schema: HSObservationShapeSchema,
           conditions: {
-            product: 'https://www.wildberries.ru/catalog/10322023/detail.aspx',
+            product: 'https://www.acme.com/catalog/10322023/detail.aspx',
             parsedAt: {
               relation: 'after',
               value: ['2021-07-01T00:00:00'],
@@ -704,22 +704,22 @@ describe('constructObjectsQuery', () => {
     //console.log(genQueryStr);
     const correctQuery = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
       PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>  
-      PREFIX hs: <https://huntersales.ru/schema#>
+      PREFIX iot: <https://agentlab.eu/ns/iot#>
       CONSTRUCT {
-        ?eIri0 rdf:type hs:HSObservation ;
-          hs:product <https://www.wildberries.ru/catalog/10322023/detail.aspx> ;
-          hs:parsedAt ?parsedAt0 ;
-          hs:price ?price0 ;
-          hs:totalSales ?totalSales0 ;
-          hs:categoryPopularity ?categoryPopularity0 .
+        ?eIri0 rdf:type iot:HSObservation ;
+          iot:product <https://www.acme.com/catalog/10322023/detail.aspx> ;
+          iot:parsedAt ?parsedAt0 ;
+          iot:price ?price0 ;
+          iot:totalSales ?totalSales0 ;
+          iot:categoryPopularity ?categoryPopularity0 .
       } WHERE {
-        ?eIri0 rdf:type hs:HSObservation ;
-          hs:product <https://www.wildberries.ru/catalog/10322023/detail.aspx> ;
-          hs:parsedAt ?parsedAt0 ;
-          hs:totalSales ?totalSales0 .
+        ?eIri0 rdf:type iot:HSObservation ;
+          iot:product <https://www.acme.com/catalog/10322023/detail.aspx> ;
+          iot:parsedAt ?parsedAt0 ;
+          iot:totalSales ?totalSales0 .
         filter(?parsedAt0 >= "2021-07-01T00:00:00"^^xsd:dateTime)
-        OPTIONAL { ?eIri0 hs:price ?price0. }
-        OPTIONAL { ?eIri0 hs:categoryPopularity ?categoryPopularity0. }
+        OPTIONAL { ?eIri0 iot:price ?price0. }
+        OPTIONAL { ?eIri0 iot:categoryPopularity ?categoryPopularity0. }
       }
       ORDER BY (?parsedAt0)`;
     const parser = new Parser();
@@ -734,7 +734,7 @@ describe('constructObjectsQuery', () => {
         {
           schema: HSObservationShapeSchema,
           conditions: {
-            product: 'https://www.wildberries.ru/catalog/10477067/detail.aspx',
+            product: 'https://www.acme.com/catalog/10477067/detail.aspx',
             parsedAt: {
               relation: 'before',
               value: ['2021-07-01T00:00:00'],
@@ -752,23 +752,23 @@ describe('constructObjectsQuery', () => {
     //console.log(genQueryStr);
     const correctQuery = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
       PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>  
-      PREFIX hs: <https://huntersales.ru/schema#>
+      PREFIX iot: <https://agentlab.eu/ns/iot#>
       CONSTRUCT {
-        ?eIri0 rdf:type hs:HSObservation ;
-          hs:product <https://www.wildberries.ru/catalog/10477067/detail.aspx> ;
-          hs:parsedAt ?parsedAt0 ;
-          hs:price ?price0 ;
-          hs:totalSales ?totalSales0 ;
-          hs:categoryPopularity ?categoryPopularity0 .
+        ?eIri0 rdf:type iot:HSObservation ;
+          iot:product <https://www.acme.com/catalog/10477067/detail.aspx> ;
+          iot:parsedAt ?parsedAt0 ;
+          iot:price ?price0 ;
+          iot:totalSales ?totalSales0 ;
+          iot:categoryPopularity ?categoryPopularity0 .
       } WHERE {
         SERVICE <http://192.168.1.33:8090/sparql> {
-          ?eIri0 rdf:type hs:HSObservation ;
-            hs:product <https://www.wildberries.ru/catalog/10477067/detail.aspx> ;
-            hs:parsedAt ?parsedAt0 ;
-            hs:totalSales ?totalSales0 .
+          ?eIri0 rdf:type iot:HSObservation ;
+            iot:product <https://www.acme.com/catalog/10477067/detail.aspx> ;
+            iot:parsedAt ?parsedAt0 ;
+            iot:totalSales ?totalSales0 .
           FILTER(?parsedAt0 <= "2021-07-01T00:00:00"^^xsd:dateTime)
-          OPTIONAL{ ?eIri0 hs:price ?price0 . }
-          OPTIONAL{ ?eIri0 hs:categoryPopularity ?categoryPopularity0 . }
+          OPTIONAL{ ?eIri0 iot:price ?price0 . }
+          OPTIONAL{ ?eIri0 iot:categoryPopularity ?categoryPopularity0 . }
         }
       }
       ORDER BY (?parsedAt0)`;
@@ -785,7 +785,7 @@ describe('constructObjectsQuery', () => {
           schema: ProductCardShapeSchema,
           conditions: {
             '@id': 'mktp:ProductCards_in_Category_Coll_Ent0_con',
-            seller: 'https://www.example.ru',
+            seller: 'https://www.acme.com',
           },
           orderBy: [{ expression: factory.variable('lastMonthSalesValue0'), descending: true }],
           limit: 2,
@@ -798,32 +798,32 @@ describe('constructObjectsQuery', () => {
     const genQueryStr = client.sparqlConstructParams.query;
     //console.log(genQueryStr);
     const correctQuery = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-      PREFIX hs: <https://huntersales.ru/schema#>
+      PREFIX iot: <https://agentlab.eu/ns/iot#>
       CONSTRUCT {
-        ?eIri0 rdf:type hs:ProductCard.
-        ?eIri0 hs:seller <https://www.example.ru>.
-        ?eIri0 hs:name ?name0.
-        ?eIri0 hs:lastMonthSalesValue ?lastMonthSalesValue0.
-        ?eIri0 hs:saleValue ?saleValue0.
-        ?eIri0 hs:brand ?brand0.
-        ?eIri0 hs:imageUrl ?imageUrl0.
+        ?eIri0 rdf:type iot:ProductCard.
+        ?eIri0 iot:seller <https://www.acme.com>.
+        ?eIri0 iot:name ?name0.
+        ?eIri0 iot:lastMonthSalesValue ?lastMonthSalesValue0.
+        ?eIri0 iot:saleValue ?saleValue0.
+        ?eIri0 iot:brand ?brand0.
+        ?eIri0 iot:imageUrl ?imageUrl0.
       }
       WHERE {
         {
           SELECT ?eIri0 ?name0 ?lastMonthSalesValue0 ?saleValue0 ?brand0 ?imageUrl0 WHERE {
             {
               SELECT ?eIri0 ?name0 ?lastMonthSalesValue0 ?saleValue0 ?brand0 WHERE {
-                ?eIri0 rdf:type hs:ProductCard;
-                  hs:seller  <https://www.example.ru> ;
-                  hs:name ?name0;
-                  hs:lastMonthSalesValue ?lastMonthSalesValue0 .
-                OPTIONAL { ?eIri0 hs:saleValue ?saleValue0. }
-                OPTIONAL { ?eIri0 hs:brand ?brand0. }
+                ?eIri0 rdf:type iot:ProductCard;
+                  iot:seller  <https://www.acme.com> ;
+                  iot:name ?name0;
+                  iot:lastMonthSalesValue ?lastMonthSalesValue0 .
+                OPTIONAL { ?eIri0 iot:saleValue ?saleValue0. }
+                OPTIONAL { ?eIri0 iot:brand ?brand0. }
               }
               ORDER BY DESC (?lastMonthSalesValue0)
               LIMIT 2
             }
-            OPTIONAL { ?eIri0 hs:imageUrl ?imageUrl0. }
+            OPTIONAL { ?eIri0 iot:imageUrl ?imageUrl0. }
           }
         }
       }`;
@@ -865,46 +865,46 @@ describe('constructObjectsQuery', () => {
     //console.log(genQueryStr);
     const correctQuery = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
     PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-    PREFIX hs: <https://huntersales.ru/schema#>
+    PREFIX iot: <https://agentlab.eu/ns/iot#>
     CONSTRUCT {
-      ?eIri0 rdf:type hs:ProductCard .
-      ?eIri0 hs:name ?name0 .
-      ?eIri0 hs:lastMonthSalesValue ?lastMonthSalesValue0 .
-      ?eIri0 hs:saleValue ?saleValue0 .
-      ?eIri0 hs:brand ?brand0 .
-      ?eIri0 hs:seller ?seller0 .
-      ?eIri0 hs:imageUrl ?imageUrl0 .
-      ?eIri1 rdf:type hs:HSObservation .
-      ?eIri1 hs:product ?eIri0 .
-      ?eIri1 hs:parsedAt ?parsedAt1 .
-      ?eIri1 hs:price ?price1 .
-      ?eIri1 hs:totalSales ?totalSales1.
-      ?eIri1 hs:categoryPopularity ?categoryPopularity1.
+      ?eIri0 rdf:type iot:ProductCard .
+      ?eIri0 iot:name ?name0 .
+      ?eIri0 iot:lastMonthSalesValue ?lastMonthSalesValue0 .
+      ?eIri0 iot:saleValue ?saleValue0 .
+      ?eIri0 iot:brand ?brand0 .
+      ?eIri0 iot:seller ?seller0 .
+      ?eIri0 iot:imageUrl ?imageUrl0 .
+      ?eIri1 rdf:type iot:HSObservation .
+      ?eIri1 iot:product ?eIri0 .
+      ?eIri1 iot:parsedAt ?parsedAt1 .
+      ?eIri1 iot:price ?price1 .
+      ?eIri1 iot:totalSales ?totalSales1.
+      ?eIri1 iot:categoryPopularity ?categoryPopularity1.
     } WHERE {
       {
         SELECT ?eIri0 ?name0 ?lastMonthSalesValue0 ?saleValue0 ?brand0 ?seller0 ?imageUrl0 WHERE {
           {
             SELECT ?eIri0 ?name0 ?lastMonthSalesValue0 ?saleValue0 ?brand0 ?seller0 WHERE {
-              ?eIri0 rdf:type hs:ProductCard ;
-                hs:name ?name0 ;
-                hs:lastMonthSalesValue ?lastMonthSalesValue0 ;
-                hs:seller ?seller0.
-              OPTIONAL { ?eIri0 hs:saleValue ?saleValue0. }
-              OPTIONAL { ?eIri0 hs:brand ?brand0. }
+              ?eIri0 rdf:type iot:ProductCard ;
+                iot:name ?name0 ;
+                iot:lastMonthSalesValue ?lastMonthSalesValue0 ;
+                iot:seller ?seller0.
+              OPTIONAL { ?eIri0 iot:saleValue ?saleValue0. }
+              OPTIONAL { ?eIri0 iot:brand ?brand0. }
             }
             ORDER BY DESC(?lastMonthSalesValue0)
             LIMIT 2
           }
-          OPTIONAL { ?eIri0 hs:imageUrl ?imageUrl0. }
+          OPTIONAL { ?eIri0 iot:imageUrl ?imageUrl0. }
         }
       } . {
-        ?eIri1 rdf:type hs:HSObservation ;
-          hs:product ?eIri0 ;
-          hs:parsedAt ?parsedAt1 ;
-          hs:totalSales ?totalSales1 .
+        ?eIri1 rdf:type iot:HSObservation ;
+          iot:product ?eIri0 ;
+          iot:parsedAt ?parsedAt1 ;
+          iot:totalSales ?totalSales1 .
         FILTER(?parsedAt1 >= "2021-07-01T00:00:00"^^xsd:dateTime)
-        OPTIONAL { ?eIri1 hs:price ?price1. }
-        OPTIONAL { ?eIri1 hs:categoryPopularity ?categoryPopularity1. }
+        OPTIONAL { ?eIri1 iot:price ?price1. }
+        OPTIONAL { ?eIri1 iot:categoryPopularity ?categoryPopularity1. }
       }
     }
     ORDER BY DESC(?lastMonthSalesValue0) ?parsedAt1`;
@@ -953,29 +953,29 @@ describe('constructObjectsQuery', () => {
     console.log(genQueryStr);
     const correctQuery = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
     PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-    PREFIX hs: <https://huntersales.ru/schema#>
+    PREFIX iot: <https://agentlab.eu/ns/iot#>
     CONSTRUCT {
-      ?eIri0 rdf:type hs:ProductCard .
-      ?eIri0 hs:name ?name0 .
-      ?eIri0 hs:lastMonthSalesValue ?lastMonthSalesValue0 .
-      ?eIri1 rdf:type hs:HSObservation .
-      ?eIri1 hs:product ?eIri0 .
-      ?eIri1 hs:parsedAt ?parsedAt1 .
-      ?eIri1 hs:price ?price1 .
+      ?eIri0 rdf:type iot:ProductCard .
+      ?eIri0 iot:name ?name0 .
+      ?eIri0 iot:lastMonthSalesValue ?lastMonthSalesValue0 .
+      ?eIri1 rdf:type iot:HSObservation .
+      ?eIri1 iot:product ?eIri0 .
+      ?eIri1 iot:parsedAt ?parsedAt1 .
+      ?eIri1 iot:price ?price1 .
     } WHERE {
       {
         SELECT ?eIri0 ?name0 ?lastMonthSalesValue0 WHERE {
-          ?eIri0 rdf:type hs:ProductCard ;
-            hs:name ?name0 ;
-            hs:lastMonthSalesValue ?lastMonthSalesValue0 .
+          ?eIri0 rdf:type iot:ProductCard ;
+            iot:name ?name0 ;
+            iot:lastMonthSalesValue ?lastMonthSalesValue0 .
         }
         ORDER BY DESC(?lastMonthSalesValue0)
         LIMIT 2
     } . {
-        ?eIri1 rdf:type hs:HSObservation ;
-          hs:product ?eIri0 ;
-          hs:parsedAt ?parsedAt1 ;
-          hs:price ?price1 .
+        ?eIri1 rdf:type iot:HSObservation ;
+          iot:product ?eIri0 ;
+          iot:parsedAt ?parsedAt1 ;
+          iot:price ?price1 .
         filter(?parsedAt1 >= "2021-07-01T00:00:00"^^xsd:dateTime)
       }
     }
@@ -998,13 +998,13 @@ describe('deleteObjectQuery', () => {
         ],
       },
       {
-        '@_id': 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml',
+        '@_id': 'file:///myfile.xml',
       },
       `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-      PREFIX rm:  <http://cpgu.kbpm.ru/ns/rm/rdf#>
-      DELETE { <file:///urn-s2-iisvvt-infosystems-classifier-45950.xml> ?p0 ?o0 }
+      PREFIX rm:  <https://agentlab.eu/ns/rm/rdf#>
+      DELETE { <file:///myfile.xml> ?p0 ?o0 }
       WHERE {
-        <file:///urn-s2-iisvvt-infosystems-classifier-45950.xml> rdf:type rm:Artifact;
+        <file:///myfile.xml> rdf:type rm:Artifact;
           ?p0 ?o0.
       }`,
     ));
@@ -1024,7 +1024,7 @@ describe('deleteObjectQuery', () => {
       },
       `PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
       PREFIX dcterms: <http://purl.org/dc/terms/>
-      PREFIX rm:      <http://cpgu.kbpm.ru/ns/rm/rdf#>
+      PREFIX rm:      <https://agentlab.eu/ns/rm/rdf#>
       DELETE { ?eIri0 ?p0 ?o0 }
       WHERE {
         ?eIri0 rdf:type rm:Artifact;
@@ -1045,7 +1045,7 @@ describe('deleteObjectQuery', () => {
       },
       undefined,
       `PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-      PREFIX rm:      <http://cpgu.kbpm.ru/ns/rm/rdf#>
+      PREFIX rm:      <https://agentlab.eu/ns/rm/rdf#>
       DELETE { ?eIri0 ?p0 ?o0 }
       WHERE {
         ?eIri0 rdf:type rm:Artifact;
@@ -1067,17 +1067,17 @@ describe('insertObjectQuery', () => {
       {
         // screened with '_' to distinguish from Condition object @id
         '@_id': 'file:///urn-45952.xml',
-        creator: 'users:amivanoff',
+        creator: 'users:user1',
         created: '1970-01-01T00:00:00-02:00',
       },
       `PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
       PREFIX xsd:     <http://www.w3.org/2001/XMLSchema#>
       PREFIX dcterms: <http://purl.org/dc/terms/>
-      PREFIX rm:      <http://cpgu.kbpm.ru/ns/rm/rdf#>
-      PREFIX users:   <http://cpgu.kbpm.ru/ns/rm/users#>
+      PREFIX rm:      <https://agentlab.eu/ns/rm/rdf#>
+      PREFIX users:   <https://agentlab.eu/ns/rm/users#>
       INSERT DATA {
         <file:///urn-45952.xml> rdf:type rm:Artifact;
-          dcterms:creator users:amivanoff;
+          dcterms:creator users:user1;
           dcterms:created "1970-01-01T00:00:00-02:00"^^xsd:dateTime.
       }`,
     ));
@@ -1099,14 +1099,14 @@ describe('updateObjectQuery', () => {
       {
         title: 'title',
         modified: '2019-08-07T05:21:43.581Z',
-        modifiedBy: 'users:amivanoff',
+        modifiedBy: 'users:user1',
       },
       `PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
       PREFIX xsd:     <http://www.w3.org/2001/XMLSchema#>
       PREFIX dcterms: <http://purl.org/dc/terms/>
       PREFIX oslc:    <http://open-services.net/ns/core#>
-      PREFIX rm:      <http://cpgu.kbpm.ru/ns/rm/rdf#>
-      PREFIX users:   <http://cpgu.kbpm.ru/ns/rm/users#>
+      PREFIX rm:      <https://agentlab.eu/ns/rm/rdf#>
+      PREFIX users:   <https://agentlab.eu/ns/rm/users#>
       DELETE {
         ?eIri0 dcterms:title ?title0;
           dcterms:modified ?modified0;
@@ -1115,7 +1115,7 @@ describe('updateObjectQuery', () => {
       INSERT {
         ?eIri0 dcterms:title "title"^^xsd:string;
           dcterms:modified "2019-08-07T05:21:43.581Z"^^xsd:dateTime;
-          oslc:modifiedBy users:amivanoff.
+          oslc:modifiedBy users:user1.
       }
       WHERE {
         ?eIri0 rdf:type rm:Artifact.
@@ -1144,14 +1144,14 @@ describe('updateObjectQuery', () => {
       {
         title: 'title',
         modified: '2019-08-07T05:21:43.581Z',
-        modifiedBy: 'users:amivanoff',
+        modifiedBy: 'users:user1',
       },
       `PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
       PREFIX xsd:     <http://www.w3.org/2001/XMLSchema#>
       PREFIX dcterms: <http://purl.org/dc/terms/>
       PREFIX oslc:    <http://open-services.net/ns/core#>
-      PREFIX rm:      <http://cpgu.kbpm.ru/ns/rm/rdf#>
-      PREFIX users:   <http://cpgu.kbpm.ru/ns/rm/users#>
+      PREFIX rm:      <https://agentlab.eu/ns/rm/rdf#>
+      PREFIX users:   <https://agentlab.eu/ns/rm/users#>
       DELETE {
         ${id} dcterms:title ?title0;
           dcterms:modified ?modified0;
@@ -1160,7 +1160,7 @@ describe('updateObjectQuery', () => {
       INSERT {
         ${id} dcterms:title "title"^^xsd:string;
           dcterms:modified "2019-08-07T05:21:43.581Z"^^xsd:dateTime;
-          oslc:modifiedBy users:amivanoff.
+          oslc:modifiedBy users:user1.
       }
       WHERE {
         ${id} rdf:type rm:Artifact.

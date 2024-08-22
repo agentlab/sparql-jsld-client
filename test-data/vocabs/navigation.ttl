@@ -1,0 +1,40 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+
+@prefix nav:  <https://agentlab.eu/ns/rm/navigation#> .
+
+# in context https://agentlab.eu/ns/rm/navigation#
+
+# ******** Classes ********
+
+nav:
+  a                owl:Ontology ;
+  dcterms:title    "IBM Compliant Navigation Vocabulary" ;
+  rdfs:label       "Navigation" .
+
+nav:folder
+  a                 rdfs:Class ;
+  rdfs:isDefinedBy  nav: ;
+  rdfs:label        "Folder" ;
+  rdfs:comment      "Abstraction of a directory containing Requirements and RequirementCollections." .
+
+nav:ProjectArea
+  a                 rdfs:Class ;
+  rdfs:isDefinedBy  nav: ;
+  rdfs:label        "ProjectArea" ;
+  rdfs:comment      "Abstraction of a Project Area." .
+
+
+# ******** Properties ********
+
+nav:parent
+  a                 rdf:Property ;
+  rdfs:isDefinedBy  nav: ;
+  rdfs:label        "Parent" ;
+  rdfs:comment      "Expresses a containment relationship between folders." .
+
+nav:processArea
+  a                 rdf:Property ;
+  rdfs:isDefinedBy  nav: ;
+  rdfs:label        "Folder" ;
+  rdfs:comment      "Expresses a containment relationship between folder and project." .

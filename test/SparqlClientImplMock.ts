@@ -125,10 +125,6 @@ export class SparqlClientImplMock implements SparqlClient {
     return this.sparqlUpdateReturn;
   }
 
-  /**
-   * Удаляет все триплы в графе с заданным graph
-   * @param graph
-   */
   async clearGraph(graph = 'null') {
     this.clearGraphParams = {
       graph,

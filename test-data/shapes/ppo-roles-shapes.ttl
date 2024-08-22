@@ -1,0 +1,77 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+
+@prefix rm: <https://agentlab.eu/ns/rm/rdf#> .
+@prefix pporoles: <https://agentlab.eu/ns/rm/ppo-roles#> .
+
+
+# ******** Class Shapes ********
+pporoles:UserShape
+  a                       sh:NodeShape ;
+  sh:targetClass          pporoles:User ;
+  sh:property
+    rm:nameShape ,
+    rm:creatorShape ,
+    rm:createdShape ,
+    rm:modifiedByShape ,
+    rm:modifiedShape ;
+  rm:defaultIndividNs     "https://agentlab.eu/ns/rm/users#"^^xsd:anyURI .
+
+pporoles:GroupShape
+  a                       sh:NodeShape ;
+  sh:targetClass          pporoles:UserGroup ;
+  sh:property
+    rm:nameShape ,
+    rm:creatorShape ,
+    rm:createdShape ,
+    rm:modifiedByShape ,
+    rm:modifiedShape ,
+    pporoles:memberShape ;
+  rm:defaultIndividNs     "https://agentlab.eu/ns/rm/users#"^^xsd:anyURI .
+
+pporoles:PolicyRoleShape
+  a                       sh:NodeShape ;
+  sh:targetClass          pporoles:PolicyRole ;
+  sh:property
+    rm:titleShape ,
+    rm:descriptionShape ,
+    rm:creatorShape ,
+    rm:createdShape ,
+    rm:modifiedByShape ,
+    rm:modifiedShape ,
+    pporoles:roleAgentShape ,
+    pporoles:rolePolicyShape ;
+  rm:defaultIndividNs     "https://agentlab.eu/ns/rm/users#"^^xsd:anyURI .
+
+
+# ******** Property Shapes ********
+
+pporoles:roleAgentShape
+  a                     sh:PropertyShape ;
+  sh:name               "Role Agent"^^xsd:string ;
+  sh:description        "Agent, designated to the Role."^^xsd:string ;
+  sh:path               pporoles:roleAgent ;
+  sh:class              pporoles:UserAgent ;
+  sh:nodeKind           sh:BlankNodeOrIRI .
+
+pporoles:rolePolicyShape
+  a                     sh:PropertyShape ;
+  sh:name               "Role Policy"^^xsd:string ;
+  sh:description        "Policy, assigned to the Role."^^xsd:string ;
+  sh:path               pporoles:rolePolicy ;
+  sh:class              foaf:PrivacyPreference ;
+  sh:nodeKind           sh:BlankNodeOrIRI .
+
+pporoles:memberShape
+  a                     sh:PropertyShape ;
+  sh:name               "Group Member" ;
+  sh:description        "Group Member."^^xsd:string ;
+  sh:path               foaf:member ;
+  sh:class              foaf:UserAgent ;
+  sh:nodeKind           sh:BlankNodeOrIRI .

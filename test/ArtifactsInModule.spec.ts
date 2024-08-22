@@ -69,8 +69,8 @@ const SchemaWithHasChildProp: any = {
   properties: {
     ...artifactSchema.properties,
     hasChild: {
-      title: 'Имеет потомков',
-      description: 'Имеет потомков',
+      title: 'Has Child',
+      description: 'Has Child',
       type: 'boolean',
       shapeModifiability: 'system',
     },
@@ -95,7 +95,7 @@ const usedInModuleCollConstrJs: any = {
         '@type': 'aldkg:EntConstrCondition', // normally gets from schema @id
         //'@_id':
         //'@_type':
-        object: 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml',
+        object: 'file:///myfile.xml',
         subject: '?eIri1',
       },
       //variables: {},
@@ -114,7 +114,7 @@ const usedInModuleCollConstrJs: any = {
             triples: [
               factory.quad(
                 factory.variable('eIri2'),
-                factory.namedNode('http://cpgu.kbpm.ru/ns/rm/user-types#parentBinding'),
+                factory.namedNode('https://agentlab.eu/ns/rm/user-types#parentBinding'),
                 factory.variable('eIri1'),
               ),
             ],
@@ -139,27 +139,27 @@ const moduleObject: any = {
   '@type': 'rmUserTypes:UsedInModule',
   bookOrder: 1,
   created: '2014-02-10T10:12:16.000Z',
-  creator: 'users:amivanoff',
+  creator: 'users:user1',
   depth: 1,
   modified: '2014-02-10T10:12:16.000Z',
-  modifiedBy: 'users:amivanoff',
-  object: 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml',
-  parentBinding: 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml',
-  processArea: 'projects:gishbbProject',
+  modifiedBy: 'users:user1',
+  object: 'file:///myfile.xml',
+  parentBinding: 'file:///myfile.xml',
+  processArea: 'projects:defaultProject',
   sectionNumber: '0-1',
   subject: {
-    '@id': 'cpgu:_tHAikozUEeOiy8owVBW5pQ',
-    '@type': 'cpgu:Группировка',
+    '@id': 'clss:_tHAikozUEeOiy8owVBW5pQ',
+    '@type': 'clss:Grouping',
     artifactFormat: 'rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Text',
     assetFolder: 'folders:samples_module',
     created: '2014-02-10T10:12:16.000Z',
-    creator: 'users:amivanoff',
+    creator: 'users:user1',
     hasChild: true,
     identifier: 30001,
     modified: '2014-02-10T10:12:16.000Z',
-    modifiedBy: 'users:amivanoff',
-    processArea: 'projects:gishbbProject',
-    title: 'ТН ВЭД ТС',
+    modifiedBy: 'users:user1',
+    processArea: 'projects:defaultProject',
+    title: 'Requirement Module 30000 - Grouping 30001 Title',
   },
 };
 
@@ -213,28 +213,28 @@ describe('ArtifactsInModules query should return Module UsedInModules with assoc
           expect(linksAndArtifacts[0]).toMatchObject({
             '@id': 'reqs:_M1HusThYEem2Z_XixsC3pQ',
             '@type': 'rmUserTypes:UsedInModule',
-            processArea: 'projects:gishbbProject',
+            processArea: 'projects:defaultProject',
             bookOrder: 1,
             depth: 1,
-            parentBinding: 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml',
+            parentBinding: 'file:///myfile.xml',
             sectionNumber: '0-1',
-            modifiedBy: 'users:amivanoff',
+            modifiedBy: 'users:user1',
             created: '2014-02-10T10:12:16.000Z',
-            creator: 'users:amivanoff',
+            creator: 'users:user1',
             modified: '2014-02-10T10:12:16.000Z',
-            object: 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml',
+            object: 'file:///myfile.xml',
             subject: {
-              '@id': 'cpgu:_tHAikozUEeOiy8owVBW5pQ',
-              '@type': 'cpgu:Группировка',
-              processArea: 'projects:gishbbProject',
+              '@id': 'clss:_tHAikozUEeOiy8owVBW5pQ',
+              '@type': 'clss:Grouping',
+              processArea: 'projects:defaultProject',
               artifactFormat: 'rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Text',
               assetFolder: 'folders:samples_module',
-              modifiedBy: 'users:amivanoff',
+              modifiedBy: 'users:user1',
               created: '2014-02-10T10:12:16.000Z',
-              creator: 'users:amivanoff',
+              creator: 'users:user1',
               identifier: 30001,
               modified: '2014-02-10T10:12:16.000Z',
-              title: 'ТН ВЭД ТС',
+              title: 'Requirement Module 30000 - Grouping 30001 Title',
               hasChild: true,
             },
           });
@@ -247,7 +247,7 @@ describe('ArtifactsInModules query should return Module UsedInModules with assoc
 
   //TODO: sorting is not working
   /*it('sorted by DESC bookOrder', (done) => {
-    // not nessesary to add, it could be retrieved from server by type IRI
+    // not necessary to add, it could be retrieved from server by type IRI
     // used here to increase predictability
     //provider.addSchema(artifactSchema);
     //provider.addSchema(usedInSchema);
@@ -269,7 +269,7 @@ describe('ArtifactsInModules query should return Module UsedInModules with assoc
             '@type': 'some conditions type', // normally gets from schema @id
             //'@_id':
             //'@_type':
-            object: 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml',
+            object: 'file:///myfile.xml',
           },
           //variables: {},
         },
@@ -288,19 +288,19 @@ describe('ArtifactsInModules query should return Module UsedInModules with assoc
         expect(linksAndArtifacts[0]).toMatchObject({
           '@id': 'reqs:_N1HusThYEem2Z_XixsC3pQ',
           '@type': ['rmUserTypes:UsedInModule', 'rm:Artifact'],
-          object: 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml',
-          subject: 'cpgu:///_Ep8ocYzVEeOiy8owVBW5pQ',
-          parentBinding: 'cpgu:///_zYXy8ozUEeOiy8owVBW5pQ',
+          object: 'file:///myfile.xml',
+          subject: 'clss:///_Ep8ocYzVEeOiy8owVBW5pQ',
+          parentBinding: 'clss:///_zYXy8ozUEeOiy8owVBW5pQ',
           depth: 3,
           bookOrder: 10,
-          '@id1': 'cpgu:///_Ep8ocYzVEeOiy8owVBW5pQ',
+          '@id1': 'clss:///_Ep8ocYzVEeOiy8owVBW5pQ',
           identifier: 30010,
-          title: 'Наименование товарной позиции',
-          creator: 'users:amivanoff',
+          title: 'Requirement Module 30000 - Grouping 30010 Title',
+          creator: 'users:user1',
           created: '2014-02-10T10:12:16.000Z',
-          modifiedBy: 'users:amivanoff',
+          modifiedBy: 'users:user1',
           modified: '2014-02-10T10:12:16.000Z',
-          processArea: 'projects:gishbbProject',
+          processArea: 'projects:defaultProject',
           assetFolder: 'folders:samples_module',
           artifactFormat: 'rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Text',
           hasChild: false,
@@ -312,7 +312,7 @@ describe('ArtifactsInModules query should return Module UsedInModules with assoc
   });
 
   it('sorted by two: ASC bookOrder and DESC depth', (done) => {
-    // not nessesary to add, it could be retrieved from server by type IRI
+    // not necessary to add, it could be retrieved from server by type IRI
     // used here to increase predictability
     //provider.addSchema(artifactSchema);
     //provider.addSchema(usedInSchema);
@@ -379,7 +379,7 @@ const usedInModuleParentCollConstrJs: any = {
             triples: [
               factory.quad(
                 factory.variable('eIri2'),
-                factory.namedNode('http://cpgu.kbpm.ru/ns/rm/user-types#parentBinding'),
+                factory.namedNode('https://agentlab.eu/ns/rm/user-types#parentBinding'),
                 factory.variable('eIri1'),
               ),
             ],
@@ -410,7 +410,7 @@ const usedInModuleChildCollConstrJs: any = {
       conditions: {
         '@id': 'rm:UsedInModuleLink_Child_EntConstr0_Condition',
         '@type': 'aldkg:EntConstrCondition',
-        object: 'file:///urn-s2-iisvvt-infosystems-classifier-45950.xml',
+        object: 'file:///myfile.xml',
       },
     },
   ],

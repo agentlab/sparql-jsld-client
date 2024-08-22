@@ -51,7 +51,7 @@ describe('SparqlClientUpload', () => {
     await uploadFiles(client, [vocabsFiles[0]], rootFolder);
     await client.deleteRepository(rmRepositoryID);
   });
-  it(`SparqlClient should upload 1 cpgu vocab`, async () => {
+  it(`SparqlClient should upload 1 classifier vocab`, async () => {
     rmRepositoryID = genTimestampedName('test_SparqlClientUpload');
     await client.createRepository(
       {

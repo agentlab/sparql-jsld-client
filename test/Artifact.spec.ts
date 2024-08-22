@@ -63,8 +63,8 @@ afterAll(async () => {
 /*async function createRandomTextArtifact(schema: any, artifactFormat: string, assetFolder: string): Promise<any> {
   const uuid = uuid62.v4();
   const newArtifact = {
-    title: 'Требование ' + uuid,
-    description: 'Описание ' + uuid,
+    title: 'Requirement ' + uuid,
+    description: 'Description ' + uuid,
     assetFolder,
     artifactFormat,
   };
@@ -79,8 +79,8 @@ describe('create-artifact-scenario', () => {
   it(`should persist artifact in the store`, async () => {
     //await repository.schemas.loadSchemaByClassIri('rm:Artifact');
     //const artifactSchema = repository.schemas.getOrLoadSchemaByClassIri('rm:Artifact');
-    //await repository.schemas.loadSchemaByClassIri('cpgu:Группировка');
-    //const classifierGroupSchema = repository.schemas.getOrLoadSchemaByClassIri('cpgu:Группировка');
+    //await repository.schemas.loadSchemaByClassIri('clss:Grouping');
+    //const classifierGroupSchema = repository.schemas.getOrLoadSchemaByClassIri('clss:Grouping');
 
     const coll = repository.addColl('rm:ArtifactShape');
     await coll.loadColl();
@@ -151,7 +151,7 @@ describe('create-artifact-scenario', () => {
     });
     const afterDelList11 = await repository.selectObjectsWithTypeInfo({
       schema: artifactSchema,
-      cinditions: { assetFolder },
+      conditions: { assetFolder },
     });
     expect(afterDelList11.length).toBe(2);
     expect(afterDelList11.filter((req: any) => req.identifier === newArtifact2.identifier).length).toBe(0);
@@ -205,7 +205,7 @@ describe('create-artifact-scenario', () => {
 
     //console.log('+++ Modify artifact');
     const forUpdateArtifact4: JsObject = newArtifact4;
-    forUpdateArtifact4.title = 'Изменение заголовка требования';
+    forUpdateArtifact4.title = 'Req Title Change';
 
     //const updatedArtifact4 =
     await repository.updateObject({
@@ -216,7 +216,7 @@ describe('create-artifact-scenario', () => {
       },
     });
     //expect(updatedArtifact4.identifier).toBe(forUpdateArtifact4.identifier);
-    //xpect(updatedArtifact4.title).toBe(forUpdateArtifact4.title);
+    //expect(updatedArtifact4.title).toBe(forUpdateArtifact4.title);
     //expect(forUpdateArtifact4.modified).not.toBe(updatedArtifact4.modified);
     //forUpdateArtifact4.modified = updatedArtifact4.modified;
     //forUpdateArtifact4.modifiedBy = updatedArtifact4.modifiedBy;
@@ -250,7 +250,7 @@ describe('Modify artifact', () => {
   it(`title should be modifiable`, async () => {
     let artifacts = await selectArtifacts({}, graphUri, apiUrl);
     const rec = artifacts[0];
-    const newTitle = 'Изменение заголовка требования';
+    const newTitle = 'Req Title Change';
 
     await updateArtifact(
       rec,
@@ -306,8 +306,8 @@ describe('Modify artifact', () => {
   it(`title and description should be modifiable`, async () => {
     let artifacts = await selectArtifacts({}, graphUri, apiUrl);
     const rec = artifacts[0];
-    const newTitle = 'Изменение2 заголовка требования';
-    const newDescription = 'Изменение2 описания требования';
+    const newTitle = 'Req Title Change2';
+    const newDescription = 'Req Description Change2';
 
     await updateArtifact(
       rec,
@@ -350,10 +350,10 @@ describe('ClearGraph', () => {
     // Creating artifacts
     for (let i = 0; i < 1; ++i) {
       const newArtifact = {
-        title: 'Требование ' + i,
-        description: 'Описание ' + i,
+        title: 'Requirement ' + i,
+        description: 'Description ' + i,
         assetFolder: listFolders[0]['@id],
-        type: 'http://cpgu.kbpm.ru/ns/rm/cpgu#Группировка',
+        type: 'https://agentlab.eu/ns/rm/classifier#Grouping',
         format: 'rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Text',
       };
 
@@ -363,10 +363,10 @@ describe('ClearGraph', () => {
     // Creating module
     for (let i = 0; i < 1; ++i) {
       const newArtifact = {
-        title: 'Модуль ' + i,
-        description: 'Описание ' + i,
+        title: 'Module ' + i,
+        description: 'Description ' + i,
         assetFolder: listFolders[0]['@id'],
-        type: 'http://cpgu.kbpm.ru/ns/rm/cpgu#Classifier',
+        type: 'https://agentlab.eu/ns/rm/classifier#Classifier',
         format: 'rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Module',
       };
 
@@ -377,30 +377,30 @@ describe('ClearGraph', () => {
 
     const insertData = async (assetFolder, index, prefix) => {
       const newArtifact = {
-        title: `Требование ${prefix}-${index}`,
-        description: 'Это требование содержится в директории ' + assetFolder.title,
+        title: `Requirement ${prefix}-${index}`,
+        description: 'This Requirement contains in the Folder ' + assetFolder.title,
         assetFolder: assetFolder['@id'],
-        type: 'http://cpgu.kbpm.ru/ns/rm/cpgu#Группировка',
+        type: 'https://agentlab.eu/ns/rm/classifier#Grouping',
         format: 'rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Text',
       };
 
       await createArtifact(newArtifact, graphUri, apiUrl);
 
       const newModule = {
-        title: `Модуль ${prefix}-${index}`,
-        description: 'Этот модуль содержится в директории ' + assetFolder.title,
+        title: `Module ${prefix}-${index}`,
+        description: 'This Module contains in the Folder ' + assetFolder.title,
         assetFolder: assetFolder['@id'],
-        type: 'http://cpgu.kbpm.ru/ns/rm/cpgu#Группировка',
+        type: 'https://agentlab.eu/ns/rm/classifier#Grouping',
         format: 'rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Text',
       };
 
       await createArtifact(newModule, graphUri, apiUrl);
 
       const newArtifactsCollection = {
-        title: `Набор требований ${prefix}-${index}`,
-        description: 'Этот набор требований содержится в директории ' + assetFolder.title,
+        title: `Collection ${prefix}-${index}`,
+        description: 'This Collection contains in the Folder ' + assetFolder.title,
         assetFolder: assetFolder['@id'],
-        type: 'http://cpgu.kbpm.ru/ns/rm/cpgu#Classifier',
+        type: 'https://agentlab.eu/ns/rm/classifier#Classifier',
         format: 'rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Collection',
       };
 

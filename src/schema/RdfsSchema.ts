@@ -10,7 +10,7 @@
 
 export const NopSchema: any /*JSONSchema6forRdf*/ = {
   $schema: 'http://json-schema.org/draft-07/schema#',
-  //$id: 'http://cpgu.kbpm.ru/ns/rm/rdf#NopSchema',
+  //$id: 'https://agentlab.eu/ns/rm/rdf#NopSchema',
   '@id': 'rm:NopSchema', // json-ld
   '@type': 'sh:NodeShape', // json-ld
   targetClass: 'rdfs:Nop',
@@ -26,7 +26,7 @@ export const NopSchema: any /*JSONSchema6forRdf*/ = {
 
 export const ResourceSchema: any /*JSONSchema6forRdf*/ = {
   $schema: 'http://json-schema.org/draft-07/schema#',
-  //$id: 'http://cpgu.kbpm.ru/ns/rm/rdf#ResourceSchema',
+  //$id: 'https://agentlab.eu/ns/rm/rdf#ResourceSchema',
   '@id': 'rm:ResourceSchema', // json-ld
   '@type': 'sh:NodeShape', // json-ld
   title: 'Resource Schema',
@@ -44,12 +44,12 @@ export const ResourceSchema: any /*JSONSchema6forRdf*/ = {
       title: 'URI',
     },
     '@type': {
-      title: 'Тип',
+      title: 'Class',
       type: 'string',
       format: 'iri',
     },
     label: {
-      title: 'Метка',
+      title: 'Label',
       type: 'string',
     },
   },
@@ -58,7 +58,7 @@ export const ResourceSchema: any /*JSONSchema6forRdf*/ = {
 
 export const ClassSchema: any /*JSONSchema6forRdf*/ = {
   $schema: 'http://json-schema.org/draft-07/schema#',
-  //$id: 'http://cpgu.kbpm.ru/ns/rm/rdf#Class',
+  //$id: 'https://agentlab.eu/ns/rm/rdf#Class',
   '@id': 'rm:Class', // json-ld
   '@type': 'sh:NodeShape', // json-ld
   title: 'Class Schema',
@@ -75,18 +75,18 @@ export const ClassSchema: any /*JSONSchema6forRdf*/ = {
       title: 'URI',
     },
     '@type': {
-      title: 'Тип',
+      title: 'Class',
       type: 'string',
       format: 'iri',
     },
     //label: {
     //  '@id': 'rdfs:label',
-    //  title: 'Метка',
+    //  title: 'Label',
     //  type: 'string',
     //},
     //subClassOf: {
     //  '@id': 'rdfs:subClassOf',
-    //  title: 'Подкласс классов',
+    //  title: 'Subclass of a Class',
     //  type: 'array',
     //  items: {
     //    type: 'string',
@@ -101,8 +101,8 @@ export const ClassSchema: any /*JSONSchema6forRdf*/ = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   '@id': 'rdfs:Datatype', // json-ld
   '@type': 'rdfs:Datatype', // json-ld
-  title: 'Типы данных',
-  description: 'Типы данных',
+  title: 'DataType',
+  description: 'DataType',
   type: 'object',
   '@context': {
     '@type': 'rdf:type',
@@ -115,12 +115,12 @@ export const ClassSchema: any /*JSONSchema6forRdf*/ = {
       format: 'iri',
     },
     '@type': {
-      title: 'Тип',
+      title: 'Class',
       type: 'string',
       format: 'iri',
     },
     label: {
-      title: 'Метка',
+      title: 'Label',
       type: 'string',
     },
     // isDefinedBy: {

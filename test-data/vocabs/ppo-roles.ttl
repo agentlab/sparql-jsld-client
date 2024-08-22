@@ -1,0 +1,68 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix adms: <http://www.w3.org/ns/adms#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix vann: <http://purl.org/vocab/vann/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@prefix ppo: <http://vocab.deri.ie/ppo#> .
+
+@prefix rm: <https://agentlab.eu/ns/rm/rdf#> .
+
+@prefix pporoles: <https://agentlab.eu/ns/rm/ppo-roles#> .
+
+
+<https://agentlab.eu/ns/rm/ppo-roles> a owl:Ontology, adms:SemanticAsset;
+    dcterms:title "Roles Extension for Privacy Preference Ontology (PPO)";
+    dcterms:description "A roles ontology to create RBAC privacy preferences for Linked Data based on PPO ontology";
+    dcterms:modified "2019-08-09"^^xsd:date;
+    vann:preferredNamespaceUri "https://agentlab.eu/ns/rm/ppo-roles#";
+    vann:preferredNamespacePrefix "ppo";
+    dcterms:created "2019-08-09"^^xsd:date;
+    dcterms:type <http://purl.org/adms/assettype/Ontology>;
+    dcterms:status <http://purl.org/adms/status/UnderDevelopment> .
+
+pporoles:ttl a adms:SemanticDistribution;
+    dcterms:FileFormat <>;
+    adms:accessURL "https://agentlab.eu/ns/rm/ppo-roles.ttl";
+    adms:status <http://purl.org/adms/status/Completed> .
+
+pporoles:UserAgent
+    a rdfs:Class ;
+    rdfs:subClassOf 
+        foaf:Agent ;
+    dcterms:title "User Agent" ;
+    dcterms:description "User Agent of a System." .
+
+pporoles:User
+    a rdfs:Class ;
+    rdfs:subClassOf 
+        pporoles:UserAgent ;
+    dcterms:title "User" ;
+    dcterms:description "User of a System." .
+
+pporoles:UserGroup
+    a rdfs:Class ;
+    rdfs:subClassOf 
+        pporoles:UserAgent ;
+    dcterms:title "User Group" ;
+    dcterms:description "Group of System Users." .
+
+
+pporoles:PolicyRole a rdfs:Class, owl:Class;
+    rdfs:label "Policy Role";
+    rdfs:comment "Policy Role connects Agents and security Politics" .
+
+pporoles:roleAgent a rdf:Property, owl:DatatypeProperty;
+    rdfs:label "Role Agent";
+    rdfs:comment "Agent, designated to the Role";
+    rdfs:domain pporoles:PolicyRole;
+    rdfs:range pporoles:UserAgent .
+
+pporoles:rolePolicy a rdf:Property;
+    rdfs:label "Role Policy";
+    rdfs:comment "Policy, assigned to the Role";
+    rdfs:domain pporoles:PolicyRole ;
+    rdfs:range ppo:PrivacyPreference .

@@ -86,7 +86,7 @@ describe('classshape-scenario', () => {
   });
 
   it('should retrieve 0 superclasses for root class from server', async () => {
-    const iri = 'rm:Artifact'; //'cpgu:Document';
+    const iri = 'rm:Artifact'; //'clss:Document';
     const collConstr = {
       entConstrs: [
         {
@@ -106,7 +106,7 @@ describe('classshape-scenario', () => {
   });
 
   it('should retrieve 2 superclasses for sub-class from server', async () => {
-    const iri = 'cpgu:Document';
+    const iri = 'clss:Document';
     const collConstr = {
       entConstrs: [
         {
@@ -180,11 +180,11 @@ describe('classshape-scenario', () => {
   it('get all shape properties from 2 parent entConstrs with UTF-8', async () => {
     expect(repository.ns.current.size).toBeGreaterThan(4);
     // check first-time schema retrieving
-    await repository.schemas.loadSchemaByClassIri('cpgu:Группировка');
-    const classifierSchema1 = repository.schemas.getOrLoadSchemaByClassIri('cpgu:Группировка');
+    await repository.schemas.loadSchemaByClassIri('clss:Grouping');
+    const classifierSchema1 = repository.schemas.getOrLoadSchemaByClassIri('clss:Grouping');
     expect(classifierSchema1).toEqual(expect.anything());
     // check cached schema retrieving
-    const classifierSchema2 = repository.schemas.getOrLoadSchemaByClassIri('cpgu:Группировка');
+    const classifierSchema2 = repository.schemas.getOrLoadSchemaByClassIri('clss:Grouping');
     expect(classifierSchema2).toEqual(expect.anything());
   });
 

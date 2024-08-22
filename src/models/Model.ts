@@ -22,7 +22,7 @@ export const rootModelInitialState: any = {
     login: 'guest@example.com',
     name: 'Guest',
   },
-  processArea: 'projects:gishbbProject',
+  processArea: 'projects:defaultProject',
   ns: {
     current: {
       rdf: 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
@@ -30,7 +30,7 @@ export const rootModelInitialState: any = {
       xsd: 'http://www.w3.org/2001/XMLSchema#',
       sesame: 'http://www.openrdf.org/schema/sesame#', //rdf4j DirectType Inferencer sesame:directSubClassOf
       rdf4j: 'http://rdf4j.org/schema/rdf4j#', //rdf4j Default Graph rdf4j:nil, rdf4j:SHACLShapeGraph
-      aldkg: 'https://agentlab.eu/ldkg/onto#',
+      aldkg: 'https://agentlab.eu/ns/ldkg#',
     },
   },
   schemas: {

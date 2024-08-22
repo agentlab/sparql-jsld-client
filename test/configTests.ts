@@ -25,25 +25,25 @@ export const testNs: JsStrObj = {
   oslc_asset: 'http://open-services.net/ns/asset#',
   sh: 'http://www.w3.org/ns/shacl#',
 
-  acl: 'http://www.w3.org/ns/auth/acl#',
+  //acl: 'http://www.w3.org/ns/auth/acl#',
   ppo: 'http://vocab.deri.ie/ppo#',
-  pporoles: 'https://agentlab.ru/onto/ppo-roles#',
-  policies: 'http://cpgu.kbpm.ru/ns/rm/policies#',
+  pporoles: 'https://agentlab.eu/ns/rm/ppo-roles#',
+  //policies: 'https://agentlab.eu/ns/rm/policies#',
 
-  nav: 'http://cpgu.kbpm.ru/ns/rm/navigation#',
-  rm: 'http://cpgu.kbpm.ru/ns/rm/rdf#',
-  rmUserTypes: 'http://cpgu.kbpm.ru/ns/rm/user-types#',
-  cpgu: 'http://cpgu.kbpm.ru/ns/rm/cpgu#',
+  nav: 'https://agentlab.eu/ns/rm/navigation#',
+  rm: 'https://agentlab.eu/ns/rm/rdf#',
+  rmUserTypes: 'https://agentlab.eu/ns/rm/user-types#',
+  clss: 'https://agentlab.eu/ns/rm/classifier#',
 
-  users: 'http://cpgu.kbpm.ru/ns/rm/users#',
-  projects: 'http://cpgu.kbpm.ru/ns/rm/projects#',
-  folders: 'http://cpgu.kbpm.ru/ns/rm/folders#',
-  reqs: 'http://cpgu.kbpm.ru/ns/rm/reqs#',
+  users: 'https://agentlab.eu/ns/rm/users#',
+  projects: 'https://agentlab.eu/ns/rm/projects#',
+  folders: 'https://agentlab.eu/ns/rm/folders#',
+  reqs: 'https://agentlab.eu/ns/rm/reqs#',
 
-  hs: 'https://huntersales.ru/schema#',
+  iot: 'https://agentlab.eu/ns/iot#',
 };
 
-export const rootFolder = '../rdf-data-expert/';
+export const rootFolder = './test-data/';
 
 export const vocabsFiles: FileUploadConfig[] = [
   {
@@ -58,10 +58,6 @@ export const vocabsFiles: FileUploadConfig[] = [
     file: 'vocabs/xsd.ttl',
     baseURI: '<http://www.w3.org/2001/XMLSchema#>',
   },
-  {
-    file: 'vocabs/xsd-ru.ttl',
-    baseURI: '<http://cpgu.kbpm.ru/ns/xsd#>',
-  },
   // deadlocks rdfs+dt
   //{
   //  file: 'vocabs/shacl.ttl',
@@ -69,64 +65,64 @@ export const vocabsFiles: FileUploadConfig[] = [
   //},
   {
     file: 'vocabs/navigation.ttl',
-    baseURI: '<http://cpgu.kbpm.ru/ns/rm/navigation#>',
+    baseURI: '<https://agentlab.eu/ns/rm/navigation#>',
   },
   {
     file: 'vocabs/rm.ttl',
-    baseURI: '<http://cpgu.kbpm.ru/ns/rm/rdf#>',
+    baseURI: '<https://agentlab.eu/ns/rm/rdf#>',
   },
   {
     file: 'vocabs/rm-user-types.ttl',
-    baseURI: '<http://cpgu.kbpm.ru/ns/rm/user-types#>',
+    baseURI: '<https://agentlab.eu/ns/rm/user-types#>',
   },
   {
-    file: 'vocabs/cpgu.ttl',
-    baseURI: '<http://cpgu.kbpm.ru/ns/rm/cpgu#>',
+    file: 'vocabs/classifier.ttl',
+    baseURI: '<https://agentlab.eu/ns/rm/classifier#>',
   },
-  {
+  /*{
     file: 'vocabs/acl.ttl',
     baseURI: '<http://www.w3.org/ns/auth/acl#>',
-  },
+  },*/
   {
     file: 'vocabs/ppo.ttl',
     baseURI: '<http://vocab.deri.ie/ppo#>',
   },
   {
     file: 'vocabs/ppo-roles.ttl',
-    baseURI: '<https://agentlab.ru/onto/ppo-roles#>',
+    baseURI: '<https://agentlab.eu/ns/rm/ppo-roles#>',
   },
 ];
 
 export const shapesFiles: FileUploadConfig[] = [
   {
-    file: 'shapes/shacl/ppo-roles-shapes.ttl',
-    baseURI: '<https://agentlab.ru/onto/ppo-roles#>',
+    file: 'shapes/ppo-roles-shapes.ttl',
+    baseURI: '<https://agentlab.eu/ns/rm/ppo-roles#>',
     graph: '<http://rdf4j.org/schema/rdf4j#SHACLShapeGraph>',
   },
   // deadlocks rdfs+dt
   //{
-  //  file: 'shapes/shacl/shacl-shacl.ttl',
+  //  file: 'shapes/shacl-shacl.ttl',
   //  baseURI: '<http://www.w3.org/ns/shacl-shacl#>',
   //  graph: '<http://rdf4j.org/schema/rdf4j#SHACLShapeGraph>',
   //},
   {
-    file: 'shapes/shacl/xsd-shapes.ttl',
-    baseURI: '<http://cpgu.kbpm.ru/ns/xsd-shapes#>',
+    file: 'shapes/xsd-shapes.ttl',
+    baseURI: '<https://agentlab.eu/ns/xsd#>',
     graph: '<http://rdf4j.org/schema/rdf4j#SHACLShapeGraph>',
   },
   {
-    file: 'shapes/shacl/rm/rm-shapes.ttl',
-    baseURI: '<http://cpgu.kbpm.ru/ns/rm/rdf#>',
+    file: 'shapes/rm-shapes.ttl',
+    baseURI: '<https://agentlab.eu/ns/rm/rdf#>',
     graph: '<http://rdf4j.org/schema/rdf4j#SHACLShapeGraph>',
   },
   {
-    file: 'shapes/shacl/rm/rm-user-types-shapes.ttl',
-    baseURI: '<http://cpgu.kbpm.ru/ns/rm/user-types#>',
+    file: 'shapes/rm-user-types-shapes.ttl',
+    baseURI: '<https://agentlab.eu/ns/rm/user-types#>',
     graph: '<http://rdf4j.org/schema/rdf4j#SHACLShapeGraph>',
   },
   {
-    file: 'shapes/shacl/cpgu/cpgu-shapes.ttl',
-    baseURI: '<http://cpgu.kbpm.ru/ns/rm/cpgu#>',
+    file: 'shapes/classifier-shapes.ttl',
+    baseURI: '<https://agentlab.eu/ns/rm/classifier#>',
     graph: '<http://rdf4j.org/schema/rdf4j#SHACLShapeGraph>',
   },
 ];
@@ -134,32 +130,32 @@ export const shapesFiles: FileUploadConfig[] = [
 export const usersFiles: FileUploadConfig[] = [
   {
     file: 'data/users.ttl',
-    baseURI: '<http://cpgu.kbpm.ru/ns/rm/users#>',
+    baseURI: '<https://agentlab.eu/ns/rm/users#>',
   },
-  {
+  /*{
     file: 'data/access-management.ttl',
-    baseURI: '<http://cpgu.kbpm.ru/ns/rm/policies#>',
-  },
+    baseURI: '<https://agentlab.eu/ns/rm/policies#>',
+  },*/
 ];
 
 export const projectsFoldersFiles: FileUploadConfig[] = [
   {
     file: 'data/projects.ttl',
-    baseURI: '<http://cpgu.kbpm.ru/ns/rm/projects#>',
+    baseURI: '<https://agentlab.eu/ns/rm/projects#>',
   },
   {
     file: 'data/folders.ttl',
-    baseURI: '<http://cpgu.kbpm.ru/ns/rm/folders#>',
+    baseURI: '<https://agentlab.eu/ns/rm/folders#>',
   },
 ];
 
 export const samplesFiles: FileUploadConfig[] = [
   {
-    file: 'data/cpgu/sample-module.ttl',
-    baseURI: '<http://cpgu.kbpm.ru/ns/rm/reqs#>',
+    file: 'data/sample-module.ttl',
+    baseURI: '<https://agentlab.eu/ns/rm/reqs#>',
   },
   {
-    file: 'data/cpgu/sample-collection.ttl',
-    baseURI: '<http://cpgu.kbpm.ru/ns/rm/reqs#>',
+    file: 'data/sample-collection.ttl',
+    baseURI: '<https://agentlab.eu/ns/rm/reqs#>',
   },
 ];

@@ -1,0 +1,200 @@
+@prefix rdf:                <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xsd:                <http://www.w3.org/2001/XMLSchema#> .
+@prefix oslc_asset:         <http://open-services.net/ns/asset#> .
+@prefix clss:               <https://agentlab.eu/ns/rm/classifier#> .
+@prefix dc:                 <http://purl.org/dc/elements/1.1/> .
+@prefix dcterms:            <http://purl.org/dc/terms/> .
+@prefix rm:                 <https://agentlab.eu/ns/rm/rdf#> .
+@prefix rmUserTypes:        <https://agentlab.eu/ns/rm/user-types#> .
+@prefix sh:                 <http://www.w3.org/ns/shacl#> .
+
+#####################################
+### Superclass shapes
+#####################################
+
+clss:GenericArtifactShape
+  a                       sh:NodeShape ;
+  sh:targetClass          clss:GenericArtifact ;
+  dcterms:title           "RequirementClassShape GenericArtifact Title" ;
+  dcterms:description     "RequirementClassShape GenericArtifact Description" ;
+  sh:property
+    dcterms:alternativeShape ,
+    clss:uriShape ,
+    clss:statusShape ,
+    dcterms:abstractShape .
+
+clss:OSLCAssetArtifactShape
+  a                       sh:NodeShape ;
+  sh:targetClass          clss:OSLCAssetArtifact ;
+  dcterms:title           "RequirementClassShape OSLCAssetArtifact Title" ;
+  dcterms:description     "RequirementClassShape OSLCAssetArtifact Description" ;
+  sh:property
+    oslc_asset:guidShape ,
+    oslc_asset:versionShape .
+
+clss:FileLinkArtifactShape
+  a                       sh:NodeShape ;
+  sh:targetClass          clss:FileLinkArtifact ;
+  dcterms:title           "RequirementClassShape FileLinkArtifact Title" ;
+  dcterms:description     "RequirementClassShape FileLinkArtifact Description" ;
+  sh:property
+    clss:fileShape ,
+    clss:linkShape .
+
+#####################################
+### Class shapes
+#####################################
+clss:ClassifierShape
+  a                       sh:NodeShape ;
+  sh:targetClass          clss:Classifier ;
+  dcterms:title           "RequirementClassShape Classifier Title" ;
+  dcterms:description     "RequirementClassShape Classifier Description" ;
+  rm:inCreationMenu       true ;
+  rm:defaultIndividNs     "https://agentlab.eu/ns/rm/classifier#"^^xsd:anyURI ;
+  rm:defaultFormat        rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Module ;
+  rm:iconReference        <https://agentlab.eu/ns/rm/images/use-case> .
+
+clss:GroupingShape
+  a                       sh:NodeShape ;
+  sh:targetClass          clss:Grouping ;
+  dcterms:title           "RequirementClassShape Grouping Title" ;
+  dcterms:description     "RequirementClassShape Grouping Description" ;
+  sh:property
+    clss:formatShape ,
+    clss:dataTypeShape ;
+  rm:inCreationMenu       true ;
+  rm:defaultIndividNs     "https://agentlab.eu/ns/rm/classifier#"^^xsd:anyURI ;
+  rm:defaultFormat        rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Text .
+
+clss:DocumentShape
+  a                       sh:NodeShape ;
+  sh:targetClass          clss:Document ;
+  dcterms:title           "RequirementClassShape Document Title" ;
+  dcterms:description     "RequirementClassShape Document Description" ;
+  rm:inCreationMenu       true ;
+  rm:defaultIndividNs     "https://agentlab.eu/ns/rm/classifier#"^^xsd:anyURI ;
+  rm:defaultFormat        rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Text ;
+  rm:iconReference        <https://agentlab.eu/ns/rm/images/general-document> .
+
+clss:InfoShape
+  a                       sh:NodeShape ;
+  sh:targetClass          clss:Info ;
+  dcterms:title           "RequirementClassShape Info Title" ;
+  dcterms:description     "RequirementClassShape Info Description" ;
+  rm:inCreationMenu       true ;
+  rm:defaultIndividNs     "https://agentlab.eu/ns/rm/classifier#"^^xsd:anyURI ;
+  rm:defaultFormat        rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Collection ;
+  rm:iconReference        <https://agentlab.eu/ns/rm/images/process-diagram> .
+
+
+#####################################
+### Property shapes
+#####################################
+
+#dc:typeShape
+#  a                       sh:PropertyShape ;
+#  sh:name                 "type" ;
+#  sh:path                 dc:type ;
+#  sh:maxCount             1 ;
+#  sh:datatype             xsd:string .
+
+clss:uriShape
+  a                       sh:PropertyShape ;
+  sh:name                 "PropertyShape URI Name" ;
+  sh:description          "PropertyShape URI Description" ;
+  sh:path                 clss:uri ;
+  rm:shapeModifiability   "user" ;
+  rm:valueModifiability   "user" ;
+  sh:maxCount             1 ;
+  sh:nodeKind             sh:IRI .
+
+clss:statusShape
+  a                       sh:PropertyShape ;
+  sh:name                 "PropertyShape Status Name" ;
+  sh:description          "PropertyShape Status Description" ;
+  sh:path                 clss:status ;
+# who could modify shape data
+  rm:shapeModifiability   "user" ;
+# who could modify value data
+  rm:valueModifiability   "user" ;
+#  sh:minCount             1 ;
+  sh:maxCount             1 ;
+  sh:nodeKind             sh:IRI ;
+  sh:class                rmUserTypes:_YwrbNRmREemK5LEaKhoOow .
+
+dcterms:alternativeShape
+  a                       sh:PropertyShape ;
+  sh:name                 "PropertyShape Alternative Name" ;
+  sh:path                 dcterms:alternative ;
+  rm:shapeModifiability   "user" ;
+  rm:valueModifiability   "user" ;
+  sh:maxCount             1 ;
+  sh:datatype             xsd:string .
+
+dcterms:abstractShape
+  a                       sh:PropertyShape ;
+  sh:name                 "PropertyShape Abstract Name" ;
+  sh:path                 dcterms:abstract ;
+  rm:shapeModifiability   "user" ;
+  rm:valueModifiability   "user" ;
+  sh:maxCount             1 ;
+  sh:datatype             xsd:string .
+
+oslc_asset:guidShape
+  a                       sh:PropertyShape ;
+  sh:name                 "PropertyShape Guid Name" ;
+  sh:path                 oslc_asset:guid ;
+  rm:shapeModifiability   "user" ;
+  rm:valueModifiability   "user" ;
+  sh:maxCount             1 ;
+  sh:datatype             xsd:string .
+
+oslc_asset:versionShape
+  a                       sh:PropertyShape ;
+  sh:name                 "PropertyShape Version Name" ;
+  sh:path                 oslc_asset:version ;
+  rm:shapeModifiability   "user" ;
+  rm:valueModifiability   "user" ;
+  sh:maxCount             1 ;
+  sh:datatype             xsd:string .
+
+clss:fileShape
+  a                       sh:PropertyShape ;
+  sh:name                 "PropertyShape File Name" ;
+  sh:description          "PropertyShape File Description" ;
+  sh:path                 clss:file ;
+  rm:shapeModifiability   "user" ;
+  rm:valueModifiability   "user" ;
+  sh:maxCount             1 ;
+  sh:nodeKind             sh:IRI ;
+  sh:class                clss:File .
+
+clss:formatShape
+  a                       sh:PropertyShape ;
+  sh:name                 "PropertyShape Format Name" ;
+  sh:description          "PropertyShape Format Description" ;
+  sh:path                 clss:format ;
+  rm:shapeModifiability   "user" ;
+  rm:valueModifiability   "user" ;
+  sh:maxCount             1 ;
+  sh:datatype             xsd:string .
+
+clss:dataTypeShape
+  a                       sh:PropertyShape ;
+  sh:name                 "PropertyShape DataType Name" ;
+  sh:description          "PropertyShape DataType Description" ;
+  sh:path                 clss:dataType ;
+  rm:shapeModifiability   "user" ;
+  rm:valueModifiability   "user" ;
+  sh:maxCount             1 ;
+  sh:datatype             xsd:string .
+
+clss:linkShape
+  a                       sh:PropertyShape ;
+  sh:name                 "PropertyShape Link Name" ;
+  sh:description          "PropertyShape Link Description" ;
+  sh:path                 clss:link ;
+  rm:shapeModifiability   "user" ;
+  rm:valueModifiability   "user" ;
+  sh:maxCount             1 ;
+  sh:nodeKind             sh:IRI .

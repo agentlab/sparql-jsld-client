@@ -1,0 +1,19 @@
+@prefix rdf:       <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xsd:       <http://www.w3.org/2001/XMLSchema#> .
+@prefix dcterms:   <http://purl.org/dc/terms/> .
+@prefix oslc:      <http://open-services.net/ns/core#> .
+
+@prefix nav:       <https://agentlab.eu/ns/rm/navigation#> .
+
+@prefix users:     <https://agentlab.eu/ns/rm/users#> .
+@prefix projects:  <https://agentlab.eu/ns/rm/projects#> .
+
+# in context https://agentlab.eu/ns/rm/projects#
+
+projects:defaultProject
+  a                       nav:ProjectArea ;
+  dcterms:title           "Default Project" ;
+  dcterms:created         "2019-01-16T13:21:08.720Z"^^xsd:dateTime ;
+  dcterms:creator         users:user1 ;
+  dcterms:modified        "2019-01-16T13:21:08.720Z"^^xsd:dateTime ;
+  oslc:modifiedBy         users:user1 .

@@ -90,16 +90,16 @@ describe('SparqlClient', () => {
   });
   it(`SparqlClient should select direct parent classes`, async () => {
     const query = `PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-    PREFIX cpgu: <http://cpgu.kbpm.ru/ns/rm/cpgu#>
-    SELECT ?superClass WHERE { cpgu:Classifier rdfs:subClassOf ?superClass. }`;
+    PREFIX clss: <https://agentlab.eu/ns/rm/classifier#>
+    SELECT ?superClass WHERE { clss:Classifier rdfs:subClassOf ?superClass. }`;
     const results = await client.sparqlSelect(query, { infer: 'false' });
     //console.log('results', json2str(results));
     expect(results.bindings).toHaveLength(1);
   });
   it(`SparqlClient should select one directSubClassOf with enabled inference`, async () => {
     const query = `PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-    PREFIX cpgu: <http://cpgu.kbpm.ru/ns/rm/cpgu#>
-    SELECT ?superClass WHERE { cpgu:Classifier sesame:directSubClassOf ?superClass. }`;
+    PREFIX clss: <https://agentlab.eu/ns/rm/classifier#>
+    SELECT ?superClass WHERE { clss:Classifier sesame:directSubClassOf ?superClass. }`;
     const results = await client.sparqlSelect(query);
     //console.log('results', json2str(results));
     expect(results.bindings).toHaveLength(1);
@@ -109,7 +109,7 @@ describe('SparqlClient', () => {
     /*const query = `PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
     PREFIX sh: <http://www.w3.org/ns/shacl#>
     PREFIX dcterms: <http://purl.org/dc/terms/>
-    PREFIX rm: <http://cpgu.kbpm.ru/ns/rm/rdf#>
+    PREFIX rm: <https://agentlab.eu/ns/rm/rdf#>
     CONSTRUCT {
       ?eIri0 rdf:type sh:NodeShape;
         sh:targetClass rm:Artifact;
@@ -161,7 +161,7 @@ describe('SparqlClient', () => {
     const query = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
     PREFIX dcterms: <http://purl.org/dc/terms/>
     PREFIX sh: <http://www.w3.org/ns/shacl#>
-    PREFIX rm: <http://cpgu.kbpm.ru/ns/rm/rdf#>
+    PREFIX rm: <https://agentlab.eu/ns/rm/rdf#>
     CONSTRUCT {
       ?eIri0 rdf:type sh:NodeShape;
         sh:targetClass rm:Artifact;
@@ -318,12 +318,12 @@ describe('SparqlClient', () => {
   });
 
   it(`SparqlClient should construct Classifier shape with array props`, async () => {
-    const targetClass = 'cpgu:Classifier';
+    const targetClass = 'clss:Classifier';
     /*const query = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
     PREFIX dcterms: <http://purl.org/dc/terms/>
     PREFIX sh: <http://www.w3.org/ns/shacl#>
-    PREFIX rm: <http://cpgu.kbpm.ru/ns/rm/rdf#>
-    PREFIX cpgu: <http://cpgu.kbpm.ru/ns/rm/cpgu#>
+    PREFIX rm: <https://agentlab.eu/ns/rm/rdf#>
+    PREFIX clss: <https://agentlab.eu/ns/rm/classifier#>
     CONSTRUCT {
       ?eIri0 rdf:type sh:NodeShape.
       ?eIri0 sh:targetClass ${targetClass}.
@@ -379,8 +379,8 @@ describe('SparqlClient', () => {
     const query = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
     PREFIX dcterms: <http://purl.org/dc/terms/>
     PREFIX sh: <http://www.w3.org/ns/shacl#>
-    PREFIX rm: <http://cpgu.kbpm.ru/ns/rm/rdf#>
-    PREFIX cpgu: <http://cpgu.kbpm.ru/ns/rm/cpgu#>
+    PREFIX rm: <https://agentlab.eu/ns/rm/rdf#>
+    PREFIX clss: <https://agentlab.eu/ns/rm/classifier#>
     CONSTRUCT {
       ?eIri0 rdf:type sh:NodeShape.
       ?eIri0 sh:targetClass ${targetClass}.
@@ -543,7 +543,7 @@ describe('SparqlClient', () => {
 
   /*
   const query = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-    PREFIX nav: <http://cpgu.kbpm.ru/ns/rm/navigation#>
+    PREFIX nav: <https://agentlab.eu/ns/rm/navigation#>
     PREFIX oslc: <http://open-services.net/ns/core#>
     PREFIX dcterms: <http://purl.org/dc/terms/>
     CONSTRUCT {
@@ -572,7 +572,7 @@ describe('SparqlClient', () => {
 
   it(`SparqlClient should construct Folder`, async () => {
     const query = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-    PREFIX nav: <http://cpgu.kbpm.ru/ns/rm/navigation#>
+    PREFIX nav: <https://agentlab.eu/ns/rm/navigation#>
     PREFIX oslc: <http://open-services.net/ns/core#>
     PREFIX dcterms: <http://purl.org/dc/terms/>
     CONSTRUCT {
@@ -606,39 +606,39 @@ describe('SparqlClient', () => {
   //   const client = new SparqlClientImpl(rdfServerUrl);
   //   client.setRepositoryId('mktp-fed');
   //   const query = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-  //   PREFIX hs: <https://huntersales.ru/schema#>
+  //   PREFIX iot: <https://agentlab.eu/ns/iot#>
   //   CONSTRUCT {
-  //     ?eIri0 rdf:type hs:HSObservation.
-  //     ?eIri0 hs:product <https://www.wildberries.ru/catalog/10477061/detail.aspx>.
-  //     ?eIri0 hs:parsedAt ?parsedAt0.
-  //     ?eIri0 hs:categoryPopularity ?categoryPopularity0.
-  //     ?eIri0 hs:commentsCount ?commentsCount0.
-  //     ?eIri0 hs:price ?price0.
-  //     ?eIri0 hs:questionsCount ?questionsCount0.
-  //     ?eIri0 hs:saleValue ?saleValue0.
-  //     ?eIri0 hs:salesAmountDiff ?salesAmountDiff0.
-  //     ?eIri0 hs:stocksDiffOrders ?stocksDiffOrders0.
-  //     ?eIri0 hs:stocksDiffReturns ?stocksDiffReturns0.
-  //     ?eIri0 hs:stocks ?stocks0.
-  //     ?eIri0 hs:totalSalesDiff ?totalSalesDiff0.
-  //     ?eIri0 hs:totalSales ?totalSales0.
+  //     ?eIri0 rdf:type iot:HSObservation.
+  //     ?eIri0 iot:product <https://www.acme.com/catalog/10477061/detail.aspx>.
+  //     ?eIri0 iot:parsedAt ?parsedAt0.
+  //     ?eIri0 iot:categoryPopularity ?categoryPopularity0.
+  //     ?eIri0 iot:commentsCount ?commentsCount0.
+  //     ?eIri0 iot:price ?price0.
+  //     ?eIri0 iot:questionsCount ?questionsCount0.
+  //     ?eIri0 iot:saleValue ?saleValue0.
+  //     ?eIri0 iot:salesAmountDiff ?salesAmountDiff0.
+  //     ?eIri0 iot:stocksDiffOrders ?stocksDiffOrders0.
+  //     ?eIri0 iot:stocksDiffReturns ?stocksDiffReturns0.
+  //     ?eIri0 iot:stocks ?stocks0.
+  //     ?eIri0 iot:totalSalesDiff ?totalSalesDiff0.
+  //     ?eIri0 iot:totalSales ?totalSales0.
   //   }
   //   WHERE {
   //     SERVICE <http://192.168.1.33:8090/sparql> {
-  //     ?eIri0 rdf:type hs:HSObservation;
-  //       hs:product <https://www.wildberries.ru/catalog/10477061/detail.aspx>;
-  //       hs:parsedAt ?parsedAt0;
-  //       hs:categoryPopularity ?categoryPopularity0;
-  //       hs:commentsCount ?commentsCount0;
-  //       hs:price ?price0;
-  //       hs:questionsCount ?questionsCount0;
-  //       hs:saleValue ?saleValue0;
-  //       hs:salesAmountDiff ?salesAmountDiff0;
-  //       hs:stocksDiffOrders ?stocksDiffOrders0;
-  //       hs:stocksDiffReturns ?stocksDiffReturns0;
-  //       hs:stocks ?stocks0;
-  //       hs:totalSalesDiff ?totalSalesDiff0;
-  //       hs:totalSales ?totalSales0.
+  //     ?eIri0 rdf:type iot:HSObservation;
+  //       iot:product <https://www.acme.com/catalog/10477061/detail.aspx>;
+  //       iot:parsedAt ?parsedAt0;
+  //       iot:categoryPopularity ?categoryPopularity0;
+  //       iot:commentsCount ?commentsCount0;
+  //       iot:price ?price0;
+  //       iot:questionsCount ?questionsCount0;
+  //       iot:saleValue ?saleValue0;
+  //       iot:salesAmountDiff ?salesAmountDiff0;
+  //       iot:stocksDiffOrders ?stocksDiffOrders0;
+  //       iot:stocksDiffReturns ?stocksDiffReturns0;
+  //       iot:stocks ?stocks0;
+  //       iot:totalSalesDiff ?totalSalesDiff0;
+  //       iot:totalSales ?totalSales0.
   //   }
   //   }
   //   ORDER BY (?parsedAt)`;
@@ -677,76 +677,76 @@ describe('SparqlClient', () => {
   //   client.setRepositoryId('mktp-fed');
   //   /*const query = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
   //   PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-  //   PREFIX hs: <https://huntersales.ru/schema#>
+  //   PREFIX iot: <https://agentlab.eu/ns/iot#>
   //   CONSTRUCT {
-  //     ?eIri0 rdf:type hs:ProductCard .
-  //     ?eIri0 hs:name ?name0 .
-  //     ?eIri0 hs:lastMonthSalesValue ?lastMonthSalesValue0 .
-  //     ?eIri0 hs:saleValue ?saleValue0 .
-  //     ?eIri0 hs:brand ?brand0 .
-  //     ?eIri0 hs:seller ?seller0 .
-  //     ?eIri0 hs:imageUrl ?imageUrl0 .
-  //     ?eIri1 rdf:type hs:HSObservation .
-  //     ?eIri1 hs:product ?eIri0 .
-  //     ?eIri1 hs:parsedAt ?parsedAt1 .
-  //     ?eIri1 hs:price ?price1 .
+  //     ?eIri0 rdf:type iot:ProductCard .
+  //     ?eIri0 iot:name ?name0 .
+  //     ?eIri0 iot:lastMonthSalesValue ?lastMonthSalesValue0 .
+  //     ?eIri0 iot:saleValue ?saleValue0 .
+  //     ?eIri0 iot:brand ?brand0 .
+  //     ?eIri0 iot:seller ?seller0 .
+  //     ?eIri0 iot:imageUrl ?imageUrl0 .
+  //     ?eIri1 rdf:type iot:HSObservation .
+  //     ?eIri1 iot:product ?eIri0 .
+  //     ?eIri1 iot:parsedAt ?parsedAt1 .
+  //     ?eIri1 iot:price ?price1 .
   //   } WHERE {
   //     {
   //       SELECT ?eIri0 ?name0 ?lastMonthSalesValue0 ?seller0 ?saleValue0 ?brand0 ?imageUrl0 WHERE {
   //         {
   //           SELECT ?eIri0 ?name0 ?lastMonthSalesValue0 ?seller0 ?saleValue0 ?brand0 WHERE {
-  //             ?eIri0 rdf:type hs:ProductCard ;
-  //               hs:name ?name0 ;
-  //               hs:lastMonthSalesValue ?lastMonthSalesValue0 ;
-  //               hs:seller ?seller0.
-  //             OPTIONAL { ?eIri0 hs:saleValue ?saleValue0. }
-  //             OPTIONAL { ?eIri0 hs:brand ?brand0. }
+  //             ?eIri0 rdf:type iot:ProductCard ;
+  //               iot:name ?name0 ;
+  //               iot:lastMonthSalesValue ?lastMonthSalesValue0 ;
+  //               iot:seller ?seller0.
+  //             OPTIONAL { ?eIri0 iot:saleValue ?saleValue0. }
+  //             OPTIONAL { ?eIri0 iot:brand ?brand0. }
   //           }
   //           ORDER BY DESC(?lastMonthSalesValue0)
   //           LIMIT 2
   //         }
-  //         OPTIONAL { ?eIri0 hs:imageUrl ?imageUrl }
+  //         OPTIONAL { ?eIri0 iot:imageUrl ?imageUrl }
   //       }
   //     } {
-  //       ?eIri1 rdf:type hs:HSObservation ;
-  //         hs:product ?eIri0 ;
-  //         hs:parsedAt ?parsedAt1 ;
-  //         hs:price ?price1 .
+  //       ?eIri1 rdf:type iot:HSObservation ;
+  //         iot:product ?eIri0 ;
+  //         iot:parsedAt ?parsedAt1 ;
+  //         iot:price ?price1 .
   //       filter(?parsedAt1 >= "2021-07-01T00:00:00"^^xsd:dateTime)
   //     }
   //   }
   //   ORDER BY DESC(?lastMonthSalesValue0) ?parsedAt1`;*/
   //   const query = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
   //   PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-  //   PREFIX hs: <https://huntersales.ru/schema#>
+  //   PREFIX iot: <https://agentlab.eu/ns/iot#>
   //   CONSTRUCT {
-  //     ?eIri0 rdf:type hs:ProductCard .
-  //     ?eIri0 hs:name ?name0 .
-  //     ?eIri0 hs:lastMonthSalesValue ?lastMonthSalesValue0 .
-  //     ?eIri0 hs:imageUrl ?imageUrl0 .
-  //     ?eIri1 rdf:type hs:HSObservation .
-  //     ?eIri1 hs:product ?eIri0 .
-  //     ?eIri1 hs:parsedAt ?parsedAt1 .
-  //     ?eIri1 hs:price ?price1 .
+  //     ?eIri0 rdf:type iot:ProductCard .
+  //     ?eIri0 iot:name ?name0 .
+  //     ?eIri0 iot:lastMonthSalesValue ?lastMonthSalesValue0 .
+  //     ?eIri0 iot:imageUrl ?imageUrl0 .
+  //     ?eIri1 rdf:type iot:HSObservation .
+  //     ?eIri1 iot:product ?eIri0 .
+  //     ?eIri1 iot:parsedAt ?parsedAt1 .
+  //     ?eIri1 iot:price ?price1 .
   //   } WHERE {
   //     {
   //       SELECT ?eIri0 ?name0 ?lastMonthSalesValue0 ?imageUrl0 WHERE {
   //         {
   //           SELECT ?eIri0 ?name0 ?lastMonthSalesValue0 WHERE {
-  //             ?eIri0 rdf:type hs:ProductCard ;
-  //               hs:name ?name0 ;
-  //               hs:lastMonthSalesValue ?lastMonthSalesValue0 .
+  //             ?eIri0 rdf:type iot:ProductCard ;
+  //               iot:name ?name0 ;
+  //               iot:lastMonthSalesValue ?lastMonthSalesValue0 .
   //           }
   //           ORDER BY DESC(?lastMonthSalesValue0)
   //           LIMIT 2
   //         }
-  //         OPTIONAL { ?eIri0 hs:imageUrl ?imageUrl }
+  //         OPTIONAL { ?eIri0 iot:imageUrl ?imageUrl }
   //       }
   //     } {
-  //       ?eIri1 rdf:type hs:HSObservation ;
-  //         hs:product ?eIri0 ;
-  //         hs:parsedAt ?parsedAt1 ;
-  //         hs:price ?price1 .
+  //       ?eIri1 rdf:type iot:HSObservation ;
+  //         iot:product ?eIri0 ;
+  //         iot:parsedAt ?parsedAt1 ;
+  //         iot:price ?price1 .
   //       filter(?parsedAt1 >= "2021-07-01T00:00:00"^^xsd:dateTime)
   //     }
   //   }

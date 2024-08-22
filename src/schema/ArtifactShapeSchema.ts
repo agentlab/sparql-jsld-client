@@ -51,7 +51,7 @@ export const ArtifactShapeSchema: JSONSchema6forRdf = {
       title: 'URI',
     },
     '@type': {
-      title: 'Тип',
+      title: 'Class',
       type: 'object',
     },
     targetClass: {
@@ -139,39 +139,39 @@ export const PropertyShapeSchema: JSONSchema6forRdf = {
       title: 'URI',
     },
     '@type': {
-      title: 'Тип',
+      title: 'Class',
       type: 'object',
     },
     name: {
-      title: 'Название',
+      title: 'Name',
       type: 'string',
     },
     description: {
-      title: 'Описание',
+      title: 'Description',
       type: 'string',
     },
     path: {
-      title: 'Путь',
+      title: 'path',
       type: 'object',
     },
     order: {
-      title: 'Приоритет',
+      title: 'Order',
       type: 'integer',
     },
     datatype: {
-      title: 'Тип данных',
+      title: 'DataType',
       type: 'object',
     },
     minCount: {
-      title: 'Минимальный предел',
+      title: 'Min Count',
       type: 'integer',
     },
     maxCount: {
-      title: 'Максимальный предел',
+      title: 'Max Count',
       type: 'integer',
     },
     class: {
-      title: 'Класс значений',
+      title: 'Value Class',
       type: 'object',
     },
     nodeKind: {

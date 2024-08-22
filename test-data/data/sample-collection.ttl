@@ -1,0 +1,100 @@
+@prefix rdf:         <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:        <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:         <http://www.w3.org/2001/XMLSchema#> .
+@prefix dcterms:     <http://purl.org/dc/terms/> .
+@prefix oslc:        <http://open-services.net/ns/core#> .
+
+@prefix rm:          <https://agentlab.eu/ns/rm/rdf#> .
+@prefix nav:         <https://agentlab.eu/ns/rm/navigation#> .
+@prefix rmUserTypes: <https://agentlab.eu/ns/rm/user-types#> .
+@prefix clss:        <https://agentlab.eu/ns/rm/classifier#> .
+
+# Data
+@prefix projects:    <https://agentlab.eu/ns/rm/projects#> .
+@prefix users:       <https://agentlab.eu/ns/rm/users#> .
+@prefix folders:     <https://agentlab.eu/ns/rm/folders#> .
+@prefix reqs:        <https://agentlab.eu/ns/rm/reqs#> .
+
+# in context https://agentlab.eu/ns/rm/reqs#
+
+reqs:collect1
+  a                         clss:Document ;
+  dcterms:identifier        "20000"^^xsd:integer ;
+  dcterms:title             "Requirement Collection 20000"^^xsd:string ;
+  dcterms:description       "Requirement Collection 20000 Description"^^xsd:string ;
+  rm:artifactFormat         rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Collection ;
+  dcterms:creator           users:user1 ;
+  dcterms:created           "2017-02-22T15:58:30.675Z"^^xsd:dateTime ;
+  oslc:modifiedBy           users:user1 ;
+  dcterms:modified          "2019-01-16T13:21:08.720Z"^^xsd:dateTime ;
+  nav:processArea           projects:defaultProject ;
+  rm:assetFolder            folders:samples_collection .
+
+reqs:req1
+  a                         clss:Info ;
+  dcterms:identifier        "20001"^^xsd:integer ;
+  dcterms:title             "Collection 20000 - Req 20001 - Title"^^xsd:string ;
+  rm:xhtmlText              "<div xmlns=\"http://www.w3.org/1999/xhtml\"><h1 style=\"text-align: center;\">Collection 20000 - Req 20001 - Main Text</h1></div>"^^rdf:HTML ;
+  rm:artifactFormat         rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Text ;
+  dcterms:creator           users:user1 ;
+  dcterms:created           "2017-02-22T15:58:30.675Z"^^xsd:dateTime ;
+  oslc:modifiedBy           users:user1 ;
+  dcterms:modified          "2019-01-16T13:21:08.720Z"^^xsd:dateTime ;
+  nav:processArea           projects:defaultProject ;
+  rm:assetFolder            folders:samples_collection .
+
+reqs:_a2HusThYEem2Z_XixsC3pQ
+  a                         rmUserTypes:UsedIn ;
+  rdf:object                reqs:collect1 ;
+  rdf:subject               reqs:req1 ;
+  dcterms:creator           users:user1 ;
+  dcterms:created           "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;
+  oslc:modifiedBy           users:user1 ;
+  dcterms:modified          "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;
+  nav:processArea           projects:defaultProject .
+
+reqs:req2
+  a                         clss:Info ;
+  dcterms:identifier        "20002"^^xsd:integer ;
+  dcterms:title             "Collection 20000 - Req 20002 - Title"^^xsd:string ;
+  rm:xhtmlText              "<div xmlns=\"http://www.w3.org/1999/xhtml\"><h1 style=\"text-align: center;\">Collection 20000 - Req 20002 - Main Text</h1></div>"^^rdf:HTML ;
+  rm:artifactFormat         rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Text ;
+  dcterms:creator           users:user1 ;
+  dcterms:created           "2017-02-22T15:58:30.675Z"^^xsd:dateTime ;
+  oslc:modifiedBy           users:user1 ;
+  dcterms:modified          "2019-01-16T13:21:08.720Z"^^xsd:dateTime ;
+  nav:processArea           projects:defaultProject ;
+  rm:assetFolder            folders:samples_collection .
+
+reqs:_b2HusThYEem2Z_XixsC3pQ
+  a                         rmUserTypes:UsedIn ;
+  rdf:object                reqs:collect1 ;
+  rdf:subject               reqs:req2 ;
+  dcterms:creator           users:user1 ;
+  dcterms:created           "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;
+  oslc:modifiedBy           users:user1 ;
+  dcterms:modified          "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;
+  nav:processArea           projects:defaultProject .
+
+reqs:req3
+  a                         clss:Info ;
+  dcterms:identifier        "20003"^^xsd:integer ;
+  dcterms:title             "Collection 20000 - Req 20003 - Title"^^xsd:string ;
+  rm:xhtmlText              "<div xmlns=\"http://www.w3.org/1999/xhtml\"><h1 style=\"text-align: center;\">Collection 20000 - Req 20003 - Main Text</h1></div>"^^rdf:HTML ;
+  rm:artifactFormat         rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Text ;
+  dcterms:creator           users:user1 ;
+  dcterms:created           "2017-02-22T15:58:30.675Z"^^xsd:dateTime ;
+  oslc:modifiedBy           users:user1 ;
+  dcterms:modified          "2019-01-16T13:21:08.720Z"^^xsd:dateTime ;
+  nav:processArea           projects:defaultProject ;
+  rm:assetFolder            folders:samples_collection .
+
+reqs:_c2HusThYEem2Z_XixsC3pQ
+  a                         rmUserTypes:UsedIn ;
+  rdf:object                reqs:collect1 ;
+  rdf:subject               reqs:req3 ;
+  dcterms:creator           users:user1 ;
+  dcterms:created           "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;
+  oslc:modifiedBy           users:user1 ;
+  dcterms:modified          "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;
+  nav:processArea           projects:defaultProject .

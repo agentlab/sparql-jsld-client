@@ -1,0 +1,89 @@
+@prefix rdf:       <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xsd:       <http://www.w3.org/2001/XMLSchema#> .
+@prefix dcterms:   <http://purl.org/dc/terms/> .
+@prefix oslc:      <http://open-services.net/ns/core#> .
+@prefix foaf:      <http://xmlns.com/foaf/0.1/> .
+@prefix schema:    <http://schema.org/> .
+
+@prefix pporoles: <https://agentlab.eu/ns/rm/ppo-roles#> .
+@prefix users:     <https://agentlab.eu/ns/rm/users#> .
+
+# in context https://agentlab.eu/ns/rm/users#
+
+users:user1  a pporoles:User ;
+  schema:affiliation        users:agentlab ;
+  foaf:name                 "User One" ;
+  dcterms:creator           users:user1 ;
+  dcterms:created           "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;
+  oslc:modifiedBy           users:user1 ;
+  dcterms:modified          "2014-02-10T10:12:16.000Z"^^xsd:dateTime .
+
+users:user4  a pporoles:User ;
+  schema:affiliation         users:agentlab ;
+  foaf:name                 "User Four" ;
+  dcterms:creator           users:user1 ;
+  dcterms:created           "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;
+  oslc:modifiedBy           users:user1 ;
+  dcterms:modified          "2014-02-10T10:12:16.000Z"^^xsd:dateTime .
+
+users:user2  a pporoles:User ;
+  schema:affiliation        users:agentlab ;
+  foaf:name                 "User Two" ;
+  dcterms:creator           users:user1 ;
+  dcterms:created           "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;
+  oslc:modifiedBy           users:user1 ;
+  dcterms:modified          "2014-02-10T10:12:16.000Z"^^xsd:dateTime .
+
+users:user3  a pporoles:User ;
+  schema:affiliation        users:agentlab ;
+  foaf:name                 "User Three" ;
+  dcterms:creator           users:user1 ;
+  dcterms:created           "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;
+  oslc:modifiedBy           users:user1 ;
+  dcterms:modified          "2014-02-10T10:12:16.000Z"^^xsd:dateTime .
+
+users:officeImporterService  a pporoles:User ;
+  foaf:name                 "Document Importer Service" ;
+  dcterms:creator           users:user1 ;
+  dcterms:created           "2020-05-15T10:12:16.000Z"^^xsd:dateTime ;
+  oslc:modifiedBy           users:user1 ;
+  dcterms:modified          "2020-05-15T10:12:16.000Z"^^xsd:dateTime .
+
+users:expertGroup1 a pporoles:UserGroup ;
+  foaf:name                 "Expert Group 1" ;
+  foaf:member               users:user1 ;
+  foaf:member               users:user4 ;
+  foaf:member               users:user2 ;
+  dcterms:creator           users:user1 ;
+  dcterms:created           "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;
+  oslc:modifiedBy           users:user1 ;
+  dcterms:modified          "2014-02-10T10:12:16.000Z"^^xsd:dateTime .
+
+users:expertUsers2 a pporoles:UserGroup ;
+  foaf:name                 "Expert Group 2" ;
+  foaf:member               users:user1 ;
+  foaf:member               users:user3 ;
+  dcterms:creator           users:user1 ;
+  dcterms:created           "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;
+  oslc:modifiedBy           users:user1 ;
+  dcterms:modified          "2014-02-10T10:12:16.000Z"^^xsd:dateTime .
+
+users:adminUsers a pporoles:UserGroup ;
+  foaf:name                 "Administrators" ;
+  foaf:member               users:user1 ;
+  dcterms:creator           users:user1 ;
+  dcterms:created           "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;
+  oslc:modifiedBy           users:user1 ;
+  dcterms:modified          "2014-02-10T10:12:16.000Z"^^xsd:dateTime .
+
+users:agentlab a foaf:Organization ;
+  foaf:name                 "AgentLab" ;
+  foaf:homepage             <https://agentlab.eu> ;
+  foaf:member               users:user1 ;
+  foaf:member               users:user4 ;
+  foaf:member               users:user2 ;
+  foaf:member               users:user3 ;
+  dcterms:creator           users:user1 ;
+  dcterms:created           "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;
+  oslc:modifiedBy           users:user1 ;
+  dcterms:modified          "2014-02-10T10:12:16.000Z"^^xsd:dateTime .

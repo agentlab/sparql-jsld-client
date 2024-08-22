@@ -305,7 +305,7 @@ export class SparqlClientImpl implements SparqlClient {
   }
 
   /**
-   * Удаляет все триплы в графе с заданным graph
+   * Delete all triples in a specified graph
    * @param graph
    */
   async clearGraph(graph = 'null'): Promise<any> {
@@ -339,8 +339,8 @@ export class SparqlClientImpl implements SparqlClient {
     if (repType === 'virtuoso') {
       repParam = {
         ...repParam,
-        'Default graph name': `http://cpgu.kbpm.ru/ns/rm/${repId}`,
-        'Inference RuleSet name': `http://cpgu.kbpm.ru/ns/rm/${repId}`,
+        'Default graph name': `https://agentlab.eu/ns/rm/${repId}`,
+        'Inference RuleSet name': `https://agentlab.eu/ns/rm/${repId}`,
         "Use defGraph with SPARQL queries, if query default graph wasn't set": true,
       };
     }

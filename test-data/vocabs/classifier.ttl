@@ -1,0 +1,109 @@
+@prefix rdf:         <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:        <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:         <http://www.w3.org/2001/XMLSchema#> .
+@prefix oslc_asset:  <http://open-services.net/ns/asset#> .
+@prefix dcterms:     <http://purl.org/dc/terms/> .
+
+@prefix rm:          <https://agentlab.eu/ns/rm/rdf#> .
+@prefix rmUserTypes: <https://agentlab.eu/ns/rm/user-types#> .
+
+@prefix clss:        <https://agentlab.eu/ns/rm/classifier#> .
+
+
+#####################################
+### Superclass Classes
+#####################################
+
+clss:GenericArtifact
+    a rm:ArtifactClasses ;
+    rdfs:subClassOf rm:Artifact  ;
+    dcterms:title           "RequirementClass Title GenericArtifact".
+
+clss:OSLCAssetArtifact
+    a rm:ArtifactClasses  ;
+    dcterms:title           "RequirementClass Title OSLCAssetArtifact".
+
+clss:FileLinkArtifact
+    a rm:ArtifactClasses  ;
+    dcterms:title           "RequirementClass Title FileLinkArtifact".
+
+#####################################
+### Actual Classes
+#####################################
+
+clss:Classifier
+    a rm:ArtifactClasses ;
+    rdfs:subClassOf 
+        clss:GenericArtifact ;
+    dcterms:title           "RequirementClass Title Classifier" ;
+    rm:inCreationMenu       true ;
+    dcterms:description     "RequirementClass Description Classifier" .
+
+clss:Grouping
+    a rm:ArtifactClasses ;
+    rdfs:subClassOf 
+        clss:GenericArtifact ,
+        clss:FileLinkArtifact ;
+    dcterms:title           "RequirementClass Title Grouping" ;
+    rm:inCreationMenu       true ;
+    dcterms:description     "RequirementClass Description Grouping" .
+
+clss:Document
+    a rm:ArtifactClasses ;
+    rdfs:subClassOf 
+        clss:GenericArtifact ,
+        clss:OSLCAssetArtifact ;
+    dcterms:title           "RequirementClass Title Document" ;
+    rm:inCreationMenu       true ;
+    dcterms:description     "RequirementClass Description Document" .
+
+clss:Info
+    a rm:ArtifactClasses ;
+    rdfs:subClassOf 
+        clss:GenericArtifact ,
+        clss:OSLCAssetArtifact ,
+        clss:FileLinkArtifact ;
+    dcterms:title           "RequirementClass Title Info" ;
+    rm:inCreationMenu       true ;
+    dcterms:description     "RequirementClass Description Info" .
+
+#################################
+
+
+
+
+
+#####################################
+### Properties
+#####################################
+
+clss:uri
+    a rdf:Property ;
+    dcterms:title       "Property Title URI" ;
+    dcterms:description "Property Description URI" .
+
+clss:status
+    a rdf:Property ;
+    dcterms:title       "Property Title Status" ;
+    dcterms:description "Property Description Status" .
+
+clss:file
+    a rdf:Property ;
+    dcterms:title       "Property Title File" ;
+    dcterms:description "Property Description File" .
+
+clss:format
+    a rdf:Property ;
+    dcterms:title       "Property Title Format" ;
+    dcterms:description "Property Description Format" .
+
+clss:dataType
+    a rdf:Property ;
+    dcterms:title       "Property Title DataType" ;
+    dcterms:description "Property Description DataType" .
+
+
+clss:link
+    a rdf:Property ;
+    dcterms:title       "Property Title Link" ;
+    dcterms:description "Property Description Link" .

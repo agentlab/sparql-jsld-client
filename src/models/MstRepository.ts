@@ -415,7 +415,7 @@ export const MstRepository = types
       }),*/
 
       /**
-       * Находит один объект по его идентификатору (численному полю identifier)
+       * Finds one RDF object by its numeric property 'identifier'
        * Accepts shape (schema) IRI or schema object
        */
       /*selectMaxObjectId: flow(function* selectMaxObjectId(schema: any) {

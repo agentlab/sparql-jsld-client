@@ -50,7 +50,7 @@ export function createSchemaWithSubClassOf(schema: any, iri: string, classIri?: 
     properties: {
       ...schema.properties,
       subClassOf: {
-        title: 'Подкласс класса',
+        title: 'Subclass of a Class',
         type: 'string',
         format: 'iri',
       },
@@ -459,7 +459,7 @@ export async function resolveSchemaFromServer(conditions: JsObject, nsJs: any, c
         format: 'iri',
       },
       '@type': {
-        title: 'Тип',
+        title: 'Class',
         type: 'string',
         format: 'iri',
       },

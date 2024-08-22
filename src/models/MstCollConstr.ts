@@ -217,7 +217,7 @@ export const MstCollConstr = types
        * SELECT
        */
       /**
-       * Заменяет
+       *
        * @param obj
        */
       /*selectObjectsArrayProperties: flow(function* selectObjectsArrayProperties(entConstrs: EntConstrInternal[], objects: JsObject[]) {
@@ -513,9 +513,9 @@ export async function constructObjectsSnapshot(
 }
 
 /**
- * Удаляет ВСЕ триплы для заданного URI, соответствующего набору значений полей из conditions
- * @param conditions: объект с полями для условия поиска
- * }
+ * Delete ALL triples for a specific RDF object, which values corresponds values from conditions
+ * @param conditions: JS object with properties, which defines search conditions
+ *
  */
 export async function deleteObject(collConstr: ICollConstr, conditions?: JsObject | JsObject[], loadIfNeeded = true) {
   //TODO: performance

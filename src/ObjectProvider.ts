@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
 import uuid62 from 'uuid62';
-import { JSONSchema6 } from 'json-schema';
+import { JSONSchema7, JSONSchema7TypeName } from 'json-schema';
 
 export function json2str(data: any): string {
   if (data) return JSON.stringify(data, null, 2);
@@ -35,11 +35,8 @@ export function idComparator(a: JsObject, b: JsObject): number {
   return 0;
 }
 
-export type JSONSchema6DefinitionForRdfProperty = JSONSchema6forRdfProperty;
-export interface JSONSchema6forRdfProperty extends JSONSchema6 {
-  //uri: string;
-  //formatters?: { [key: string]: (value: any) => any };
-
+export type JSONSchema7PropertyDefinition_LD = JSONSchema7Property_LD;
+export interface JSONSchema7Property_LD extends JSONSchema7 {
   /**
    * json-ld Property
    * https://github.com/json-ld/json-ld.org/blob/master/schemas/jsonld-schema.json
@@ -47,24 +44,22 @@ export interface JSONSchema6forRdfProperty extends JSONSchema6 {
   '@id'?: string;
   '@type'?: string;
 
+  // permissions extension
   valueModifiability?: string; // user or non -- system
   shapeModifiability?: string; // user or non -- system
 
-  contentMediaType?: string;
-  contentEncoding?: string;
-
   properties?: {
-    [key: string]: JSONSchema6DefinitionForRdfProperty;
+    [key: string]: JSONSchema7PropertyDefinition_LD;
   };
 }
 
-export type JSONSchema6DefinitionForRdf = JSONSchema6forRdf;
-export interface JSONSchema6forRdf extends JSONSchema6, JsObject {
-  //uri: string;
-  //formatField?: (field: JSONSchema6DefinitionForRdfProperty, value: any, format?: string) => any;
+export type JSONSchema7Definition_LD = JSONSchema7_LD;
+export interface JSONSchema7_LD extends Omit<JSONSchema7, 'allOf'>, JsObject {
+  allOf?: { $ref: string }[] | undefined; // override from this: "allOf?: JSONSchema6Definition[] | undefined;"
+  type: JSONSchema7TypeName; // restrict from this: "type?: JSONSchema6TypeName | JSONSchema6TypeName[] | undefined;"
 
   /**
-   * json-ld Node
+   * json-ld Node extensions
    * https://github.com/json-ld/json-ld.org/blob/master/schemas/jsonld-schema.json
    */
   '@context'?: JsStrObjObj; // json-ld
@@ -72,23 +67,21 @@ export interface JSONSchema6forRdf extends JSONSchema6, JsObject {
   //'@included' // json-ld
   //'@graph'?: [] | {}; // json-ld
   //'@nest' // json-ld
-  '@type'?: string; // json-ld
+  '@type'?: string; // json-ld (SHACL Shape IRI -- shape IRI itself, not shaped class IRI)
   //'@reverse'
   //'@index'
 
-  targetClass: string;
+  targetClass: string; // SHACL Shape Class IRI (shaped class IRI)
 
+  // Artifact extensions
   //inCreationMenu?: boolean;
   //defaultFormat?: string;
   //iconReference?: string;
 
   properties: {
-    [key: string]: JSONSchema6DefinitionForRdfProperty;
+    [key: string]: JSONSchema7PropertyDefinition_LD;
   };
 }
-export type JSONSchema6forRdf2 = JSONSchema6forRdf & {
-  '@id'?: string;
-};
 
 export function copyObjectProps(objTo: JsObject, objFrom: JsObject): void {
   Object.keys(objFrom).forEach((objFromKey) => {
@@ -147,7 +140,7 @@ export function copyUniqueArrayElements(arrTo: any[], arrFrom: any[]): void {
   });
 }
 
-export function getPropKeysByFormat(schema: JSONSchema6forRdf, format: string): string[] {
+export function getPropKeysByFormat(schema: JSONSchema7_LD, format: string): string[] {
   const props: string[] = [];
   for (const key in schema.properties) {
     if (schema.properties[key].format === format) {

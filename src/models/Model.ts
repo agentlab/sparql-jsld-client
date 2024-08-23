@@ -14,15 +14,14 @@ import { ArtifactShapeSchema, PropertyShapeSchema } from '../schema/ArtifactShap
 import { JsObject } from '../ObjectProvider';
 import { SparqlClient } from '../SparqlClient';
 
-import { MstRepository } from './MstRepository';
+import { MstRepository, TMstRepositorySnapshotIn } from './MstRepository';
 
-export const rootModelInitialState: any = {
+export const rootModelInitialState: TMstRepositorySnapshotIn = {
   repId: '',
   user: {
-    login: 'guest@example.com',
+    login: 'guest@acme.com',
     name: 'Guest',
   },
-  processArea: 'projects:defaultProject',
   ns: {
     current: {
       rdf: 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
@@ -49,7 +48,6 @@ export const rootModelInitialState: any = {
       [PropertyShapeSchema.targetClass]: PropertyShapeSchema['@id'],
     },
   },
-  //collsConstr: {},
   colls: {},
 };
 

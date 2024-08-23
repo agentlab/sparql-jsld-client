@@ -234,7 +234,7 @@ rm:xhtmlTextShape
 rm:creatorShape
   a                     sh:PropertyShape ;
   sh:name               "Creator"^^xsd:string ;
-  sh:description        "An Agent, created an Artifact"^^xsd:string ;
+  sh:description        "An Agent, created a Resource"^^xsd:string ;
   sh:path               dcterms:creator ;
   sh:order              5 ;
   rm:shapeModifiability "system" ;
@@ -247,7 +247,7 @@ rm:creatorShape
 rm:createdShape
   a                     sh:PropertyShape ;
   sh:name               "Created"^^xsd:string ;
-  sh:description        "When an Artifact was created"^^xsd:string ;
+  sh:description        "When a Resource was created"^^xsd:string ;
   sh:path               dcterms:created ;
   sh:order              6 ;
   rm:shapeModifiability "system" ;
@@ -259,7 +259,7 @@ rm:createdShape
 rm:modifiedByShape
   a                     sh:PropertyShape ;
   sh:name               "Modified By"^^xsd:string ;
-  sh:description        "An Agent, modified an Artifact"^^xsd:string ;
+  sh:description        "An Agent, modified a Resource"^^xsd:string ;
   sh:path               oslc:modifiedBy ;
   sh:order              7 ;
   rm:shapeModifiability "system" ;
@@ -272,7 +272,7 @@ rm:modifiedByShape
 rm:modifiedShape
   a                     sh:PropertyShape ;
   sh:name               "Modified"^^xsd:string ;
-  sh:description        "When an Artifact was modified"^^xsd:string ;
+  sh:description        "When a Resource was modified"^^xsd:string ;
   sh:path               dcterms:modified ;
   sh:order              8 ;
   rm:shapeModifiability "system" ;

@@ -7,13 +7,13 @@
  *
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
-import { JSONSchema6forRdf, JsObject } from '../../src/ObjectProvider';
+import { JSONSchema7_LD, JsObject } from '../../src/ObjectProvider';
 
 export const textFormatUri = 'rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Text';
 export const collectionFormatUri = 'rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Collection';
 export const moduleFormatUri = 'rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Module';
 
-export const artifactSchema: JSONSchema6forRdf = {
+export const artifactSchema: JSONSchema7_LD = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   //$id: 'https://agentlab.eu/ns/rm/rdf#ArtifactShape',
   '@id': 'rm:ArtifactShape',
@@ -99,7 +99,7 @@ export const artifactSchema: JSONSchema6forRdf = {
     },
     creator: {
       title: 'Creator',
-      description: 'An Agent, created an Artifact',
+      description: 'An Agent, created a Resource',
       type: 'string',
       format: 'iri',
       shapeModifiability: 'system',
@@ -107,7 +107,7 @@ export const artifactSchema: JSONSchema6forRdf = {
     },
     created: {
       title: 'Created',
-      description: 'When an Artifact was created',
+      description: 'When a Resource was created',
       type: 'string',
       format: 'date-time',
       shapeModifiability: 'system',
@@ -115,7 +115,7 @@ export const artifactSchema: JSONSchema6forRdf = {
     },
     modifiedBy: {
       title: 'Modified By',
-      description: 'An Agent, modified an Artifact',
+      description: 'An Agent, modified a Resource',
       type: 'string',
       format: 'iri',
       shapeModifiability: 'system',
@@ -123,7 +123,7 @@ export const artifactSchema: JSONSchema6forRdf = {
     },
     modified: {
       title: 'Modified',
-      description: 'When an Artifact was modified',
+      description: 'When a Resource was modified',
       type: 'string',
       format: 'date-time',
       shapeModifiability: 'system',
@@ -157,7 +157,7 @@ export const artifactSchema: JSONSchema6forRdf = {
   required: ['@id', '@type', 'title' /*, 'identifier', 'assetFolder', 'artifactFormat'*/],
 };
 
-export const genericArtifactSchema: JSONSchema6forRdf = {
+export const genericArtifactSchema: JSONSchema7_LD = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   //$id: 'https://agentlab.eu/ns/rm/classifier#GenericArtifactShape',
   allOf: [{ $ref: 'rm:ArtifactShape' }],
@@ -215,7 +215,7 @@ export const genericArtifactSchema: JSONSchema6forRdf = {
   },
 };
 
-export const classifierSchema: JSONSchema6forRdf = {
+export const classifierSchema: JSONSchema7_LD = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   //$id: 'https://agentlab.eu/ns/rm/classifier#ClassifierShape',
   allOf: [{ $ref: 'clss:GenericArtifactShape' }],
@@ -232,7 +232,7 @@ export const classifierSchema: JSONSchema6forRdf = {
   properties: {},
 };
 
-export const classifierCompleteSchema: JSONSchema6forRdf = {
+export const classifierCompleteSchema: JSONSchema7_LD = {
   ...classifierSchema,
   '@context': {
     ...artifactSchema['@context'],
@@ -319,7 +319,7 @@ export const artifactShape: JsObject = {
       '@type': 'sh:PropertyShape',
       class: 'pporoles:User',
       //datatype: undefined,
-      description: 'An Agent, created an Artifact',
+      description: 'An Agent, created a Resource',
       maxCount: 1,
       //minCount: undefined,
       name: 'Creator',
@@ -334,7 +334,7 @@ export const artifactShape: JsObject = {
       '@type': 'sh:PropertyShape',
       //class: undefined,
       datatype: 'xsd:dateTime',
-      description: 'When an Artifact was created',
+      description: 'When a Resource was created',
       maxCount: 1,
       //minCount: undefined,
       name: 'Created',
@@ -349,7 +349,7 @@ export const artifactShape: JsObject = {
       '@type': 'sh:PropertyShape',
       class: 'pporoles:User',
       //datatype: undefined,
-      description: 'An Agent, modified an Artifact',
+      description: 'An Agent, modified a Resource',
       maxCount: 1,
       //minCount: undefined,
       name: 'Modified By',
@@ -364,7 +364,7 @@ export const artifactShape: JsObject = {
       '@type': 'sh:PropertyShape',
       //class: undefined,
       datatype: 'xsd:dateTime',
-      description: 'When an Artifact was modified',
+      description: 'When a Resource was modified',
       maxCount: 1,
       //minCount: undefined,
       name: 'Modified',
@@ -424,7 +424,7 @@ export const artifactShape: JsObject = {
   title: 'Artifact',
 };
 
-export const linkSchema: JSONSchema6forRdf = {
+export const linkSchema: JSONSchema7_LD = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   //$id: 'https://agentlab.eu/ns/rm/user-types#UsedInShape',
   '@id': 'rm:LinkShape',
@@ -479,28 +479,28 @@ export const linkSchema: JSONSchema6forRdf = {
       type: 'string',
       format: 'iri',
       title: 'Creator',
-      description: 'An Agent, created an Artifact',
+      description: 'An Agent, created a Resource',
       shapeModifiability: 'system',
     },
     created: {
       type: 'string',
       format: 'date-time',
       title: 'Created',
-      description: 'When an Artifact was created',
+      description: 'When a Resource was created',
       shapeModifiability: 'system',
     },
     modifiedBy: {
       type: 'string',
       format: 'iri',
       title: 'Modified By',
-      description: 'An Agent, modified an Artifact',
+      description: 'An Agent, modified a Resource',
       shapeModifiability: 'system',
     },
     modified: {
       type: 'string',
       format: 'date-time',
       title: 'Modified',
-      description: 'When an Artifact was modified',
+      description: 'When a Resource was modified',
       shapeModifiability: 'system',
     },
     processArea: {
@@ -528,7 +528,7 @@ export const linkSchema: JSONSchema6forRdf = {
   required: ['@id', '@type', 'object', 'subject'],
 };
 
-export const usedInSchema: JSONSchema6forRdf = {
+export const usedInSchema: JSONSchema7_LD = {
   ...linkSchema,
   '@id': 'rmUserTypes:UsedInShape',
   title: 'UsedIn Link',
@@ -536,7 +536,7 @@ export const usedInSchema: JSONSchema6forRdf = {
   targetClass: 'rmUserTypes:UsedIn',
 };
 
-export const usedInModuleSchema: JSONSchema6forRdf = {
+export const usedInModuleSchema: JSONSchema7_LD = {
   ...usedInSchema,
   allOf: [{ $ref: 'rmUserTypes:UsedInShape' }],
   '@id': 'rmUserTypes:UsedInModuleShape',
@@ -605,7 +605,7 @@ export const usedInModuleSchema: JSONSchema6forRdf = {
 
 export const { property: artifactShapeProperty, ...artifactShapeNoProperty } = artifactShape;
 
-export const ProductCardShapeSchema: JSONSchema6forRdf = {
+export const ProductCardShapeSchema: JSONSchema7_LD = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   '@id': 'iot:ProductCardCardsShape',
   '@type': 'sh:NodeShape',
@@ -689,7 +689,7 @@ export const ProductCardShapeSchema: JSONSchema6forRdf = {
   required: ['@id', '@type', 'name', 'lastMonthSalesValue', 'seller'],
 };
 
-export const HSObservationShapeSchema: JSONSchema6forRdf = {
+export const HSObservationShapeSchema: JSONSchema7_LD = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   '@id': 'iot:HSObservationCardsShape',
   '@type': 'sh:NodeShape',
@@ -753,7 +753,7 @@ export const HSObservationShapeSchema: JSONSchema6forRdf = {
   required: ['@id', '@type', 'product', 'parsedAt', 'totalSales'],
 };
 
-export const ProductCardShapeSchemaForCardsList: JSONSchema6forRdf = {
+export const ProductCardShapeSchemaForCardsList: JSONSchema7_LD = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   '@id': 'iot:ProductCardShapeForCardsList',
   '@type': 'sh:NodeShape',
@@ -835,7 +835,7 @@ export const ProductCardShapeSchemaForCardsList: JSONSchema6forRdf = {
   required: ['@id', '@type', 'name', 'lastMonthSalesValue', 'hasObservations'],
 };
 
-export const HSObservationShapeSchemaForCardsList: JSONSchema6forRdf = {
+export const HSObservationShapeSchemaForCardsList: JSONSchema7_LD = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   '@id': 'iot:HSObservationShapeForCardsList',
   '@type': 'sh:NodeShape',

@@ -21,7 +21,7 @@ import {
   getRoot,
 } from 'mobx-state-tree';
 
-import { JSONSchema6forRdf, copyUniqueObjectPropsWithRenameOrFilter, JsObject } from '../ObjectProvider';
+import { JSONSchema7_LD, copyUniqueObjectPropsWithRenameOrFilter, JsObject, JsStrObjObj } from '../ObjectProvider';
 import {
   propertyShapesToSchemaProperties,
   uiMapping,
@@ -59,7 +59,7 @@ export function createSchemaWithSubClassOf(schema: any, iri: string, classIri?: 
   };
 }
 
-const MstJSONSchema7TypeName = types.enumeration(['string', 'number', 'boolean', 'object', 'integer', 'array', 'null']);
+const MstJSONSchema7TypeName = types.enumeration(['string', 'number', 'integer', 'boolean', 'object', 'array', 'null']);
 const MstJSONSchema7Type = types.union(
   types.string,
   types.number,
@@ -95,7 +95,7 @@ export const MstJSONSchema7forRdf = types
      */
     '@id': types.identifier, // id of a shape
     '@type': types.maybe(types.string), // type of a shape (Node or Property)
-    '@context': types.maybe(types.map(types.union(types.string, types.map(types.string)))), // json-ld
+    '@context': types.maybe(types.map(types.union(types.string, types.frozen<JsStrObjObj>()))), // json-ld
 
     /**
      * Our custom extensions from SHACL
@@ -274,7 +274,7 @@ export const MstSchemas = types
       const uiSchema = r.uiSchema;
       if (!schema) return Promise.reject('Cannot load schema with conditions' + conditions);
       // get parent schemas
-      let schemaQueue: JSONSchema6forRdf[] = yield getDirectSuperSchemas(schema);
+      let schemaQueue: JSONSchema7_LD[] = yield getDirectSuperSchemas(schema);
       schemaQueue = [schema, ...schemaQueue];
       // copy loaded schema and parents into new schema
       let schemaResult: any = { '@id': schema['@id'], '@type': schema['@type'] };
@@ -291,9 +291,9 @@ export const MstSchemas = types
       return self.json.get(schemaResult['@id']);
     });
 
-    const getDirectSuperSchemas = flow(function* getDirectSuperSchemas(schema: JSONSchema6forRdf) {
+    const getDirectSuperSchemas = flow(function* getDirectSuperSchemas(schema: JSONSchema7_LD) {
       //console.debug('getDirectSuperSchemas for schema=', schema['@id']);
-      const schemaOrUndef: JSONSchema6forRdf | undefined = schema;
+      const schemaOrUndef: JSONSchema7_LD | undefined = schema;
       const parentSchemas: any[] = [];
       if (schemaOrUndef.allOf) {
         const schemaAllOf: any[] = schemaOrUndef.allOf.filter((s1: any) => s1.$ref !== undefined);
@@ -313,7 +313,7 @@ export const MstSchemas = types
       return parentSchemas;
     });
 
-    const copyAllSchemasToOne = (schemaQueue: JSONSchema6forRdf[], schema: any) => {
+    const copyAllSchemasToOne = (schemaQueue: JSONSchema7_LD[], schema: any) => {
       let schemaOrUndefined: any | undefined;
       while (schemaQueue.length > 0) {
         schemaOrUndefined = schemaQueue.pop();
@@ -338,7 +338,7 @@ export const MstSchemas = types
     const loadingByIri: any = {};
 
     return {
-      addSchema(schema: JSONSchema6forRdf): void {
+      addSchema(schema: JSONSchema7_LD): void {
         const iri: string = abbreviateIri(schema['@id'], repository.ns.currentJs);
         if (!self.json.get(iri)) {
           self.json.set(iri, schema as any);

@@ -15,8 +15,8 @@ import { BgpPattern, Generator, OptionalPattern } from 'sparqljs';
 
 import { Bindings } from './SparqlClient';
 import {
-  JSONSchema6forRdf,
-  JSONSchema6forRdfProperty,
+  JSONSchema7_LD,
+  JSONSchema7Property_LD,
   JsObject,
   copyObjectPropsWithRenameOrFilter,
   JsStrObj,
@@ -69,11 +69,11 @@ export function propsToSparqlVars(entConstr: Pick<EntConstrInternal, 'props2vars
   return variables;
 }
 
-export function getSchemaPropUri(schema: JSONSchema6forRdf, propertyKey: string): string | string[] | undefined {
+export function getSchemaPropUri(schema: JSONSchema7_LD, propertyKey: string): string | string[] | undefined {
   const properties = schema.properties;
   const context = schema['@context'];
   if (properties && context && typeof context !== 'string') {
-    const prop: JSONSchema6forRdfProperty | undefined = properties[propertyKey];
+    const prop: JSONSchema7Property_LD | undefined = properties[propertyKey];
     if (prop !== undefined && propertyKey !== '@id') {
       const propContext = (context as any)[propertyKey];
       if (propContext) {
@@ -91,11 +91,11 @@ export function getSchemaPropUri(schema: JSONSchema6forRdf, propertyKey: string)
 }
 
 export function getSchemaPropType(
-  properties: { [key: string]: JSONSchema6forRdfProperty },
+  properties: { [key: string]: JSONSchema7Property_LD },
   context: JsObject,
   propertyKey: string,
 ): string | undefined {
-  const prop: JSONSchema6forRdfProperty | undefined = properties[propertyKey];
+  const prop: JSONSchema7Property_LD | undefined = properties[propertyKey];
   const propContext = context[propertyKey];
   if (prop && prop.type && propContext && propContext['@type']) {
     if (prop.type === 'object') {
@@ -188,7 +188,7 @@ export interface IEntConstrJsOpt {
   '@type'?: string;
   '@parent'?: string;
   // external properties from Sparql EntConstr could be changed by client-code only (GUI code, etc.), immutable within SPARQL generation
-  schema: JSONSchema6forRdf;
+  schema: JSONSchema7_LD;
   conditions?: JsObject;
   variables?: JsObject;
   data?: JsObject;
@@ -225,7 +225,7 @@ export interface IEntConstrJs extends EntConstrData {
 }
 export interface EntConstrData {
   // external properties from Sparql EntConstr could be changed by client-code only (GUI code, etc.), immutable within SPARQL generation
-  schema: JSONSchema6forRdf;
+  schema: JSONSchema7_LD;
   conditions: JsObject;
   variables?: JsObject;
   data: JsObject;

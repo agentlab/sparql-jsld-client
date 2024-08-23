@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
 import dayjs from 'dayjs';
-import { JSONSchema6forRdf } from '../ObjectProvider';
+import { JSONSchema7_LD } from '../ObjectProvider';
 
 interface FormatterAndDefaultAndTitle {
   propertyFormatter?: (value: any) => any;
@@ -16,10 +16,7 @@ interface FormatterAndDefaultAndTitle {
   propertyTitle?: string;
 }
 
-export function getPropertyFormatterAndDefault(
-  schema: JSONSchema6forRdf,
-  propKey: string,
-): FormatterAndDefaultAndTitle {
+export function getPropertyFormatterAndDefault(schema: JSONSchema7_LD, propKey: string): FormatterAndDefaultAndTitle {
   const properties = schema.properties;
   const contexts = schema['@context'];
   const result: FormatterAndDefaultAndTitle = {};

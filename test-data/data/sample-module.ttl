@@ -34,7 +34,7 @@
   dcterms:modified          "2014-02-10T10:12:16.000Z"^^xsd:dateTime ;
   oslc_asset:guid           "E159CD38-5205-DA02-CDAE-560D10043BD5" ;
   clss:status               rmUserTypes:_YwrbNRmREemK5LEaKhoOow_Draft ;
-  clss:uri                  <file:///urn-s2-iisvvt-infosystems-classifier-45950> ;
+  clss:uri                  <file:///myfile.xml> ;
   oslc_asset:version        "1.0"^^xsd:string ;
   nav:processArea           projects:defaultProject ;
   rm:assetFolder            folders:samples_module .
@@ -47,7 +47,7 @@ clss:_tHAikozUEeOiy8owVBW5pQ
   rm:xhtmlText              "Requirement Module 30000 - Grouping 30001 Text"^^rdf:HTML ;
   rm:artifactFormat         rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Text ;
   clss:format               "Text"^^xsd:string ;
-  clss:link                 <file:///meta_aVECQo2fEeOiy8owVBW5pQ.xml> ;
+  clss:link                 clss:_tHAikozUEeOiy8owVBW5pQ ;
   clss:status               rmUserTypes:_YwrbNRmREemK5LEaKhoOow_Draft ;
   clss:uri                  clss:_tHAikozUEeOiy8owVBW5pQ ;
   dcterms:creator           users:user1 ;

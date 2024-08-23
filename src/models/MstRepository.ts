@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
 import { values } from 'mobx';
-import { types, getSnapshot, applySnapshot, getEnv, Instance } from 'mobx-state-tree';
+import { types, getSnapshot, applySnapshot, getEnv, Instance, SnapshotIn, SnapshotOut } from 'mobx-state-tree';
 
 import { addMissingId, JsObject } from '../ObjectProvider';
 import { abbreviateIri } from '../SparqlGen';
@@ -33,7 +33,6 @@ export const MstRepository = types
   .model('MstRepository', {
     repId: types.string,
     user: User,
-    //processArea: types.string,
     ns: MstNamespaces,
     schemas: MstSchemas,
 
@@ -42,9 +41,6 @@ export const MstRepository = types
      * Use <code>rep.getColl(iri)</code> instead of <code>rep.colls.get(iri)</code>
      */
     colls: types.map(MstColl),
-    editingData: types.map(types.boolean),
-
-    selectedData: types.map(types.frozen<any>()),
   })
   /**
    * Views
@@ -60,18 +56,6 @@ export const MstRepository = types
         const iri = typeof iriOrCollConstr === 'string' ? iriOrCollConstr : iriOrCollConstr['@id'];
         const coll = self.colls.get(iri);
         return coll;
-      },
-
-      getSelectedDataJs(iri: string) {
-        if (!iri) return undefined;
-        const coll = this.getColl(iri);
-        if (!coll) return undefined;
-        const id = self.selectedData.get(iri);
-        if (id) {
-          const data = coll.dataByIri(id);
-          if (data) return getSnapshot<JsObject>(data);
-        }
-        return undefined;
       },
     };
   })
@@ -221,49 +205,6 @@ export const MstRepository = types
       },
 
       saveData(schemaUri: string) {},
-      //////////  Selection Service  ///////////
-
-      setSelectedData(iri: string, data: any) {
-        //console.log('setSelectedData START', { iri, data });
-        if (iri /*&& */) {
-          //let id: string;
-          //if (typeof data === 'string') {
-          //  id = data;
-          //} else {
-          //  id = data['@id'];
-          //
-          //if (id && typeof id === 'string') {
-          //  self.selectedData.set(iri, id);
-          //  console.log('setSelectedData UPDATE', { iri, id });
-          //}
-          self.selectedData.set(iri, data);
-        }
-        //console.log('setSelectedData END', { iri, data });
-      },
-      //////////  FORM  ///////////
-      onSaveFormData(formId: string) {},
-      onCancelForm(id: string) {},
-      setEditing(schemaUri: string, state: boolean, reset = false) {
-        if (self.editingData.get(schemaUri) !== state) {
-          self.editingData.set(schemaUri, state);
-          //if (schemaUri === 'root' && this.setParentEditing) {
-          //  self.setParentEditing(state);
-          //}
-          //if (this.saveLogicTree[schemaUri] && this.saveLogicTree[schemaUri].parent) {
-          //  this.setEditingChanges(this.saveLogicTree[schemaUri].parent as string, state, schemaUri);
-          //}
-          //if (reset) {
-          //  this.resetEditingChanges(schemaUri);
-          //}
-        }
-      },
-      setModalVisible(uri: string, state: boolean) {},
-      setOnValidate(form: string, id: string, state: boolean) {},
-      onChangeData(path: string, data: any) {},
-      setSaveLogic(parent: string, child: string) {},
-      setEditingChanges(parentUri: string, state: boolean, childUri: string) {},
-      onChangeFormData(form: string, path: string, data: any) {},
-      resetEditingChanges(schemaUri: string) {},
 
       /**
        * Edit Connection
@@ -541,4 +482,6 @@ export const MstRepository = types
     };
   });
 
-export type IRepository = Instance<typeof MstRepository>;
+export type TMstRepository = Instance<typeof MstRepository>;
+export type TMstRepositorySnapshotIn = SnapshotIn<typeof MstRepository>;
+export type TMstRepositorySnapshotOut = SnapshotOut<typeof MstRepository>;

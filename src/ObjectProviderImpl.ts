@@ -8,16 +8,16 @@
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
 import {
-  JSONSchema6forRdf,
+  JSONSchema7_LD,
   JsObject,
-  JSONSchema6DefinitionForRdfProperty,
+  JSONSchema7PropertyDefinition_LD,
   copyObjectProps,
   copyUniqueArrayElements,
 } from './ObjectProvider';
 
 export const schemaNonPrimitivePropsKeys = ['@context', 'properties', 'required'];
 
-function combineProperties(oldObj: any, newObj: any, schema: JSONSchema6forRdf): any {
+function combineProperties(oldObj: any, newObj: any, schema: JSONSchema7_LD): any {
   const newData: any = {};
   Object.keys(oldObj).forEach((key) => {
     if (schema.properties && oldObj[key] !== newObj[key]) {
@@ -31,7 +31,7 @@ function combineProperties(oldObj: any, newObj: any, schema: JSONSchema6forRdf):
   return newData;
 }
 
-export function createObjectWithoutRepetitions(objects: any[], schema: JSONSchema6forRdf): any[] {
+export function createObjectWithoutRepetitions(objects: any[], schema: JSONSchema7_LD): any[] {
   const newData = new Map();
   const usedUri: any[] = [];
   objects.forEach((object) => {
@@ -231,8 +231,8 @@ function propertyShapeToUiSchema(
 
 export function propertyShapesToSchemaProperties(
   shapeProps: any[] | undefined,
-): [{ [key: string]: JSONSchema6DefinitionForRdfProperty }, JsObject, string[], JsObject] {
-  const schemaProps: { [key: string]: JSONSchema6DefinitionForRdfProperty } = {};
+): [{ [key: string]: JSONSchema7PropertyDefinition_LD }, JsObject, string[], JsObject] {
+  const schemaProps: { [key: string]: JSONSchema7PropertyDefinition_LD } = {};
   const schemaContexts: JsObject = {};
   const schemaReqs: string[] = [];
   const uiSchema: JsObject = {};
@@ -261,7 +261,7 @@ export function propertyShapesToSchemaProperties(
  * @param schema
  * @param parentSchema
  */
-export function addToSchemaParentSchema(schema: JSONSchema6forRdf, parentSchema: JSONSchema6forRdf): JSONSchema6forRdf {
+export function addToSchemaParentSchema(schema: JSONSchema7_LD, parentSchema: JSONSchema7_LD): JSONSchema7_LD {
   const parentCtx = parentSchema['@context'];
   if (parentCtx && typeof parentCtx !== 'string' && !Array.isArray(parentCtx)) {
     if (!schema['@context']) schema['@context'] = {};

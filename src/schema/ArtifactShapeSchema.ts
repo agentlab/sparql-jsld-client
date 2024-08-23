@@ -7,9 +7,9 @@
  *
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
-import { JSONSchema6forRdf } from '../ObjectProvider';
+import { JSONSchema7_LD } from '../ObjectProvider';
 
-export const ArtifactShapeSchema: JSONSchema6forRdf = {
+export const ArtifactShapeSchema: JSONSchema7_LD = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   '@id': 'sh:NodeShapeShape',
   '@type': 'sh:NodeShape',
@@ -25,10 +25,10 @@ export const ArtifactShapeSchema: JSONSchema6forRdf = {
     },
     title: 'dcterms:title',
     description: 'dcterms:description',
-    /*property: {
-      '@id': 'sh:property',
-      '@type': 'sh:PropertyShape',
-    },*/
+    //property: {
+    //  '@id': 'sh:property',
+    //  '@type': 'sh:PropertyShape',
+    //},
     property: 'sh:property',
     inCreationMenu: 'rm:inCreationMenu',
     defaultIndividNs: {
@@ -87,7 +87,7 @@ export const ArtifactShapeSchema: JSONSchema6forRdf = {
   required: ['@id', 'targetClass' /*, 'property'*/], // arrays should be required
 };
 
-export const PropertyShapeSchema: JSONSchema6forRdf = {
+export const PropertyShapeSchema: JSONSchema7_LD = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   //$id: 'http://example.com/product.schema.json',
   '@id': 'sh:PropertyShapeShape',

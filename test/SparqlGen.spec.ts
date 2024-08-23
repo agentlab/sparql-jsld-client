@@ -10,7 +10,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, jest, it } from '@jest/globals';
 import { Parser } from 'sparqljs';
 
-import { JsObject, JSONSchema6forRdf } from '../src/ObjectProvider';
+import { JsObject, JSONSchema7_LD } from '../src/ObjectProvider';
 import { factory, getFullIriNamedNode, ICollConstrJsOpt } from '../src/SparqlGen';
 import { constructObjectsQuery, selectObjectsQuery } from '../src/SparqlGenSelect';
 import { insertObjectQuery, deleteObjectQuery, updateObjectQuery } from '../src/SparqlGenUpdate';
@@ -32,7 +32,7 @@ import { expectToBeDefined } from './TestHelpers';
 // See https://stackoverflow.com/questions/49603939/async-callback-was-not-invoked-within-the-5000ms-timeout-specified-by-jest-setti
 jest.setTimeout(500000);
 
-const SchemaWithoutArrayProperties: JSONSchema6forRdf = {
+const SchemaWithoutArrayProperties: JSONSchema7_LD = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   //$id: 'https://agentlab.eu/ns/rm/rdf#PropertyShapeWithoutArrayProperties',
   '@id': 'rm:PropertyShapeWithoutArrayProperties',
@@ -179,7 +179,7 @@ describe('SchemaWithoutArrayProperties', () => {
     ));
 });
 
-const SchemaWithArrayProperty: JSONSchema6forRdf = {
+const SchemaWithArrayProperty: JSONSchema7_LD = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   //$id: 'http://www.w3.org/ns/shacl#SchemaWithArrayProperty',
   '@id': 'sh:SchemaWithArrayProperty',

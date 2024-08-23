@@ -230,7 +230,7 @@ export const MstCollConstr = types
           for (const key of Object.keys(entConstr.schemaPropsWithArrays)) {
             for (const object of objects) {
               const prop = entConstr.schemaPropsWithArrays[key];
-              const schemaWithArrayProperty: JSONSchema6forRdf = {
+              const schemaWithArrayProperty: JSONSchema7_LD = {
                 ...schema,
                 '@id': '_' + uuid62.v4(),
                 '@context': {

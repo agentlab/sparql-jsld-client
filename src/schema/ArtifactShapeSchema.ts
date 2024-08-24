@@ -7,9 +7,9 @@
  *
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
-import { JSONSchema7_LD } from '../ObjectProvider';
+import { JSONSchema7LD } from '../ObjectProvider';
 
-export const ArtifactShapeSchema: JSONSchema7_LD = {
+export const ArtifactShapeSchema: JSONSchema7LD = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   '@id': 'sh:NodeShapeShape',
   '@type': 'sh:NodeShape',
@@ -87,7 +87,7 @@ export const ArtifactShapeSchema: JSONSchema7_LD = {
   required: ['@id', 'targetClass' /*, 'property'*/], // arrays should be required
 };
 
-export const PropertyShapeSchema: JSONSchema7_LD = {
+export const PropertyShapeSchema: JSONSchema7LD = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   //$id: 'http://example.com/product.schema.json',
   '@id': 'sh:PropertyShapeShape',

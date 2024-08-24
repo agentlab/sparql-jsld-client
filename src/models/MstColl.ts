@@ -28,10 +28,10 @@ import {
 
 import { JsObject } from '../ObjectProvider';
 import {
-  MstCollConstr as MstCollConstr,
+  MstCollConstr,
   constructObjectsSnapshot,
   deleteObjectSnapshot,
-  ICollConstrSnapshotOut,
+  TMstCollConstrSnapshotOut,
   MstMapOfJsObject,
 } from './MstCollConstr';
 
@@ -245,9 +245,9 @@ export const MstColl = types
         //console.log('loadColl START');
         self.isLoading = true;
         if (self.collConstr) {
-          const collConstr = getSnapshot<ICollConstrSnapshotOut>(self.collConstr);
+          const collConstr = getSnapshot<TMstCollConstrSnapshotOut>(self.collConstr);
           let parent: any | undefined = self.collConstr['@parent'];
-          if (parent) parent = getSnapshot<ICollConstrSnapshotOut>(parent);
+          if (parent) parent = getSnapshot<TMstCollConstrSnapshotOut>(parent);
           //console.log('loadColl query', { collConstr, parent });
           try {
             const objects: JsObject[] | null = yield constructObjectsSnapshot(
@@ -283,12 +283,12 @@ export const MstColl = types
         self.isLoading = true;
         if (self.collConstr) {
           const collConstr = {
-            ...getSnapshot<ICollConstrSnapshotOut>(self.collConstr),
+            ...getSnapshot<TMstCollConstrSnapshotOut>(self.collConstr),
             limit: self.pageSize,
             offset: self.dataIntrnl.length,
           };
           let parent: any = self.collConstr['@parent'];
-          if (parent) parent = getSnapshot<ICollConstrSnapshotOut>(parent);
+          if (parent) parent = getSnapshot<TMstCollConstrSnapshotOut>(parent);
           //console.log('loadMore query', { collConstr, parent });
           try {
             const objects: JsObject[] | null = yield constructObjectsSnapshot(
@@ -355,7 +355,7 @@ export const MstColl = types
           elem = elem['@id'];
           if (!elem) return null;
         }
-        let collConstr: any = getSnapshot<ICollConstrSnapshotOut>(self.collConstr);
+        let collConstr: any = getSnapshot<TMstCollConstrSnapshotOut>(self.collConstr);
         // filter-out query modifiers like orderBy, limit...
         collConstr = {
           '@id': collConstr['@id'],
@@ -363,7 +363,7 @@ export const MstColl = types
           entConstrs: collConstr.entConstrs,
         };
         let parent: any = self.collConstr['@parent'];
-        if (parent) parent = getSnapshot<ICollConstrSnapshotOut>(parent);
+        if (parent) parent = getSnapshot<TMstCollConstrSnapshotOut>(parent);
         yield deleteObjectSnapshot(rep.schemas, rep.ns.currentJs, client, collConstr, parent, { '@_id': elem });
         //@ts-ignore
         return self.delElemInternal(elem);

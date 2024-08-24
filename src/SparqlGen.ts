@@ -15,8 +15,8 @@ import { BgpPattern, Generator, OptionalPattern } from 'sparqljs';
 
 import { Bindings } from './SparqlClient';
 import {
-  JSONSchema7_LD,
-  JSONSchema7Property_LD,
+  JSONSchema7LD,
+  JSONSchema7LDProperty,
   JsObject,
   copyObjectPropsWithRenameOrFilter,
   JsStrObj,
@@ -69,11 +69,11 @@ export function propsToSparqlVars(entConstr: Pick<EntConstrInternal, 'props2vars
   return variables;
 }
 
-export function getSchemaPropUri(schema: JSONSchema7_LD, propertyKey: string): string | string[] | undefined {
+export function getSchemaPropUri(schema: JSONSchema7LD, propertyKey: string): string | string[] | undefined {
   const properties = schema.properties;
   const context = schema['@context'];
   if (properties && context && typeof context !== 'string') {
-    const prop: JSONSchema7Property_LD | undefined = properties[propertyKey];
+    const prop: JSONSchema7LDProperty | undefined = properties[propertyKey];
     if (prop !== undefined && propertyKey !== '@id') {
       const propContext = (context as any)[propertyKey];
       if (propContext) {
@@ -91,11 +91,11 @@ export function getSchemaPropUri(schema: JSONSchema7_LD, propertyKey: string): s
 }
 
 export function getSchemaPropType(
-  properties: { [key: string]: JSONSchema7Property_LD },
+  properties: { [key: string]: JSONSchema7LDProperty },
   context: JsObject,
   propertyKey: string,
 ): string | undefined {
-  const prop: JSONSchema7Property_LD | undefined = properties[propertyKey];
+  const prop: JSONSchema7LDProperty | undefined = properties[propertyKey];
   const propContext = context[propertyKey];
   if (prop && prop.type && propContext && propContext['@type']) {
     if (prop.type === 'object') {
@@ -188,7 +188,7 @@ export interface IEntConstrJsOpt {
   '@type'?: string;
   '@parent'?: string;
   // external properties from Sparql EntConstr could be changed by client-code only (GUI code, etc.), immutable within SPARQL generation
-  schema: JSONSchema7_LD;
+  schema: string | undefined | JSONSchema7LD;
   conditions?: JsObject;
   variables?: JsObject;
   data?: JsObject;
@@ -225,7 +225,7 @@ export interface IEntConstrJs extends EntConstrData {
 }
 export interface EntConstrData {
   // external properties from Sparql EntConstr could be changed by client-code only (GUI code, etc.), immutable within SPARQL generation
-  schema: JSONSchema7_LD;
+  schema: JSONSchema7LD;
   conditions: JsObject;
   variables?: JsObject;
   data: JsObject;
@@ -394,7 +394,12 @@ export function genEntConstrSparqlSubject(
 export function genUniqueVarName2(varPref: string, no: number, entConstrs: IEntConstrJsOpt[]): string {
   let varName = varPref + no;
   entConstrs.forEach((constr) => {
-    while (constr.schema.properties && constr.schema.properties[varName]) {
+    while (
+      constr?.schema &&
+      typeof constr.schema === 'object' &&
+      constr.schema.properties &&
+      constr.schema.properties[varName]
+    ) {
       varName += entConstrs.length;
     }
   });

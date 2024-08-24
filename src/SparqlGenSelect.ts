@@ -19,7 +19,7 @@ import {
   copyObjectPropsWithRenameOrFilter,
   copyUniqueObjectProps,
   JsStrObjObj,
-  JSONSchema7_LD,
+  JSONSchema7LD,
   JsStrObj,
 } from './ObjectProvider';
 import {
@@ -79,7 +79,7 @@ export async function selectObjectsArrayProperties(
     for (const key of Object.keys(entConstr.schemaPropsWithArrays)) {
       for (const object of objects) {
         const prop = entConstr.schemaPropsWithArrays[key];
-        const schemaWithArrayProperty: JSONSchema7_LD = {
+        const schemaWithArrayProperty: JSONSchema7LD = {
           ...schema,
           '@id': '_' + uuid62.v4(),
           '@context': {
@@ -95,7 +95,7 @@ export async function selectObjectsArrayProperties(
         if (prop && prop.type && propType) {
           //let schemaUri: string | undefined;
           let constrWithSchema2: EntConstrInternal | undefined;
-          let schema2: JSONSchema7_LD;
+          let schema2: JSONSchema7LD;
           if ((prop.type === 'array' && prop.items) || prop.type === 'object') {
             //schemaUri = repository.schemas.getByClassId(propType);
             constrWithSchema2 = entConstrs.find((c) => c.schema.targetClass === propType);

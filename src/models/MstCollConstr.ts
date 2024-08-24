@@ -14,13 +14,20 @@ import {
   getEnv,
   getRoot,
   Instance,
-  SnapshotOut,
   IAnyStateTreeNode,
   IAnyModelType,
+  SnapshotIn,
+  SnapshotOut,
 } from 'mobx-state-tree';
 
 import { addMissingId, JsObject } from '../ObjectProvider';
-import { ISchemas, MstJSONSchema7forRdf, MstJSONSchema7forRdfReference } from './MstSchemas';
+import {
+  TMstSchemas,
+  MstJSONSchema7LD,
+  MstJSONSchema7LDReference,
+  TMstJSONSchema7LDSnapshotIn,
+  TMstJSONSchema7LDSnapshotOut,
+} from './MstSchemas';
 import { ICollConstrJs } from '../SparqlGen';
 import { constructObjectsQuery, selectObjectsQuery } from '../SparqlGenSelect';
 import { insertObjectQuery, deleteObjectQuery, updateObjectQuery } from '../SparqlGenUpdate';
@@ -50,7 +57,7 @@ export const MstEntConstr = types
      * could be class IRI, resolved from local schema repository (local cache) or from server
      * or could be 'private' schema (full qualified JS object)
      */
-    schema: types.union(MstJSONSchema7forRdfReference, MstJSONSchema7forRdf),
+    schema: types.union(MstJSONSchema7LDReference, MstJSONSchema7LD),
     /**
      * Obj property corresponds schema property
      * Obj value -- constrain value:
@@ -126,7 +133,15 @@ export const MstEntConstr = types
     };
   });
 
-export type IEntConstr = Instance<typeof MstEntConstr>;
+export type TMstEntConstr = Instance<typeof MstEntConstr>;
+export type TMstEntConstrSnapshotIn = Omit<SnapshotIn<typeof MstEntConstr>, '@parent' | 'schema'> & {
+  '@parent': string | undefined;
+  schema: string | undefined | TMstJSONSchema7LDSnapshotIn;
+};
+export type TMstEntConstrSnapshotOut = Omit<SnapshotOut<typeof MstEntConstr>, '@parent' | 'schema'> & {
+  '@parent': string | undefined;
+  schema: string | undefined | TMstJSONSchema7LDSnapshotOut;
+};
 
 /**
  * Collection Constraint
@@ -230,7 +245,7 @@ export const MstCollConstr = types
           for (const key of Object.keys(entConstr.schemaPropsWithArrays)) {
             for (const object of objects) {
               const prop = entConstr.schemaPropsWithArrays[key];
-              const schemaWithArrayProperty: JSONSchema7_LD = {
+              const schemaWithArrayProperty: JSONSchema7LD = {
                 ...schema,
                 '@id': '_' + uuid62.v4(),
                 '@context': {
@@ -284,7 +299,7 @@ export const MstCollConstr = types
         return objects;
       }),*/
       /*selectObjects: flow(function* selectObjects() {
-        const collConstrJs = resolveAndClone(self as ICollConstr);
+        const collConstrJs = resolveAndClone(self as TMstCollConstr);
         const entConstrs: EntConstrInternal[] = getInternalCollConstrs(collConstrJs, self.nsJs);
         selectInternalEntConstrs(entConstrs);
         const query = selectQueryFromEntConstrs(entConstrs, collConstrJs);
@@ -312,7 +327,7 @@ export const MstCollConstr = types
        * DELETE
        */
       /*deleteObject: flow(function* deleteObject(conditions?: JsObject | JsObject[], loadIfNeeded = true) {
-        const collConstrJs = resolveAndClone(self as ICollConstr);
+        const collConstrJs = resolveAndClone(self as TMstCollConstr);
         const entConstrs: EntConstrInternal[] = getInternalCollConstrs(collConstrJs, self.nsJs, conditions);
         const query = deleteObjectQuery(entConstrs);
         const queryStr = gen.stringify(query);
@@ -328,7 +343,7 @@ export const MstCollConstr = types
        * INSERT
        */
       /*createObject: flow(function* createObject(data?: JsObject | JsObject[], loadIfNeeded = true) {
-        const collConstrJs = resolveAndClone(self as ICollConstr);
+        const collConstrJs = resolveAndClone(self as TMstCollConstr);
         const entConstrs: EntConstrInternal[] = getInternalCollConstrs(collConstrJs, self.nsJs, undefined, data);
         const query = insertObjectQuery(entConstrs);
         const queryStr = gen.stringify(query);
@@ -344,7 +359,7 @@ export const MstCollConstr = types
        * UPDATE
        */
       /*updateObject: flow(function* updateObject(conditions?: JsObject | JsObject[], data?: JsObject | JsObject[], loadIfNeeded = true) {
-        const collConstrJs = resolveAndClone(self as ICollConstr);
+        const collConstrJs = resolveAndClone(self as TMstCollConstr);
         const entConstrs: EntConstrInternal[] = getInternalCollConstrs(collConstrJs, self.nsJs, conditions, data);
         const query = updateObjectQuery(entConstrs);
         const queryStr = gen.stringify(query);
@@ -359,8 +374,15 @@ export const MstCollConstr = types
     };
   });
 
-export type ICollConstr = Instance<typeof MstCollConstr>;
-export type ICollConstrSnapshotOut = SnapshotOut<typeof MstCollConstr>;
+export type TMstCollConstr = Instance<typeof MstCollConstr>;
+export type TMstCollConstrSnapshotIn = Omit<SnapshotIn<typeof MstCollConstr>, '@parent' | 'entConstrs'> & {
+  '@parent': string | undefined;
+  entConstrs: TMstEntConstrSnapshotOut[];
+};
+export type TMstCollConstrSnapshotOut = Omit<SnapshotOut<typeof MstCollConstr>, '@parent' | 'entConstrs'> & {
+  '@parent': string | undefined;
+  entConstrs: TMstEntConstrSnapshotOut[];
+};
 
 /**
  * Smart deep-merge parent CollConstr and it's entConstrs into child CollConstr.
@@ -370,9 +392,9 @@ export type ICollConstrSnapshotOut = SnapshotOut<typeof MstCollConstr>;
  * @returns
  */
 function mergeCollConstrs(
-  collConstrJs: ICollConstrSnapshotOut,
-  parentCollConstrJs: ICollConstrSnapshotOut,
-): ICollConstrSnapshotOut {
+  collConstrJs: TMstCollConstrSnapshotOut,
+  parentCollConstrJs: TMstCollConstrSnapshotOut,
+): TMstCollConstrSnapshotOut {
   // deep-merge entConstrs props, based on parent order of EntConstrs
   (collConstrJs.entConstrs as any) = parentCollConstrJs.entConstrs
     .map((parentEntConstrJs) => {
@@ -413,19 +435,19 @@ function mergeCollConstrs(
   return collConstrJs;
 }
 
-async function resolveAndClone(self: ICollConstr) {
-  const data = getSnapshot<ICollConstrSnapshotOut>(self);
+async function resolveAndClone(self: TMstCollConstr) {
+  const data = getSnapshot<TMstCollConstrSnapshotOut>(self);
   let parent: any = self['@parent'];
-  if (parent) parent = getSnapshot<ICollConstrSnapshotOut>(parent);
+  if (parent) parent = getSnapshot<TMstCollConstrSnapshotOut>(parent);
   return resolveAndCloneSnapshot(data, parent, self.rep.schemas);
 }
 
 async function resolveAndCloneSnapshot(
-  data: ICollConstrSnapshotOut,
-  parent: ICollConstrSnapshotOut | undefined,
-  schemas: ISchemas,
+  data: TMstCollConstrSnapshotOut,
+  parent: TMstCollConstrSnapshotOut | undefined,
+  schemas: TMstSchemas,
 ) {
-  let collConstrJs: ICollConstrSnapshotOut = cloneDeep(data);
+  let collConstrJs: TMstCollConstrSnapshotOut = cloneDeep(data);
   if (parent) collConstrJs = mergeCollConstrs(collConstrJs, cloneDeep(parent));
   // resolve schema by reference. For-loop because of async-await
   for (let index = 0; index < collConstrJs.entConstrs.length; index++) {
@@ -457,13 +479,13 @@ async function resolveAndCloneSnapshot(
   return collConstrJs as ICollConstrJs;
 }
 
-export async function selectObjects(collConstr: ICollConstr) {
+export async function selectObjects(collConstr: TMstCollConstr) {
   //TODO: performance
   const collConstrJs = await resolveAndClone(collConstr);
   return selectObjectsQuery(collConstrJs, collConstr.nsJs, collConstr.client);
 }
 
-export async function constructObjects(collConstr: ICollConstr) {
+export async function constructObjects(collConstr: TMstCollConstr) {
   //TODO: performance
   const collConstrJs = await resolveAndClone(collConstr);
   if (!collConstr || !collConstr.client) {
@@ -482,9 +504,9 @@ export async function constructObjects(collConstr: ICollConstr) {
  * @returns [] or null -- if incorrect query in validation and no actual request to the server had been made
  */
 export async function constructObjectsSnapshot(
-  collConstr: ICollConstrSnapshotOut,
-  parentCollConstr: ICollConstrSnapshotOut | undefined,
-  schemas: ISchemas,
+  collConstr: TMstCollConstrSnapshotOut,
+  parentCollConstr: TMstCollConstrSnapshotOut | undefined,
+  schemas: TMstSchemas,
   nsJs: any,
   client: SparqlClient,
 ) {
@@ -517,7 +539,11 @@ export async function constructObjectsSnapshot(
  * @param conditions: JS object with properties, which defines search conditions
  *
  */
-export async function deleteObject(collConstr: ICollConstr, conditions?: JsObject | JsObject[], loadIfNeeded = true) {
+export async function deleteObject(
+  collConstr: TMstCollConstr,
+  conditions?: JsObject | JsObject[],
+  loadIfNeeded = true,
+) {
   //TODO: performance
   const collConstrJs = await resolveAndClone(collConstr);
   deleteObjectQuery(collConstrJs, collConstr.nsJs, collConstr.client, conditions);
@@ -527,11 +553,11 @@ export async function deleteObject(collConstr: ICollConstr, conditions?: JsObjec
 }
 
 export async function deleteObjectSnapshot(
-  schemas: ISchemas,
+  schemas: TMstSchemas,
   nsJs: any,
   client: SparqlClient,
-  data: ICollConstrSnapshotOut,
-  parent: ICollConstrSnapshotOut | undefined,
+  data: TMstCollConstrSnapshotOut,
+  parent: TMstCollConstrSnapshotOut | undefined,
   conditions?: JsObject | JsObject[],
 ) {
   //TODO: performance
@@ -539,7 +565,7 @@ export async function deleteObjectSnapshot(
   deleteObjectQuery(collConstrJs, nsJs, client, conditions);
 }
 
-export async function insertObject(collConstr: ICollConstr, data?: JsObject | JsObject[], loadIfNeeded = true) {
+export async function insertObject(collConstr: TMstCollConstr, data?: JsObject | JsObject[], loadIfNeeded = true) {
   //TODO: performance
   const collConstrJs = await resolveAndClone(collConstr);
   insertObjectQuery(collConstrJs, collConstr.nsJs, collConstr.client, data);
@@ -549,7 +575,7 @@ export async function insertObject(collConstr: ICollConstr, data?: JsObject | Js
 }
 
 export async function updateObject(
-  collConstr: ICollConstr,
+  collConstr: TMstCollConstr,
   conditions?: JsObject | JsObject[],
   data?: JsObject | JsObject[],
   loadIfNeeded = true,

@@ -19,9 +19,11 @@ import {
   IAnyStateTreeNode,
   getEnv,
   getRoot,
+  SnapshotIn,
+  SnapshotOut,
 } from 'mobx-state-tree';
 
-import { JSONSchema7_LD, copyUniqueObjectPropsWithRenameOrFilter, JsObject, JsStrObjObj } from '../ObjectProvider';
+import { JSONSchema7LD, copyUniqueObjectPropsWithRenameOrFilter, JsObject, JsStrObjObj } from '../ObjectProvider';
 import {
   propertyShapesToSchemaProperties,
   uiMapping,
@@ -83,12 +85,15 @@ const MstJSONSchema7Array = types.array(types.late(() => MstJSONSchema7Type));
     | { [x: string]: JSONValue }
     | Array<JSONValue>;*/
 
-export const MstSchemaRef = types.model('MstJSONSchema7forRdf', {
+export const MstSchemaRef = types.model('MstJSONSchema7LD', {
   $ref: types.string,
 });
 
-export const MstJSONSchema7forRdf = types
-  .model('MstJSONSchema7forRdf', {
+/**
+ * MST JSON Schema LD
+ */
+export const MstJSONSchema7LD = types
+  .model('MstJSONSchema7LD', {
     /**
      * ext json-ld Node
      * https://github.com/json-ld/json-ld.org/blob/master/schemas/jsonld-schema.json
@@ -100,7 +105,7 @@ export const MstJSONSchema7forRdf = types
     /**
      * Our custom extensions from SHACL
      */
-    targetClass: types.maybe(types.string), // targetClass of a shape
+    targetClass: types.string, // targetClass of a shape
     //'path': types.maybe(types.string), // targetClass of a shape
 
     /**
@@ -116,7 +121,7 @@ export const MstJSONSchema7forRdf = types
     title: types.maybe(types.string),
     description: types.maybe(types.string),
 
-    properties: types.optional(types.map(types.late((): IAnyModelType => MstJSONSchema7PropertyForRdf)), {}),
+    properties: types.optional(types.map(types.late((): IAnyModelType => MstJSONSchema7LDProperty)), {}),
     required: types.optional(types.array(types.string), []),
   })
 
@@ -138,16 +143,21 @@ export const MstJSONSchema7forRdf = types
     };
   });
 
-//export interface IJSONSchema7forRdf extends Instance<typeof JSONSchema7forRdf> {}
+export type TMstJSONSchema7LD = Instance<typeof MstJSONSchema7LD>;
+export type TMstJSONSchema7LDSnapshotIn = SnapshotIn<typeof MstJSONSchema7LD>;
+export type TMstJSONSchema7LDSnapshotOut = SnapshotOut<typeof MstJSONSchema7LD>;
 
-export const MstJSONSchema7PropertyForRdf = types.model('MstJSONSchema7PropertyForRdf', {
+/**
+ * MST JSON Schema LD Property
+ */
+export const MstJSONSchema7LDProperty = types.model('MstJSONSchema7LDProperty', {
   title: types.maybe(types.string),
   description: types.maybe(types.string),
 
   type: MstJSONSchema7TypeName,
   enum: types.maybe(MstJSONSchema7Array),
   default: types.maybe(MstJSONSchema7Type),
-  items: types.maybe(types.late((): IAnyModelType => MstJSONSchema7PropertyForRdf)),
+  items: types.maybe(types.late((): IAnyModelType => MstJSONSchema7LDProperty)),
 
   format: types.maybe(types.string),
   contentMediaType: types.maybe(types.string),
@@ -161,10 +171,12 @@ export const MstJSONSchema7PropertyForRdf = types.model('MstJSONSchema7PropertyF
   shapeModifiability: types.maybe(types.string), // user or non -- system
 });
 
-//export interface IJSONSchema7PropertyForRdf extends Instance<typeof JSONSchema7PropertyForRdf> {}
+export type TMstJSONSchema7LDProperty = Instance<typeof MstJSONSchema7LDProperty>;
+export type TMstJSONSchema7LDPropertySnapshotIn = SnapshotIn<typeof MstJSONSchema7LDProperty>;
+export type TMstJSONSchema7LDPropertySnapshotOut = SnapshotOut<typeof MstJSONSchema7LDProperty>;
 
-export const MstJSONSchema7forRdfReference = types.maybe(
-  types.reference(MstJSONSchema7forRdf, {
+export const MstJSONSchema7LDReference = types.maybe(
+  types.reference(MstJSONSchema7LD, {
     get(identifier: string, parent): any {
       if (!parent) return null;
       const repository: IAnyStateTreeNode = getRoot(parent);
@@ -185,7 +197,7 @@ export const MstSchemas = types
     /**
      * Schemas by id
      */
-    json: types.map(MstJSONSchema7forRdf),
+    json: types.map(MstJSONSchema7LD),
     /**
      * Default schemas for classes
      */
@@ -274,7 +286,7 @@ export const MstSchemas = types
       const uiSchema = r.uiSchema;
       if (!schema) return Promise.reject('Cannot load schema with conditions' + conditions);
       // get parent schemas
-      let schemaQueue: JSONSchema7_LD[] = yield getDirectSuperSchemas(schema);
+      let schemaQueue: JSONSchema7LD[] = yield getDirectSuperSchemas(schema);
       schemaQueue = [schema, ...schemaQueue];
       // copy loaded schema and parents into new schema
       let schemaResult: any = { '@id': schema['@id'], '@type': schema['@type'] };
@@ -291,9 +303,9 @@ export const MstSchemas = types
       return self.json.get(schemaResult['@id']);
     });
 
-    const getDirectSuperSchemas = flow(function* getDirectSuperSchemas(schema: JSONSchema7_LD) {
+    const getDirectSuperSchemas = flow(function* getDirectSuperSchemas(schema: JSONSchema7LD) {
       //console.debug('getDirectSuperSchemas for schema=', schema['@id']);
-      const schemaOrUndef: JSONSchema7_LD | undefined = schema;
+      const schemaOrUndef: JSONSchema7LD | undefined = schema;
       const parentSchemas: any[] = [];
       if (schemaOrUndef.allOf) {
         const schemaAllOf: any[] = schemaOrUndef.allOf.filter((s1: any) => s1.$ref !== undefined);
@@ -313,7 +325,7 @@ export const MstSchemas = types
       return parentSchemas;
     });
 
-    const copyAllSchemasToOne = (schemaQueue: JSONSchema7_LD[], schema: any) => {
+    const copyAllSchemasToOne = (schemaQueue: JSONSchema7LD[], schema: any) => {
       let schemaOrUndefined: any | undefined;
       while (schemaQueue.length > 0) {
         schemaOrUndefined = schemaQueue.pop();
@@ -338,7 +350,7 @@ export const MstSchemas = types
     const loadingByIri: any = {};
 
     return {
-      addSchema(schema: JSONSchema7_LD): void {
+      addSchema(schema: JSONSchema7LD): void {
         const iri: string = abbreviateIri(schema['@id'], repository.ns.currentJs);
         if (!self.json.get(iri)) {
           self.json.set(iri, schema as any);
@@ -412,7 +424,9 @@ export const MstSchemas = types
     };
   });
 
-export type ISchemas = Instance<typeof MstSchemas>;
+export type TMstSchemas = Instance<typeof MstSchemas>;
+export type TMstSchemasSnapshotIn = SnapshotIn<typeof MstSchemas>;
+export type TMstSchemasSnapshotOut = SnapshotOut<typeof MstSchemas>;
 
 /**
  * Retrieves element's SHACL Shape from server and converts it to 'JSON Schema + LD' and UI Schema

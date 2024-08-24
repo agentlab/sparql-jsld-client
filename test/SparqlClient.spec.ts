@@ -79,7 +79,7 @@ afterAll(async () => {
 });
 
 describe('SparqlClient', () => {
-  it(`SparqlClient should select namespaces`, async () => {
+  it('SparqlClient should select namespaces', async () => {
     expect(repository.ns.current.size).toBe(6);
     await repository.ns.reloadNs();
     //console.log(getSnapshot(repository.ns.current));
@@ -88,7 +88,7 @@ describe('SparqlClient', () => {
     const ns = repository.ns.currentJs;
     expect(ns.rdf).toBe('http://www.w3.org/1999/02/22-rdf-syntax-ns#');
   });
-  it(`SparqlClient should select direct parent classes`, async () => {
+  it('SparqlClient should select direct parent classes', async () => {
     const query = `PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
     PREFIX clss: <https://agentlab.eu/ns/rm/classifier#>
     SELECT ?superClass WHERE { clss:Classifier rdfs:subClassOf ?superClass. }`;
@@ -96,7 +96,7 @@ describe('SparqlClient', () => {
     //console.log('results', json2str(results));
     expect(results.bindings).toHaveLength(1);
   });
-  it(`SparqlClient should select one directSubClassOf with enabled inference`, async () => {
+  it('SparqlClient should select one directSubClassOf with enabled inference', async () => {
     const query = `PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
     PREFIX clss: <https://agentlab.eu/ns/rm/classifier#>
     SELECT ?superClass WHERE { clss:Classifier sesame:directSubClassOf ?superClass. }`;
@@ -105,7 +105,7 @@ describe('SparqlClient', () => {
     expect(results.bindings).toHaveLength(1);
   });
 
-  it(`SparqlClient should construct Artifact shape with array props`, async () => {
+  it('SparqlClient should construct Artifact shape with array props', async () => {
     /*const query = `PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
     PREFIX sh: <http://www.w3.org/ns/shacl#>
     PREFIX dcterms: <http://purl.org/dc/terms/>
@@ -317,7 +317,7 @@ describe('SparqlClient', () => {
     // abbreviate IRIs
   });
 
-  it(`SparqlClient should construct Classifier shape with array props`, async () => {
+  it('SparqlClient should construct Classifier shape with array props', async () => {
     const targetClass = 'clss:Classifier';
     /*const query = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
     PREFIX dcterms: <http://purl.org/dc/terms/>
@@ -570,7 +570,7 @@ describe('SparqlClient', () => {
     }`; 
    */
 
-  it(`SparqlClient should construct Folder`, async () => {
+  it('SparqlClient should construct Folder', async () => {
     const query = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
     PREFIX nav: <https://agentlab.eu/ns/rm/navigation#>
     PREFIX oslc: <http://open-services.net/ns/core#>
@@ -602,7 +602,7 @@ describe('SparqlClient', () => {
   });
 
   //TODO: Federated Queries tests not working due to shut downed services
-  // it(`SparqlClient should get federated timeseries`, async () => {
+  // it('SparqlClient should get federated timeseries', async () => {
   //   const client = new SparqlClientImpl(rdfServerUrl);
   //   client.setRepositoryId('mktp-fed');
   //   const query = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -672,7 +672,7 @@ describe('SparqlClient', () => {
   //   //
   // });
 
-  // it(`SparqlClient should get LIMITed timeseries`, async () => {
+  // it('SparqlClient should get LIMITed timeseries', async () => {
   //   const client = new SparqlClientImpl(rdfServerUrl);
   //   client.setRepositoryId('mktp-fed');
   //   /*const query = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>

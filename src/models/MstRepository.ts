@@ -67,7 +67,7 @@ export const MstRepository = types
     client.setRepositoryId(self.repId);
 
     const normalizeCollConstr = (data: any) => {
-      let collConstr: any; // ICollConstr
+      let collConstr: any; // TMstCollConstr
       if (!data.entConstrs) {
         if (typeof data === 'string') {
           collConstr = {
@@ -93,7 +93,7 @@ export const MstRepository = types
           }
         }
       } else {
-        collConstr = data as any; // as ICollConstr
+        collConstr = data as any; // as TMstCollConstr
       }
       /*addCollConstr.entConstrs.forEach((s: any) => {
         if (s.schema && typeof s.schema === 'object') {

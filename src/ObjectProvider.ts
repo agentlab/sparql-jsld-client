@@ -35,8 +35,8 @@ export function idComparator(a: JsObject, b: JsObject): number {
   return 0;
 }
 
-export type JSONSchema7PropertyDefinition_LD = JSONSchema7Property_LD;
-export interface JSONSchema7Property_LD extends JSONSchema7 {
+export type JSONSchema7LDPropertyDefinition = JSONSchema7LDProperty;
+export interface JSONSchema7LDProperty extends JSONSchema7 {
   /**
    * json-ld Property
    * https://github.com/json-ld/json-ld.org/blob/master/schemas/jsonld-schema.json
@@ -49,12 +49,12 @@ export interface JSONSchema7Property_LD extends JSONSchema7 {
   shapeModifiability?: string; // user or non -- system
 
   properties?: {
-    [key: string]: JSONSchema7PropertyDefinition_LD;
+    [key: string]: JSONSchema7LDPropertyDefinition;
   };
 }
 
-export type JSONSchema7Definition_LD = JSONSchema7_LD;
-export interface JSONSchema7_LD extends Omit<JSONSchema7, 'allOf'>, JsObject {
+export type JSONSchema7LDDefinition = JSONSchema7LD;
+export interface JSONSchema7LD extends Omit<JSONSchema7, 'allOf'>, JsObject {
   allOf?: { $ref: string }[] | undefined; // override from this: "allOf?: JSONSchema6Definition[] | undefined;"
   type: JSONSchema7TypeName; // restrict from this: "type?: JSONSchema6TypeName | JSONSchema6TypeName[] | undefined;"
 
@@ -79,7 +79,7 @@ export interface JSONSchema7_LD extends Omit<JSONSchema7, 'allOf'>, JsObject {
   //iconReference?: string;
 
   properties: {
-    [key: string]: JSONSchema7PropertyDefinition_LD;
+    [key: string]: JSONSchema7LDPropertyDefinition;
   };
 }
 
@@ -140,7 +140,7 @@ export function copyUniqueArrayElements(arrTo: any[], arrFrom: any[]): void {
   });
 }
 
-export function getPropKeysByFormat(schema: JSONSchema7_LD, format: string): string[] {
+export function getPropKeysByFormat(schema: JSONSchema7LD, format: string): string[] {
   const props: string[] = [];
   for (const key in schema.properties) {
     if (schema.properties[key].format === format) {

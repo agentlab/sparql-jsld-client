@@ -26,7 +26,7 @@ const repository = MstRepository.create(rootModelInitialState, { client });
 let rmRepositoryID: string;
 
 describe('SparqlClientUpload', () => {
-  it(`SparqlClient should create and delete repository`, async () => {
+  it('SparqlClient should create and delete repository', async () => {
     rmRepositoryID = genTimestampedName('test_SparqlClientUpload');
     await client.createRepository(
       {
@@ -38,7 +38,7 @@ describe('SparqlClientUpload', () => {
     repository.setId(rmRepositoryID);
     await client.deleteRepository(rmRepositoryID);
   });
-  it(`SparqlClient should upload 1 file`, async () => {
+  it('SparqlClient should upload 1 file', async () => {
     rmRepositoryID = genTimestampedName('test_SparqlClientUpload');
     await client.createRepository(
       {
@@ -51,7 +51,7 @@ describe('SparqlClientUpload', () => {
     await uploadFiles(client, [vocabsFiles[0]], rootFolder);
     await client.deleteRepository(rmRepositoryID);
   });
-  it(`SparqlClient should upload 1 classifier vocab`, async () => {
+  it('SparqlClient should upload 1 classifier vocab', async () => {
     rmRepositoryID = genTimestampedName('test_SparqlClientUpload');
     await client.createRepository(
       {
@@ -64,7 +64,7 @@ describe('SparqlClientUpload', () => {
     await uploadFiles(client, [vocabsFiles[6]], rootFolder);
     await client.deleteRepository(rmRepositoryID);
   });
-  it(`SparqlClient should upload 7 vocab files`, async () => {
+  it('SparqlClient should upload 7 vocab files', async () => {
     rmRepositoryID = genTimestampedName('test_SparqlClientUpload');
     await client.createRepository(
       {
@@ -81,7 +81,7 @@ describe('SparqlClientUpload', () => {
     );
     await client.deleteRepository(rmRepositoryID);
   });
-  it(`SparqlClient should upload all vocab files`, async () => {
+  it('SparqlClient should upload all vocab files', async () => {
     rmRepositoryID = genTimestampedName('test_SparqlClientUpload');
     await client.createRepository(
       {
@@ -94,7 +94,7 @@ describe('SparqlClientUpload', () => {
     await uploadFiles(client, vocabsFiles, rootFolder);
     await client.deleteRepository(rmRepositoryID);
   });
-  it(`SparqlClient should upload all vocabs and shapes files`, async () => {
+  it('SparqlClient should upload all vocabs and shapes files', async () => {
     rmRepositoryID = genTimestampedName('test_SparqlClientUpload');
     await client.createRepository(
       {
@@ -109,7 +109,7 @@ describe('SparqlClientUpload', () => {
     await client.deleteRepository(rmRepositoryID);
   });
   //TODO: Did not work
-  /*it(`SparqlClient should upload all shapes and vocabs files`, async () => {
+  /*it('SparqlClient should upload all shapes and vocabs files', async () => {
     rmRepositoryID = genTimestampedName('test_SparqlClientUpload');
     await client.createRepository(
       {
@@ -123,7 +123,7 @@ describe('SparqlClientUpload', () => {
     await uploadFiles(client, vocabsFiles, rootFolder);
     await client.deleteRepository(rmRepositoryID);
   });*/
-  it(`SparqlClient should upload all vocabs, shapes and data files`, async () => {
+  it('SparqlClient should upload all vocabs, shapes and data files', async () => {
     rmRepositoryID = genTimestampedName('test_SparqlClientUpload');
     await client.createRepository(
       {

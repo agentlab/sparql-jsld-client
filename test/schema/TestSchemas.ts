@@ -7,13 +7,13 @@
  *
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
-import { JSONSchema7_LD, JsObject } from '../../src/ObjectProvider';
+import { JSONSchema7LD, JsObject } from '../../src/ObjectProvider';
 
 export const textFormatUri = 'rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Text';
 export const collectionFormatUri = 'rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Collection';
 export const moduleFormatUri = 'rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Module';
 
-export const artifactSchema: JSONSchema7_LD = {
+export const artifactSchema: JSONSchema7LD = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   //$id: 'https://agentlab.eu/ns/rm/rdf#ArtifactShape',
   '@id': 'rm:ArtifactShape',
@@ -157,7 +157,7 @@ export const artifactSchema: JSONSchema7_LD = {
   required: ['@id', '@type', 'title' /*, 'identifier', 'assetFolder', 'artifactFormat'*/],
 };
 
-export const genericArtifactSchema: JSONSchema7_LD = {
+export const genericArtifactSchema: JSONSchema7LD = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   //$id: 'https://agentlab.eu/ns/rm/classifier#GenericArtifactShape',
   allOf: [{ $ref: 'rm:ArtifactShape' }],
@@ -215,7 +215,7 @@ export const genericArtifactSchema: JSONSchema7_LD = {
   },
 };
 
-export const classifierSchema: JSONSchema7_LD = {
+export const classifierSchema: JSONSchema7LD = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   //$id: 'https://agentlab.eu/ns/rm/classifier#ClassifierShape',
   allOf: [{ $ref: 'clss:GenericArtifactShape' }],
@@ -232,7 +232,7 @@ export const classifierSchema: JSONSchema7_LD = {
   properties: {},
 };
 
-export const classifierCompleteSchema: JSONSchema7_LD = {
+export const classifierCompleteSchema: JSONSchema7LD = {
   ...classifierSchema,
   '@context': {
     ...artifactSchema['@context'],
@@ -424,7 +424,7 @@ export const artifactShape: JsObject = {
   title: 'Artifact',
 };
 
-export const linkSchema: JSONSchema7_LD = {
+export const linkSchema: JSONSchema7LD = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   //$id: 'https://agentlab.eu/ns/rm/user-types#UsedInShape',
   '@id': 'rm:LinkShape',
@@ -528,7 +528,7 @@ export const linkSchema: JSONSchema7_LD = {
   required: ['@id', '@type', 'object', 'subject'],
 };
 
-export const usedInSchema: JSONSchema7_LD = {
+export const usedInSchema: JSONSchema7LD = {
   ...linkSchema,
   '@id': 'rmUserTypes:UsedInShape',
   title: 'UsedIn Link',
@@ -536,7 +536,7 @@ export const usedInSchema: JSONSchema7_LD = {
   targetClass: 'rmUserTypes:UsedIn',
 };
 
-export const usedInModuleSchema: JSONSchema7_LD = {
+export const usedInModuleSchema: JSONSchema7LD = {
   ...usedInSchema,
   allOf: [{ $ref: 'rmUserTypes:UsedInShape' }],
   '@id': 'rmUserTypes:UsedInModuleShape',
@@ -605,7 +605,7 @@ export const usedInModuleSchema: JSONSchema7_LD = {
 
 export const { property: artifactShapeProperty, ...artifactShapeNoProperty } = artifactShape;
 
-export const ProductCardShapeSchema: JSONSchema7_LD = {
+export const ProductCardShapeSchema: JSONSchema7LD = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   '@id': 'iot:ProductCardCardsShape',
   '@type': 'sh:NodeShape',
@@ -689,7 +689,7 @@ export const ProductCardShapeSchema: JSONSchema7_LD = {
   required: ['@id', '@type', 'name', 'lastMonthSalesValue', 'seller'],
 };
 
-export const HSObservationShapeSchema: JSONSchema7_LD = {
+export const HSObservationShapeSchema: JSONSchema7LD = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   '@id': 'iot:HSObservationCardsShape',
   '@type': 'sh:NodeShape',
@@ -753,7 +753,7 @@ export const HSObservationShapeSchema: JSONSchema7_LD = {
   required: ['@id', '@type', 'product', 'parsedAt', 'totalSales'],
 };
 
-export const ProductCardShapeSchemaForCardsList: JSONSchema7_LD = {
+export const ProductCardShapeSchemaForCardsList: JSONSchema7LD = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   '@id': 'iot:ProductCardShapeForCardsList',
   '@type': 'sh:NodeShape',
@@ -835,7 +835,7 @@ export const ProductCardShapeSchemaForCardsList: JSONSchema7_LD = {
   required: ['@id', '@type', 'name', 'lastMonthSalesValue', 'hasObservations'],
 };
 
-export const HSObservationShapeSchemaForCardsList: JSONSchema7_LD = {
+export const HSObservationShapeSchemaForCardsList: JSONSchema7LD = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   '@id': 'iot:HSObservationShapeForCardsList',
   '@type': 'sh:NodeShape',

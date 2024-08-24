@@ -8,9 +8,9 @@
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
 
-import { JSONSchema7_LD } from '../ObjectProvider';
+import { JSONSchema7LD } from '../ObjectProvider';
 
-export const NopSchema: any /*JSONSchema7_LD*/ = {
+export const NopSchema: any /*JSONSchema7LD*/ = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   //$id: 'https://agentlab.eu/ns/rm/rdf#NopSchema',
   '@id': 'rm:NopSchema', // json-ld
@@ -26,7 +26,7 @@ export const NopSchema: any /*JSONSchema7_LD*/ = {
   required: ['@id'],
 };
 
-export const ResourceSchema: JSONSchema7_LD = {
+export const ResourceSchema: JSONSchema7LD = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   //$id: 'https://agentlab.eu/ns/rm/rdf#ResourceSchema',
   '@id': 'rm:ResourceSchema', // json-ld
@@ -58,7 +58,7 @@ export const ResourceSchema: JSONSchema7_LD = {
   required: ['@id'],
 };
 
-export const ClassSchema: JSONSchema7_LD = {
+export const ClassSchema: JSONSchema7LD = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   //$id: 'https://agentlab.eu/ns/rm/rdf#Class',
   '@id': 'rm:Class', // json-ld
@@ -99,7 +99,7 @@ export const ClassSchema: JSONSchema7_LD = {
   required: ['@id'],
 };
 
-export const DataTypeSchema: JSONSchema7_LD = {
+export const DataTypeSchema: JSONSchema7LD = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   '@id': 'rdfs:Datatype', // json-ld
   '@type': 'rdfs:DatatypeShape', // json-ld

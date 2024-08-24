@@ -76,7 +76,7 @@ afterAll(async () => {
 }*/
 
 describe('create-artifact-scenario', () => {
-  it(`should persist artifact in the store`, async () => {
+  it('should persist artifact in the store', async () => {
     //await repository.schemas.loadSchemaByClassIri('rm:Artifact');
     //const artifactSchema = repository.schemas.getOrLoadSchemaByClassIri('rm:Artifact');
     //await repository.schemas.loadSchemaByClassIri('clss:Grouping');
@@ -239,7 +239,7 @@ describe('create-artifact-scenario', () => {
 });
 
 /*describe('Retrieve artifacts from folder', () => {
-  it(`select should return artifacts with expected schema`, async () => {
+  it('select should return artifacts with expected schema', async () => {
     const listFolders = await fetchProjectFoldersList({ processArea: projectAreaUri }, foldersGraphUri);
     const artifacts = await selectArtifacts({ assetFolder: listFolders[0]['@id] }, graphUri, apiUrl);
     expect(artifacts.length).toBe(3);
@@ -247,7 +247,7 @@ describe('create-artifact-scenario', () => {
 });
 
 describe('Modify artifact', () => {
-  it(`title should be modifiable`, async () => {
+  it('title should be modifiable', async () => {
     let artifacts = await selectArtifacts({}, graphUri, apiUrl);
     const rec = artifacts[0];
     const newTitle = 'Req Title Change';
@@ -275,7 +275,7 @@ describe('Modify artifact', () => {
       }
     });
   });
-  it(`new pred should be addable`, async () => {
+  it('new pred should be addable', async () => {
     let artifacts = await selectArtifacts({}, graphUri, apiUrl);
     const rec = artifacts[0];
     const newForeignModifiedBy = 'someone';
@@ -303,7 +303,7 @@ describe('Modify artifact', () => {
       }
     });
   });
-  it(`title and description should be modifiable`, async () => {
+  it('title and description should be modifiable', async () => {
     let artifacts = await selectArtifacts({}, graphUri, apiUrl);
     const rec = artifacts[0];
     const newTitle = 'Req Title Change2';

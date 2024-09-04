@@ -118,7 +118,7 @@ const config = [
       }
     ]
   },
-  {
+  /*{
     ...commonInputOptions,
     plugins: [commonInputOptions.plugins, dts()],
     output: [
@@ -129,7 +129,7 @@ const config = [
         sourcemap: true,
       }
     ]
-  }
+  }*/
 ]
 
 export default config

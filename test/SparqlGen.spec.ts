@@ -484,10 +484,10 @@ describe('constructObjectsQuery', () => {
         ?eIri1 sh:path ?path1.
         ?eIri1 sh:order ?order1.
         ?eIri1 sh:datatype ?datatype1.
-        ?eIri1 sh:minCount ?minCount1.
-        ?eIri1 sh:maxCount ?maxCount1.
         ?eIri1 sh:class ?class1.
         ?eIri1 sh:nodeKind ?nodeKind1.
+        ?eIri1 sh:minCount ?minCount1.
+        ?eIri1 sh:maxCount ?maxCount1.
         ?eIri1 rm:shapeModifiability ?shapeModifiability1.
         ?eIri1 rm:valueModifiability ?valueModifiability1.
       }
@@ -509,10 +509,10 @@ describe('constructObjectsQuery', () => {
           OPTIONAL { ?eIri1 sh:description ?description1. }
           OPTIONAL { ?eIri1 sh:order ?order1. }
           OPTIONAL { ?eIri1 sh:datatype ?datatype1. }
-          OPTIONAL { ?eIri1 sh:minCount ?minCount1. }
-          OPTIONAL { ?eIri1 sh:maxCount ?maxCount1. }
           OPTIONAL { ?eIri1 sh:class ?class1. }
           OPTIONAL { ?eIri1 sh:nodeKind ?nodeKind1. }
+          OPTIONAL { ?eIri1 sh:minCount ?minCount1. }
+          OPTIONAL { ?eIri1 sh:maxCount ?maxCount1. }
           OPTIONAL { ?eIri1 rm:shapeModifiability ?shapeModifiability1. }
           OPTIONAL { ?eIri1 rm:valueModifiability ?valueModifiability1. }
         }
@@ -562,10 +562,10 @@ describe('constructObjectsQuery', () => {
         ?eIri1 sh:path ?path1.
         ?eIri1 sh:order ?order1.
         ?eIri1 sh:datatype ?datatype1.
-        ?eIri1 sh:minCount ?minCount1.
-        ?eIri1 sh:maxCount ?maxCount1.
         ?eIri1 sh:class ?class1.
         ?eIri1 sh:nodeKind ?nodeKind1.
+        ?eIri1 sh:minCount ?minCount1.
+        ?eIri1 sh:maxCount ?maxCount1.
         ?eIri1 rm:shapeModifiability ?shapeModifiability1.
         ?eIri1 rm:valueModifiability ?valueModifiability1.
       }
@@ -587,10 +587,10 @@ describe('constructObjectsQuery', () => {
           OPTIONAL { ?eIri1 sh:description ?description1. }
           OPTIONAL { ?eIri1 sh:order ?order1. }
           OPTIONAL { ?eIri1 sh:datatype ?datatype1. }
-          OPTIONAL { ?eIri1 sh:minCount ?minCount1. }
-          OPTIONAL { ?eIri1 sh:maxCount ?maxCount1. }
           OPTIONAL { ?eIri1 sh:class ?class1. }
           OPTIONAL { ?eIri1 sh:nodeKind ?nodeKind1. }
+          OPTIONAL { ?eIri1 sh:minCount ?minCount1. }
+          OPTIONAL { ?eIri1 sh:maxCount ?maxCount1. }
           OPTIONAL { ?eIri1 rm:shapeModifiability ?shapeModifiability1. }
           OPTIONAL { ?eIri1 rm:valueModifiability ?valueModifiability1. }
         }

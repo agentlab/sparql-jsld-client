@@ -98,28 +98,20 @@ export const PropertyShapeSchema: JSONSchema7LD = {
   type: 'object',
   '@context': {
     '@type': 'rdf:type',
-    datatype: {
-      '@id': 'sh:datatype',
-      '@type': '@id',
-    },
     path: {
       // object with unknown type should resolve in Resource URI
       '@id': 'sh:path',
       '@type': '@id',
     },
+    name: 'sh:name',
+    description: 'sh:description',
     order: {
       '@id': 'sh:order',
       '@type': 'xsd:integer',
     },
-    name: 'sh:name',
-    description: 'sh:description',
-    minCount: {
-      '@id': 'sh:minCount',
-      '@type': 'xsd:integer',
-    },
-    maxCount: {
-      '@id': 'sh:maxCount',
-      '@type': 'xsd:integer',
+    datatype: {
+      '@id': 'sh:datatype',
+      '@type': '@id',
     },
     class: {
       '@id': 'sh:class',
@@ -128,6 +120,17 @@ export const PropertyShapeSchema: JSONSchema7LD = {
     nodeKind: {
       '@id': 'sh:nodeKind',
       '@type': '@id',
+    },
+    //defaultValue: {
+    //  '@id': 'sh:defaultValue',
+    //},
+    minCount: {
+      '@id': 'sh:minCount',
+      '@type': 'xsd:integer',
+    },
+    maxCount: {
+      '@id': 'sh:maxCount',
+      '@type': 'xsd:integer',
     },
     shapeModifiability: 'rm:shapeModifiability',
     valueModifiability: 'rm:valueModifiability',
@@ -162,6 +165,16 @@ export const PropertyShapeSchema: JSONSchema7LD = {
       title: 'DataType',
       type: 'object',
     },
+    class: {
+      title: 'Value Class',
+      type: 'object',
+    },
+    nodeKind: {
+      type: 'object',
+    },
+    //defaultValue: {
+    //  title: 'Default Value',
+    //},
     minCount: {
       title: 'Min Count',
       type: 'integer',
@@ -169,13 +182,6 @@ export const PropertyShapeSchema: JSONSchema7LD = {
     maxCount: {
       title: 'Max Count',
       type: 'integer',
-    },
-    class: {
-      title: 'Value Class',
-      type: 'object',
-    },
-    nodeKind: {
-      type: 'object',
     },
     shapeModifiability: {
       type: 'string',

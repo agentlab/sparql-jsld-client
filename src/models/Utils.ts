@@ -7,6 +7,7 @@
  *
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
+import { getType, IAnyStateTreeNode, IAnyComplexType, isStateTreeNode } from 'mobx-state-tree';
 
 export function arrDiff(newArr: any[] | undefined, oldArr: any[] | undefined) {
   if (oldArr === undefined) oldArr = [];
@@ -14,4 +15,28 @@ export function arrDiff(newArr: any[] | undefined, oldArr: any[] | undefined) {
   const deleted = oldArr.filter((e) => newArr && !newArr.includes(e));
   const added = newArr.filter((e) => oldArr && !oldArr.includes(e));
   return { deleted, added };
+}
+
+type AnyObjectNode = any;
+function isTypeByName(value: any, typename: string): boolean {
+  return getType(value).name === typename;
+}
+//function getStateTreeNodeSafe(value: IAnyStateTreeNode): AnyObjectNode | null {
+//  return (value && value.$treenode) || null;
+//}
+function getStateTreeNode(value: IAnyStateTreeNode): AnyObjectNode {
+  if (!isStateTreeNode(value)) {
+    // istanbul ignore next
+    throw `Value ${value} is no MST Node`;
+  }
+  return (value as any).$treenode!;
+}
+
+export function getParentOfName<IT extends IAnyComplexType>(target: IAnyStateTreeNode, typename: string) {
+  let parent = getStateTreeNode(target).parent;
+  while (parent) {
+    if (isTypeByName(parent.storedValue, typename)) return parent.storedValue;
+    parent = parent.parent;
+  }
+  throw `Failed to find the parent of ${getStateTreeNode(target)} of a given type`;
 }

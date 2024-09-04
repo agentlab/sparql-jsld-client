@@ -62,26 +62,14 @@ describe('classshape-scenario', () => {
   it('should retrieve shape from server by select', async () => {
     expect(repository.ns.current.size).toBeGreaterThan(4);
     // Class Shape search by property
-    const { schema: artifactShapeSchema1 } = await resolveSchemaFromServer(
-      { targetClass: 'rm:Artifact' },
-      testNs,
-      client,
-    );
-    const { schema: artifactShapeSchema11 } = await resolveSchemaFromServer(
-      { targetClass: 'rm:Artifact' },
-      testNs,
-      client,
-    );
+    const artifactShapeSchema1 = await resolveSchemaFromServer({ targetClass: 'rm:Artifact' }, testNs, client);
+    const artifactShapeSchema11 = await resolveSchemaFromServer({ targetClass: 'rm:Artifact' }, testNs, client);
 
     expect(artifactShapeSchema1).toMatchObject(artifactSchema);
     expect(artifactShapeSchema1).toMatchObject(artifactShapeSchema11);
 
     // search node shape by shape uri
-    const { schema: artifactShapeSchema2 } = await resolveSchemaFromServer(
-      { '@_id': 'rm:ArtifactShape' },
-      testNs,
-      client,
-    );
+    const artifactShapeSchema2 = await resolveSchemaFromServer({ '@_id': 'rm:ArtifactShape' }, testNs, client);
     expect(artifactShapeSchema2).toMatchObject(artifactSchema);
   });
 

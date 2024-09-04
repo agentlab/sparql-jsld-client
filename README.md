@@ -18,6 +18,7 @@ You manipulate JS objects programmatically, client generates SPARQL Queries and 
 - Supports bulk-load data from local files to RDF repository on a server (requires RDF4J REST API)
 - Supports lazy loading and "load more" incremental page-based fetching
 - Could be extended with specialized collection processors via `registerMstCollSchema()`
+- Composable MST Model -- MstRepository tree could be inserted into a parent MST tree in another MST project
 
 ## Prerequisites
 

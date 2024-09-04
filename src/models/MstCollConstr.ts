@@ -12,7 +12,6 @@ import {
   types,
   getSnapshot,
   getEnv,
-  getRoot,
   Instance,
   IAnyStateTreeNode,
   IAnyModelType,
@@ -32,6 +31,7 @@ import { ICollConstrJs } from '../SparqlGen';
 import { constructObjectsQuery, selectObjectsQuery } from '../SparqlGenSelect';
 import { insertObjectQuery, deleteObjectQuery, updateObjectQuery } from '../SparqlGenUpdate';
 import { SparqlClient } from '../SparqlClient';
+import { getParentOfName } from './Utils';
 
 export const MstJsObject = types.frozen<any>();
 export const MstMapOfJsObject = types.map(MstJsObject);
@@ -54,7 +54,7 @@ export const MstEntConstr = types
      */
     '@parent': types.safeReference(types.late((): IAnyModelType => MstEntConstr)),
     /**
-     * could be class IRI, resolved from local schema repository (local cache) or from server
+     * could be a SHACL Shape IRI (class-shape), resolved from local schema repository (local cache) or from server
      * or could be 'private' schema (full qualified JS object)
      */
     schema: types.union(MstJSONSchema7LDReference, MstJSONSchema7LD),
@@ -135,12 +135,12 @@ export const MstEntConstr = types
 
 export type TMstEntConstr = Instance<typeof MstEntConstr>;
 export type TMstEntConstrSnapshotIn = Omit<SnapshotIn<typeof MstEntConstr>, '@parent' | 'schema'> & {
-  '@parent': string | undefined;
-  schema: string | undefined | TMstJSONSchema7LDSnapshotIn;
+  '@parent'?: string | undefined;
+  schema: string | TMstJSONSchema7LDSnapshotIn;
 };
 export type TMstEntConstrSnapshotOut = Omit<SnapshotOut<typeof MstEntConstr>, '@parent' | 'schema'> & {
-  '@parent': string | undefined;
-  schema: string | undefined | TMstJSONSchema7LDSnapshotOut;
+  '@parent'?: string | undefined;
+  schema?: string | undefined | TMstJSONSchema7LDSnapshotOut;
 };
 
 /**
@@ -182,7 +182,8 @@ export const MstCollConstr = types
    * Views
    */
   .views((self) => {
-    const rep: IAnyStateTreeNode = getRoot(self);
+    const rep: IAnyStateTreeNode = getParentOfName(self, 'MstRepository');
+    //console.log('MstCollConstr-rep', rep);
     const client = getEnv(self).client;
     return {
       get optionsJs() {
@@ -376,11 +377,11 @@ export const MstCollConstr = types
 
 export type TMstCollConstr = Instance<typeof MstCollConstr>;
 export type TMstCollConstrSnapshotIn = Omit<SnapshotIn<typeof MstCollConstr>, '@parent' | 'entConstrs'> & {
-  '@parent': string | undefined;
-  entConstrs: TMstEntConstrSnapshotOut[];
+  '@parent'?: string | undefined;
+  entConstrs: TMstEntConstrSnapshotIn[];
 };
 export type TMstCollConstrSnapshotOut = Omit<SnapshotOut<typeof MstCollConstr>, '@parent' | 'entConstrs'> & {
-  '@parent': string | undefined;
+  '@parent'?: string | undefined;
   entConstrs: TMstEntConstrSnapshotOut[];
 };
 

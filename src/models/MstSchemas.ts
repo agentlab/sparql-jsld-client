@@ -18,7 +18,6 @@ import {
   Instance,
   IAnyStateTreeNode,
   getEnv,
-  getRoot,
   SnapshotIn,
   SnapshotOut,
 } from 'mobx-state-tree';
@@ -26,7 +25,6 @@ import {
 import { JSONSchema7LD, copyUniqueObjectPropsWithRenameOrFilter, JsObject, JsStrObjObj } from '../ObjectProvider';
 import {
   propertyShapesToSchemaProperties,
-  uiMapping,
   schemaNonPrimitivePropsKeys,
   addToSchemaParentSchema,
 } from '../ObjectProviderImpl';
@@ -36,6 +34,7 @@ import { ArtifactShapeSchema, PropertyShapeSchema } from '../schema/ArtifactShap
 import { abbreviateIri, factory } from '../SparqlGen';
 import { constructObjectsQuery, selectObjectsQuery } from '../SparqlGenSelect';
 import { SparqlClient } from '../SparqlClient';
+import { getParentOfName } from './Utils';
 
 export function createSchemaWithSubClassOf(schema: any, iri: string, classIri?: string) {
   return {
@@ -166,6 +165,9 @@ export const MstJSONSchema7LDProperty = types.model('MstJSONSchema7LDProperty', 
   readOnly: types.maybe(types.boolean),
   writeOnly: types.maybe(types.boolean),
 
+  // Linked Data SHACL Shapes
+  order: types.maybe(types.integer),
+
   // extension
   valueModifiability: types.maybe(types.string), // user or non -- system
   shapeModifiability: types.maybe(types.string), // user or non -- system
@@ -179,10 +181,11 @@ export const MstJSONSchema7LDReference = types.maybe(
   types.reference(MstJSONSchema7LD, {
     get(identifier: string, parent): any {
       if (!parent) return null;
-      const repository: IAnyStateTreeNode = getRoot(parent);
-      if (!repository) return null;
-      const schemas = repository.schemas as Instance<typeof MstSchemas>;
-      const ss = getSnapshot(schemas);
+      const rep: IAnyStateTreeNode = getParentOfName(parent, 'MstRepository');
+      //console.log('MstSchemas-rep-1', rep);
+      if (!rep) return null;
+      const schemas = rep.schemas as Instance<typeof MstSchemas>;
+      //const ss = getSnapshot(schemas);
       const r = schemas.getOrLoadSchemaByIri(identifier);
       return r;
     },
@@ -209,7 +212,8 @@ export const MstSchemas = types
    * Views
    */
   .views((self) => {
-    const repository: IAnyStateTreeNode = getRoot(self);
+    const rep: IAnyStateTreeNode = getParentOfName(self, 'MstRepository');
+    //console.log('MstSchemas-rep-2', rep);
     return {
       get(id: string) {
         return self.json.get(id);
@@ -224,7 +228,7 @@ export const MstSchemas = types
        */
       getOrLoadSchemaByClassIri(iri: string | undefined) {
         if (!iri || iri.length === 0) return null;
-        iri = abbreviateIri(iri, repository.ns.currentJs);
+        iri = abbreviateIri(iri, rep.ns.currentJs);
         if (self.class2schema.has(iri)) {
           const schemaIri = self.class2schema.get(iri);
           return schemaIri ? self.json.get(schemaIri) : null;
@@ -251,7 +255,7 @@ export const MstSchemas = types
        */
       getOrLoadSchemaByIri(iri: string | undefined) {
         if (!iri || iri.length === 0) return null;
-        iri = abbreviateIri(iri, repository.ns.currentJs);
+        iri = abbreviateIri(iri, rep.ns.currentJs);
         if (self.json.has(iri)) {
           //console.log('getOrLoadSchemaByIri: return schema', iri);
           return self.json.get(iri);
@@ -277,13 +281,12 @@ export const MstSchemas = types
    * Actions
    */
   .actions((self) => {
-    const repository: IAnyStateTreeNode = getRoot(self);
+    const rep: IAnyStateTreeNode = getParentOfName(self, 'MstRepository');
+    //console.log('MstSchemas-rep-3', rep);
     const client: SparqlClient = getEnv(self).client;
 
     const loadSchemaInternal = flow(function* loadSchemaInternal(conditions: JsObject) {
-      const r = yield resolveSchemaFromServer(conditions, repository.ns.currentJs, client);
-      const schema = r.schema;
-      const uiSchema = r.uiSchema;
+      const schema = yield resolveSchemaFromServer(conditions, rep.ns.currentJs, client);
       if (!schema) return Promise.reject('Cannot load schema with conditions' + conditions);
       // get parent schemas
       let schemaQueue: JSONSchema7LD[] = yield getDirectSuperSchemas(schema);
@@ -294,7 +297,7 @@ export const MstSchemas = types
       // add schema to registries
       self.json.set(schemaResult['@id'], schemaResult);
       //console.log('loadSchemaInternal self.json.set', schema['@id']);
-      const classIri: string = abbreviateIri(schemaResult.targetClass, repository.ns.currentJs);
+      const classIri: string = abbreviateIri(schemaResult.targetClass, rep.ns.currentJs);
       if (!self.class2schema.get(classIri)) {
         self.class2schema.set(classIri, schemaResult['@id']);
         //console.log('loadSchemaInternal self.class2schema.set', classIri, schema['@id']);
@@ -351,12 +354,12 @@ export const MstSchemas = types
 
     return {
       addSchema(schema: JSONSchema7LD): void {
-        const iri: string = abbreviateIri(schema['@id'], repository.ns.currentJs);
+        const iri: string = abbreviateIri(schema['@id'], rep.ns.currentJs);
         if (!self.json.get(iri)) {
           self.json.set(iri, schema as any);
         }
         if (schema.targetClass) {
-          const classIri: string = abbreviateIri(schema.targetClass, repository.ns.currentJs);
+          const classIri: string = abbreviateIri(schema.targetClass, rep.ns.currentJs);
           if (!self.class2schema.get(classIri)) {
             self.class2schema.set(classIri, schema['@id']);
           }
@@ -457,7 +460,7 @@ export async function resolveSchemaFromServer(conditions: JsObject, nsJs: any, c
   );
 
   if (!shapes || shapes.length === 0) {
-    return { schema: undefined, uiSchema: undefined };
+    return undefined;
   }
   const shape = shapes[0];
   const schema: any = {
@@ -521,24 +524,10 @@ export async function resolveSchemaFromServer(conditions: JsObject, nsJs: any, c
         });
     });
   }
-  const [props, contexts, reqs, uiSchemaTmp] = propertyShapesToSchemaProperties(shape.property);
+  const [props, contexts, reqs] = propertyShapesToSchemaProperties(shape.property);
   schema.properties = { ...schema.properties, ...props };
   schema['@context'] = { ...(schema['@context'] as any), ...contexts };
   schema.required?.push(...reqs);
-
-  const uiSchema = {
-    '@id': {
-      ...uiMapping['@id'],
-      'ui:disabled': true,
-      'ui:order': 0,
-    },
-    '@type': {
-      ...uiMapping['@type'],
-      'ui:disabled': true,
-      'ui:order': 1,
-    },
-    ...uiSchemaTmp,
-  };
   //console.debug('resolveSchemaFromServer END conditions=', conditions);
-  return { schema, uiSchema };
+  return schema;
 }

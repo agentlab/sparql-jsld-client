@@ -71,17 +71,18 @@ function propertyNameShapeToSchema(shapePropsUri: string): string {
 function propertyShapeToJsonSchemaProperty(
   shapeProp: JsObject,
   shapePropUri: string,
-  schemaProps: JsObject,
+  schemaProps: { [key: string]: JSONSchema7LDPropertyDefinition },
   schemaContexts: JsObject,
   schemaReqs: string[],
 ): string | undefined {
   if (shapePropUri) {
     const shapePropKey = propertyNameShapeToSchema(shapePropUri);
     schemaProps[shapePropKey] = {};
-    let schemaProp: JsObject = schemaProps[shapePropKey];
+    let schemaProp: JSONSchema7LDPropertyDefinition = schemaProps[shapePropKey];
     //labels
     if (shapeProp.name) schemaProp.title = shapeProp.name;
     if (shapeProp.description) schemaProp.description = shapeProp.description;
+    if (shapeProp.order) schemaProp.order = shapeProp.order;
     //modifiability
     if (shapeProp.shapeModifiability) schemaProp.shapeModifiability = shapeProp.shapeModifiability;
     //if (shapeProp.valueModifiability) schemaProp.valueModifiability = shapeProp.valueModifiability;
@@ -89,7 +90,7 @@ function propertyShapeToJsonSchemaProperty(
     if (shapeProp.maxCount === undefined || shapeProp.maxCount > 1) {
       schemaProp.type = 'array';
       schemaProp.items = {};
-      schemaProp = schemaProp.items;
+      schemaProp = schemaProp.items as JSONSchema7LDPropertyDefinition;
     }
     if (shapeProp.minCount) {
       if (shapeProp.minCount > 0) {
@@ -165,77 +166,12 @@ function propertyShapeToJsonSchemaProperty(
   return undefined;
 }
 
-export const uiMapping: JsObject = {
-  '@id': {
-    'ui:widget': 'UriWithCopyWidget',
-  },
-  '@type': {
-    'ui:widget': 'ArtifactTypeWidget',
-  },
-  uri: {
-    'ui:widget': 'BaseInput',
-  },
-  creator: {
-    'ui:widget': 'UserWidget',
-  },
-  modifiedBy: {
-    'ui:widget': 'UserWidget',
-  },
-  description: {
-    'ui:widget': 'textarea',
-  },
-  xhtmlText: {
-    'ui:widget': 'TinyMCEWidget',
-  },
-  /*type: {
-    'ui:widget': 'ArtifactTypeWidget',
-  },*/
-  artifactFormat: {
-    'ui:widget': 'ArtifactFormatWidget',
-  },
-  assetFolder: {
-    'ui:widget': 'FolderWidget',
-  },
-  difficulty: {
-    'ui:widget': 'DifficultyWidget',
-  },
-  businessPriority: {
-    'ui:widget': 'BusinessPriorityWidget',
-  },
-  status: {
-    'ui:widget': 'StatusWidget',
-  },
-};
-
-function propertyShapeToUiSchema(
-  propShape: JsObject,
-  propsSchema: JsObject,
-  propKey: string,
-  uiSchema: JsObject,
-): void {
-  uiSchema[propKey] = {};
-  const propUiSchema = uiSchema[propKey];
-  const propSchema = propsSchema[propKey];
-  const widget = uiMapping[propKey];
-  if (widget && widget['ui:widget']) propUiSchema['ui:widget'] = widget['ui:widget'];
-  else {
-    if (propSchema.type === 'string') {
-      propUiSchema['ui:widget'] = 'BaseInput';
-    } else if (propSchema.type === 'object') {
-      propUiSchema['ui:widget'] = 'BaseInput'; //TODO create default widget for object
-    }
-  }
-  if (propShape.valueModifiability !== 'user') propUiSchema['ui:disabled'] = true;
-  if (propShape.order) propUiSchema['ui:order'] = propShape.order;
-}
-
 export function propertyShapesToSchemaProperties(
   shapeProps: any[] | undefined,
-): [{ [key: string]: JSONSchema7LDPropertyDefinition }, JsObject, string[], JsObject] {
+): [{ [key: string]: JSONSchema7LDPropertyDefinition }, JsObject, string[]] {
   const schemaProps: { [key: string]: JSONSchema7LDPropertyDefinition } = {};
   const schemaContexts: JsObject = {};
   const schemaReqs: string[] = [];
-  const uiSchema: JsObject = {};
   if (shapeProps) {
     shapeProps.forEach((shapeProp) => {
       const schemaPropUri = shapeProp.path;
@@ -246,12 +182,9 @@ export function propertyShapesToSchemaProperties(
         schemaContexts,
         schemaReqs,
       );
-      if (propKey) {
-        propertyShapeToUiSchema(shapeProp, schemaProps, propKey, uiSchema);
-      }
     });
   }
-  return [schemaProps, schemaContexts, schemaReqs, uiSchema];
+  return [schemaProps, schemaContexts, schemaReqs];
 }
 
 //TODO: only works with {} form of @context. String [] and string form are not supported.

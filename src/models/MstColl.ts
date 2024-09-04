@@ -16,7 +16,6 @@ import {
   Instance,
   flow,
   getEnv,
-  getRoot,
   getSnapshot,
   IAnyStateTreeNode,
   IAnyComplexType,
@@ -34,6 +33,7 @@ import {
   TMstCollConstrSnapshotOut,
   MstMapOfJsObject,
 } from './MstCollConstr';
+import { getParentOfName } from './Utils';
 
 export function getMstLiteralPropValue(mstModel: any, name: string) {
   const prop = mstModel?.properties[name];
@@ -182,7 +182,8 @@ export const MstColl = types
    * Actions
    */
   .actions((self) => {
-    const rep: IAnyStateTreeNode = getRoot(self);
+    const rep: IAnyStateTreeNode = getParentOfName(self, 'MstRepository');
+    //console.log('MstColl-rep', rep);
     const client = getEnv(self).client;
     let dispose: any;
     return {

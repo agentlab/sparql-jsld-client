@@ -41,16 +41,19 @@ export interface JSONSchema7LDProperty extends JSONSchema7 {
    * json-ld Property
    * https://github.com/json-ld/json-ld.org/blob/master/schemas/jsonld-schema.json
    */
-  '@id'?: string;
-  '@type'?: string;
+  '@id'?: string | undefined;
+  '@type'?: string | undefined;
+  order?: number | undefined; // SHACL Shapes
 
   // permissions extension
-  valueModifiability?: string; // user or non -- system
-  shapeModifiability?: string; // user or non -- system
+  valueModifiability?: string | undefined; // user or non -- system
+  shapeModifiability?: string | undefined; // user or non -- system
 
-  properties?: {
-    [key: string]: JSONSchema7LDPropertyDefinition;
-  };
+  properties?:
+    | {
+        [key: string]: JSONSchema7LDPropertyDefinition;
+      }
+    | undefined;
 }
 
 export type JSONSchema7LDDefinition = JSONSchema7LD;
@@ -62,12 +65,12 @@ export interface JSONSchema7LD extends Omit<JSONSchema7, 'allOf'>, JsObject {
    * json-ld Node extensions
    * https://github.com/json-ld/json-ld.org/blob/master/schemas/jsonld-schema.json
    */
-  '@context'?: JsStrObjObj; // json-ld
+  '@context'?: JsStrObjObj | undefined; // json-ld
   '@id': string; // json-ld
   //'@included' // json-ld
   //'@graph'?: [] | {}; // json-ld
   //'@nest' // json-ld
-  '@type'?: string; // json-ld (SHACL Shape IRI -- shape IRI itself, not shaped class IRI)
+  '@type'?: string | undefined; // json-ld (SHACL Shape IRI -- shape IRI itself, not shaped class IRI)
   //'@reverse'
   //'@index'
 

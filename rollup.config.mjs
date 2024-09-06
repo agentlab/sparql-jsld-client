@@ -83,6 +83,7 @@ const commonInputOptions = {
   plugins: [
     babel({
       exclude: 'node_modules/**',
+      babelHelpers: 'bundled',
     }),
     peerDepsExternal(),
     json(),

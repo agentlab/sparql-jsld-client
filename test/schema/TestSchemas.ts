@@ -242,7 +242,7 @@ export const classifierCompleteSchema: JSONSchema7LD = {
     ...artifactSchema.properties,
     ...genericArtifactSchema.properties,
   },
-  required: [...(artifactSchema.required || []), ...(genericArtifactSchema.required || [])],
+  required: [...(artifactSchema.required ?? []), ...(genericArtifactSchema.required ?? [])],
 };
 
 export const artifactShape: JsObject = {
@@ -600,7 +600,7 @@ export const usedInModuleSchema: JSONSchema7LD = {
       shapeModifiability: 'system',
     },
   },
-  required: [...(usedInSchema.required || []), 'parentBinding', 'depth', 'bookOrder', 'sectionNumber'],
+  required: [...(usedInSchema.required ?? []), 'parentBinding', 'depth', 'bookOrder', 'sectionNumber'],
 };
 
 export const { property: artifactShapeProperty, ...artifactShapeNoProperty } = artifactShape;

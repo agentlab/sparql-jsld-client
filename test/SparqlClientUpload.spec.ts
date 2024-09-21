@@ -109,7 +109,7 @@ describe('SparqlClientUpload', () => {
     await client.deleteRepository(rmRepositoryID);
   });
   //TODO: Did not work
-  /*it('SparqlClient should upload all shapes and vocabs files', async () => {
+  it.skip('SparqlClient should upload all shapes and vocabs files', async () => {
     rmRepositoryID = genTimestampedName('test_SparqlClientUpload');
     await client.createRepository(
       {
@@ -122,7 +122,7 @@ describe('SparqlClientUpload', () => {
     await uploadFiles(client, shapesFiles, rootFolder);
     await uploadFiles(client, vocabsFiles, rootFolder);
     await client.deleteRepository(rmRepositoryID);
-  });*/
+  });
   it('SparqlClient should upload all vocabs, shapes and data files', async () => {
     rmRepositoryID = genTimestampedName('test_SparqlClientUpload');
     await client.createRepository(

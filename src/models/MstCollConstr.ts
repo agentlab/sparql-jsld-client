@@ -95,7 +95,7 @@ export const MstEntConstr = types
      */
     resolveType: types.maybe(types.boolean),
   })
-  .views((self) => {
+  .views((self: { schema: any; conditions: any; variables: any; data: any }) => {
     return {
       get schemaJs() {
         return self.schema ? getSnapshot(self.schema) : undefined;
@@ -111,7 +111,7 @@ export const MstEntConstr = types
       },
     };
   })
-  .actions((self) => {
+  .actions((self: any) => {
     //let disp: any;
     return {
       /*afterAttach() {
@@ -140,7 +140,7 @@ export type TMstEntConstrSnapshotIn = Omit<SnapshotIn<typeof MstEntConstr>, '@pa
 };
 export type TMstEntConstrSnapshotOut = Omit<SnapshotOut<typeof MstEntConstr>, '@parent' | 'schema'> & {
   '@parent'?: string | undefined;
-  schema?: string | undefined | TMstJSONSchema7LDSnapshotOut;
+  schema: string | TMstJSONSchema7LDSnapshotOut;
 };
 
 /**
@@ -181,7 +181,7 @@ export const MstCollConstr = types
   /**
    * Views
    */
-  .views((self) => {
+  .views((self: { [x: string]: any; options: any }) => {
     const rep: IAnyStateTreeNode = getParentOfName(self, 'MstRepository');
     //console.log('MstCollConstr-rep', rep);
     const client = getEnv(self).client;
@@ -207,7 +207,7 @@ export const MstCollConstr = types
   /**
    * Actions
    */
-  .actions((self) => {
+  .actions((self: { limit: number | undefined }) => {
     let disp: any;
     return {
       /*afterAttach() {

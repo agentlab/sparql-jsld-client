@@ -8,7 +8,6 @@
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
 import { afterAll, beforeAll, describe, expect, jest, it } from '@jest/globals';
-import assert from 'assert';
 import { when } from 'mobx';
 import { getSnapshot } from 'mobx-state-tree';
 
@@ -22,7 +21,7 @@ import { uploadFiles } from '../src/FileUpload';
 import { rdfServerUrl, rmRepositoryParam, rmRepositoryType } from './config';
 import { vocabsFiles, shapesFiles, usersFiles, projectsFoldersFiles, samplesFiles, rootFolder } from './configTests';
 import { artifactSchema, usedInModuleSchema, usedInSchema } from './schema/TestSchemas';
-import { expectToBeDefined, genTimestampedName } from './TestHelpers';
+import { expectToBeDefined, failOnError, genTimestampedName } from './TestHelpers';
 
 // See https://stackoverflow.com/questions/49603939/async-callback-was-not-invoked-within-the-5000ms-timeout-specified-by-jest-setti
 jest.setTimeout(50000);
@@ -50,16 +49,16 @@ beforeAll(async () => {
     await uploadFiles(client, samplesFiles, rootFolder);
     //await sleep(5000); // give RDF classifier some time to classify resources after upload
     await repository.ns.reloadNs();
-  } catch (err: any) {
-    assert.fail(err);
+  } catch (err) {
+    failOnError(err);
   }
 });
 
 afterAll(async () => {
   try {
     await client.deleteRepository(rmRepositoryID);
-  } catch (err: any) {
-    assert.fail(err);
+  } catch (err) {
+    failOnError(err);
   }
 });
 
@@ -75,7 +74,7 @@ const SchemaWithHasChildProp: any = {
       shapeModifiability: 'system',
     },
   },
-  required: [...(artifactSchema.required || []), 'hasChild'],
+  required: [...(artifactSchema.required ?? []), 'hasChild'],
 };
 
 const usedInModuleCollConstrJs: any = {
@@ -246,112 +245,118 @@ describe('ArtifactsInModules query should return Module UsedInModules with assoc
   });
 
   //TODO: sorting is not working
-  /*it('sorted by DESC bookOrder', (done) => {
-    // not necessary to add, it could be retrieved from server by type IRI
-    // used here to increase predictability
-    //provider.addSchema(artifactSchema);
-    //provider.addSchema(usedInSchema);
-    //provider.addSchema(usedInModuleSchema);
+  it.skip('sorted by DESC bookOrder', () => {
+    return new Promise<void>((done) => {
+      // not necessary to add, it could be retrieved from server by type IRI
+      // used here to increase predictability
+      //provider.addSchema(artifactSchema);
+      //provider.addSchema(usedInSchema);
+      //provider.addSchema(usedInModuleSchema);
 
-    const coll = repository.addColl({
-      ...usedInModuleCollConstrJs,
-      entConstrs: [
-        {
-          '@id': 'rm:UsedInModuleLink_Shape0', // not processed by query generator, could be omitted (object id could be used for mobx JSON-LD storage or server storage)
-          '@type': 'aldkg:EntConstr', // not processed by query generator, could be omitted (object id could be used for mobx JSON-LD storage or server storage)
-          schema: 'rmUserTypes:UsedInModuleShape', // it could be schema object or class IRI string
-          //schema: usedInModuleSchema,
-          conditions: {
-            // key-value JsObject
-            // pay attention to the collisions with '@id', '@type' and other JSON-LD props!
-            // it should be screened like '@_id', '@_type'
-            '@id': 'rmUserTypes:my_link', // IRI of an element, but should be ID of condition object itself ('@id': 'rm:UsedInModuleLink_Shape0_Condition')
-            '@type': 'some conditions type', // normally gets from schema @id
-            //'@_id':
-            //'@_type':
-            object: 'file:///myfile.xml',
+      const coll = repository.addColl({
+        ...usedInModuleCollConstrJs,
+        entConstrs: [
+          {
+            '@id': 'rm:UsedInModuleLink_Shape0', // not processed by query generator, could be omitted (object id could be used for mobx JSON-LD storage or server storage)
+            '@type': 'aldkg:EntConstr', // not processed by query generator, could be omitted (object id could be used for mobx JSON-LD storage or server storage)
+            schema: 'rmUserTypes:UsedInModuleShape', // it could be schema object or class IRI string
+            //schema: usedInModuleSchema,
+            conditions: {
+              // key-value JsObject
+              // pay attention to the collisions with '@id', '@type' and other JSON-LD props!
+              // it should be screened like '@_id', '@_type'
+              '@id': 'rmUserTypes:my_link', // IRI of an element, but should be ID of condition object itself ('@id': 'rm:UsedInModuleLink_Shape0_Condition')
+              '@type': 'some conditions type', // normally gets from schema @id
+              //'@_id':
+              //'@_type':
+              object: 'file:///myfile.xml',
+            },
+            //variables: {},
           },
-          //variables: {},
+        ],
+        orderBy: [
+          {
+            expression: factory.variable('bookOrder0'),
+            descending: true,
+          },
+        ],
+      });
+      expectToBeDefined(coll);
+      when(
+        () => coll.data.length > 0,
+        () => {
+          const linksAndArtifacts: JsObject[] = coll.dataJs;
+          expect(linksAndArtifacts.length).toBe(3);
+          expect(linksAndArtifacts[0]).toMatchObject({
+            '@id': 'reqs:_N1HusThYEem2Z_XixsC3pQ',
+            '@type': ['rmUserTypes:UsedInModule', 'rm:Artifact'],
+            object: 'file:///myfile.xml',
+            subject: 'clss:///_Ep8ocYzVEeOiy8owVBW5pQ',
+            parentBinding: 'clss:///_zYXy8ozUEeOiy8owVBW5pQ',
+            depth: 3,
+            bookOrder: 10,
+            '@id1': 'clss:///_Ep8ocYzVEeOiy8owVBW5pQ',
+            identifier: 30010,
+            title: 'Requirement Module 30000 - Grouping 30010 Title',
+            creator: 'users:user1',
+            created: '2014-02-10T10:12:16.000Z',
+            modifiedBy: 'users:user1',
+            modified: '2014-02-10T10:12:16.000Z',
+            processArea: 'projects:defaultProject',
+            assetFolder: 'folders:samples_module',
+            artifactFormat: 'rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Text',
+            hasChild: false,
+          });
+          repository.removeColl(coll);
+          done();
         },
-      ],
-      orderBy: [{
-        expression: variable('bookOrder0'),
-        descending: true,
-      }],
+      );
     });
-    expectToBeDefined(coll);
-    when(
-      () => coll.data.length > 0,
-      () => {
-        const linksAndArtifacts: JsObject[] = coll.dataJs;
-        expect(linksAndArtifacts.length).toBe(3);
-        expect(linksAndArtifacts[0]).toMatchObject({
-          '@id': 'reqs:_N1HusThYEem2Z_XixsC3pQ',
-          '@type': ['rmUserTypes:UsedInModule', 'rm:Artifact'],
-          object: 'file:///myfile.xml',
-          subject: 'clss:///_Ep8ocYzVEeOiy8owVBW5pQ',
-          parentBinding: 'clss:///_zYXy8ozUEeOiy8owVBW5pQ',
-          depth: 3,
-          bookOrder: 10,
-          '@id1': 'clss:///_Ep8ocYzVEeOiy8owVBW5pQ',
-          identifier: 30010,
-          title: 'Requirement Module 30000 - Grouping 30010 Title',
-          creator: 'users:user1',
-          created: '2014-02-10T10:12:16.000Z',
-          modifiedBy: 'users:user1',
-          modified: '2014-02-10T10:12:16.000Z',
-          processArea: 'projects:defaultProject',
-          assetFolder: 'folders:samples_module',
-          artifactFormat: 'rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Text',
-          hasChild: false,
-        });
-        repository.removeColl(coll);
-        done();
-      }
-    );
   });
 
-  it('sorted by two: ASC bookOrder and DESC depth', (done) => {
-    // not necessary to add, it could be retrieved from server by type IRI
-    // used here to increase predictability
-    //provider.addSchema(artifactSchema);
-    //provider.addSchema(usedInSchema);
-    //provider.addSchema(usedInModuleSchema);
+  it.skip('sorted by two: ASC bookOrder and DESC depth', () => {
+    return new Promise<void>((done) => {
+      // not necessary to add, it could be retrieved from server by type IRI
+      // used here to increase predictability
+      //provider.addSchema(artifactSchema);
+      //provider.addSchema(usedInSchema);
+      //provider.addSchema(usedInModuleSchema);
 
-    const coll = repository.addColl({
-      ...usedInModuleCollConstrJs,
-      orderBy: [
-        {
-          expression: variable('depth0'),
-          descending: true,
+      const coll = repository.addColl({
+        ...usedInModuleCollConstrJs,
+        orderBy: [
+          {
+            expression: factory.variable('depth0'),
+            descending: true,
+          },
+          {
+            expression: factory.variable('bookOrder0'),
+            descending: false,
+          },
+        ],
+      });
+      expectToBeDefined(coll);
+      when(
+        () => coll.data.length > 0,
+        () => {
+          const linksAndArtifacts: JsObject[] = coll.dataJs;
+          expect(linksAndArtifacts.length).toBe(3);
+          expect(linksAndArtifacts[0]).toMatchObject({
+            depth: 6,
+            bookOrder: 6,
+            hasChild: false,
+          });
+          expect(linksAndArtifacts[1]).toMatchObject({
+            depth: 6,
+            bookOrder: 7,
+            hasChild: false,
+          });
+          repository.removeColl(coll);
+          done();
         },
-        {
-          expression: variable('bookOrder0'),
-          descending: false,
-        }
-      ],
+      );
     });
-    expectToBeDefined(coll);
-    when(
-      () => coll.data.length > 0,
-      () => {
-        const linksAndArtifacts: JsObject[] = coll.dataJs;
-        expect(linksAndArtifacts.length).toBe(3);
-        expect(linksAndArtifacts[0]).toMatchObject({
-          depth: 6,
-          bookOrder: 6,
-          hasChild: false,
-        });
-        expect(linksAndArtifacts[1]).toMatchObject({
-          depth: 6,
-          bookOrder: 7,
-          hasChild: false,
-        });
-        repository.removeColl(coll);
-        done();
-      }
-    );
-  });*/
+  });
 });
 
 const usedInModuleParentCollConstrJs: any = {

@@ -8,7 +8,6 @@
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
 import { afterAll, beforeAll, describe, expect, jest, it } from '@jest/globals';
-import assert from 'assert';
 
 import { rootModelInitialState } from '../../src/models/Model';
 import { MstRepository } from '../../src/models/MstRepository';
@@ -21,7 +20,7 @@ import { uploadFiles } from '../../src/FileUpload';
 import { rdfServerUrl, rmRepositoryParam, rmRepositoryType } from '../config';
 import { vocabsFiles, shapesFiles, rootFolder, testNs } from '../configTests';
 import { artifactSchema, classifierSchema, classifierCompleteSchema } from '../schema/TestSchemas';
-import { genTimestampedName } from '../TestHelpers';
+import { failOnError, genTimestampedName } from '../TestHelpers';
 
 // See https://stackoverflow.com/questions/49603939/async-callback-was-not-invoked-within-the-5000ms-timeout-specified-by-jest-setti
 jest.setTimeout(5000000);
@@ -45,16 +44,16 @@ beforeAll(async () => {
     const files = vocabsFiles.concat(shapesFiles);
     await uploadFiles(client, files, rootFolder);
     await repository.ns.reloadNs();
-  } catch (err: any) {
-    assert.fail(err);
+  } catch (err) {
+    failOnError(err);
   }
 });
 
 afterAll(async () => {
   try {
     await client.deleteRepository(rmRepositoryID);
-  } catch (err: any) {
-    assert.fail(err);
+  } catch (err) {
+    failOnError(err);
   }
 });
 

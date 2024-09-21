@@ -8,7 +8,6 @@
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
 import { afterAll, beforeAll, describe, expect, jest, it } from '@jest/globals';
-import assert from 'assert';
 import { when } from 'mobx';
 import { getSnapshot } from 'mobx-state-tree';
 
@@ -20,7 +19,7 @@ import { uploadFiles } from '../src/FileUpload';
 
 import { rdfServerUrl, rmRepositoryParam, rmRepositoryType } from './config';
 import { vocabsFiles, shapesFiles, usersFiles, projectsFoldersFiles, samplesFiles, rootFolder } from './configTests';
-import { expectToBeDefined, genTimestampedName, selectHelper } from './TestHelpers';
+import { expectToBeDefined, failOnError, genTimestampedName, selectHelper } from './TestHelpers';
 
 // See https://stackoverflow.com/questions/49603939/async-callback-was-not-invoked-within-the-5000ms-timeout-specified-by-jest-setti
 jest.setTimeout(5000000);
@@ -48,16 +47,16 @@ beforeAll(async () => {
     await uploadFiles(client, shapesFiles, rootFolder);
     //await sleep(5000); // give RDF classifier some time to classify resources after upload
     await repository.ns.reloadNs();
-  } catch (err: any) {
-    assert.fail(err);
+  } catch (err) {
+    failOnError(err);
   }
 });
 
 afterAll(async () => {
   try {
     await client.deleteRepository(rmRepositoryID);
-  } catch (err: any) {
-    assert.fail(err);
+  } catch (err) {
+    failOnError(err);
   }
 });
 
@@ -116,7 +115,9 @@ describe('SimpleRetrieve', () => {
         schema,
         conditions: { assetFolder: 'folders:samples_module' },
       },
-      (data) => expect(data.length).toBe(11),
+      (data) => {
+        expect(data.length).toBe(11);
+      },
     );
   });
 
@@ -129,7 +130,9 @@ describe('SimpleRetrieve', () => {
         schema,
         conditions: { identifier: 40000 },
       },
-      (data) => expect(data.length).toBe(0),
+      (data) => {
+        expect(data.length).toBe(0);
+      },
     );
     await selectHelper(
       repository,
@@ -137,7 +140,9 @@ describe('SimpleRetrieve', () => {
         schema,
         conditions: { assetFolder: 'folders:folder2' },
       },
-      (data) => expect(data.length).toBe(0),
+      (data) => {
+        expect(data.length).toBe(0);
+      },
     );
   });
 
@@ -149,7 +154,9 @@ describe('SimpleRetrieve', () => {
       {
         schema,
       },
-      (data) => expect(data.length).toBe(10),
+      (data) => {
+        expect(data.length).toBe(10);
+      },
     );
   });
 
@@ -162,7 +169,9 @@ describe('SimpleRetrieve', () => {
         schema,
         conditions: { identifier: 30001 },
       },
-      (data) => expect(data.length).toBe(1),
+      (data) => {
+        expect(data.length).toBe(1);
+      },
     );
     await selectHelper(
       repository,
@@ -170,7 +179,9 @@ describe('SimpleRetrieve', () => {
         schema,
         conditions: { assetFolder: 'folders:samples_module' },
       },
-      (data) => expect(data.length).toBe(10),
+      (data) => {
+        expect(data.length).toBe(10);
+      },
     );
   });
 
@@ -183,7 +194,9 @@ describe('SimpleRetrieve', () => {
         schema,
         conditions: { identifier: 40001 },
       },
-      (data) => expect(data.length).toBe(0),
+      (data) => {
+        expect(data.length).toBe(0);
+      },
     );
     await selectHelper(
       repository,
@@ -191,7 +204,9 @@ describe('SimpleRetrieve', () => {
         schema,
         conditions: { assetFolder: 'folders:samples_collection' },
       },
-      (data) => expect(data.length).toBe(0),
+      (data) => {
+        expect(data.length).toBe(0);
+      },
     );
   });
 
@@ -203,7 +218,9 @@ describe('SimpleRetrieve', () => {
       {
         schema,
       },
-      (data) => expect(data.length).toBe(3),
+      (data) => {
+        expect(data.length).toBe(3);
+      },
     );
   });
 
@@ -215,7 +232,9 @@ describe('SimpleRetrieve', () => {
       {
         schema,
       },
-      (data) => expect(data.length).toBe(39),
+      (data) => {
+        expect(data.length).toBe(39);
+      },
     );
   });
 
@@ -227,7 +246,9 @@ describe('SimpleRetrieve', () => {
       {
         schema,
       },
-      (data) => expect(data.length).toBe(8),
+      (data) => {
+        expect(data.length).toBe(8);
+      },
     );
   });
 
@@ -341,7 +362,9 @@ describe('SimpleRetrieve', () => {
           },
         ],
       },
-      (data) => expect(data.length).toBe(8),
+      (data) => {
+        expect(data.length).toBe(8);
+      },
     );
 
     await selectHelper(
@@ -357,7 +380,9 @@ describe('SimpleRetrieve', () => {
           },
         ],
       },
-      (data) => expect(data.length).toBe(5),
+      (data) => {
+        expect(data.length).toBe(5);
+      },
     );
 
     await selectHelper(
@@ -373,7 +398,9 @@ describe('SimpleRetrieve', () => {
           },
         ],
       },
-      (data) => expect(data.length).toBe(8),
+      (data) => {
+        expect(data.length).toBe(8);
+      },
     );
 
     await selectHelper(
@@ -389,7 +416,9 @@ describe('SimpleRetrieve', () => {
           },
         ],
       },
-      (data) => expect(data.length).toBe(3),
+      (data) => {
+        expect(data.length).toBe(3);
+      },
     );
   });
 });
@@ -465,8 +494,12 @@ describe('LoadMore', () => {
     await coll.loadMore();
     const data2 = coll.dataJs;
     expect(data2.length).toBe(12);
-    data.forEach((el, i) => expect(data2[i]).toEqual(el));
-    data2.slice(data.length).forEach((el: any) => expect(data).not.toContainEqual(el));
+    data.forEach((el, i) => {
+      expect(data2[i]).toEqual(el);
+    });
+    data2.slice(data.length).forEach((el: any) => {
+      expect(data).not.toContainEqual(el);
+    });
 
     // load another 5 (the rest of it)
     await coll.loadMore();

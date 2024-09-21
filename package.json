@@ -46,9 +46,9 @@
     "build-tsc": "pnpm tsc --project ./tsconfig-build.json",
     "test": "cross-env NODE_ENV=--experimental-vm-modules jest --runInBand",
     "test:ci": "cross-env NODE_ENV=--experimental-vm-modules jest --ci --coverage --maxWorkers=2",
-    "lint": "eslint \"{src,stories,test}**/*.{js,jsx,ts,tsx}\"",
+    "lint": "eslint \"{src,test}/**/*.{js,ts}\"",
     "prepare": "husky && pnpm build",
-    "format": "./node_modules/.bin/prettier --write \"{src,stories,test}/**/*.{js,jsx,ts,tsx,json,md}\"",
+    "format": "./node_modules/.bin/prettier --write \"{src,test}/**/*.{js,ts,json,md}\"",
     "lint-staged": "lint-staged"
   },
   "peerDependencies": {

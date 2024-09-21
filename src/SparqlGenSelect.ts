@@ -71,8 +71,7 @@ export async function selectObjectsArrayProperties(
   client: SparqlClient,
 ) {
   //console.debug('selectObjectsArrayProperties');
-  for (let index = 0; index < entConstrs.length; index++) {
-    const entConstr = entConstrs[index];
+  for (const entConstr of entConstrs) {
     const schema = entConstr.schema;
     const anyContext = schema['@context'];
     const context = anyContext !== undefined && typeof anyContext !== 'string' ? anyContext : {};

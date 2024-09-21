@@ -160,7 +160,7 @@ describe('SchemaWithoutArrayProperties', () => {
           {
             schema: artifactSchema,
             variables: {
-              identifier: artifactSchema?.properties?.identifier,
+              identifier: artifactSchema.properties.identifier,
             },
           },
         ],
@@ -287,7 +287,7 @@ const usedInModuleCollConstrJs: any = {
             shapeModifiability: 'system',
           },
         },
-        required: [...(artifactSchema.required || []), 'hasChild'],
+        required: [...(artifactSchema.required ?? []), 'hasChild'],
       },
       conditions: {
         hasChild: {

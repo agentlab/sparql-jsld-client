@@ -71,7 +71,7 @@ function propertyNameShapeToSchema(shapePropsUri: string): string {
 function propertyShapeToJsonSchemaProperty(
   shapeProp: JsObject,
   shapePropUri: string,
-  schemaProps: { [key: string]: JSONSchema7LDPropertyDefinition },
+  schemaProps: Record<string, JSONSchema7LDPropertyDefinition>,
   schemaContexts: JsObject,
   schemaReqs: string[],
 ): string | undefined {
@@ -168,8 +168,8 @@ function propertyShapeToJsonSchemaProperty(
 
 export function propertyShapesToSchemaProperties(
   shapeProps: any[] | undefined,
-): [{ [key: string]: JSONSchema7LDPropertyDefinition }, JsObject, string[]] {
-  const schemaProps: { [key: string]: JSONSchema7LDPropertyDefinition } = {};
+): [Record<string, JSONSchema7LDPropertyDefinition>, JsObject, string[]] {
+  const schemaProps: Record<string, JSONSchema7LDPropertyDefinition> = {};
   const schemaContexts: JsObject = {};
   const schemaReqs: string[] = [];
   if (shapeProps) {

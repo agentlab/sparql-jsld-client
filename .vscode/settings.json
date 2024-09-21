@@ -4,6 +4,9 @@
   "files.eol": "\n",
   "editor.tabSize": 2,
   //"files.autoSave": "afterDelay",
+  "eslint.debug": true,
+  "eslint.useESLintClass": true,
+  "eslint.useFlatConfig": true,
   "eslint.validate": ["javascript", "typescript"],
   "editor.codeActionsOnSave": {
     "source.fixAll": "explicit"
@@ -76,6 +79,7 @@
     "strstarts",
     "Subcat",
     "timeseries",
+    "treenode",
     "triplestore",
     "typeahead",
     "undelegate",
@@ -88,8 +92,7 @@
   "jest.jestCommandLine": "node_modules/.bin/jest --detectOpenHandles",
   "jest.runMode": "on-demand",
   "jest.shell": "/bin/zsh",
-  "eslint.useFlatConfig": true,
   "stylelint.packageManager": "pnpm",
   "js/ts.implicitProjectConfig.module": "ES2022",
-  "js/ts.implicitProjectConfig.target": "ESNext",
+  "js/ts.implicitProjectConfig.target": "ESNext"
 }

@@ -12,8 +12,8 @@ import { getType, IAnyStateTreeNode, IAnyComplexType, isStateTreeNode } from 'mo
 export function arrDiff(newArr: any[] | undefined, oldArr: any[] | undefined) {
   if (oldArr === undefined) oldArr = [];
   if (newArr === undefined) newArr = [];
-  const deleted = oldArr.filter((e) => newArr && !newArr.includes(e));
-  const added = newArr.filter((e) => oldArr && !oldArr.includes(e));
+  const deleted = oldArr.filter((e) => !newArr.includes(e));
+  const added = newArr.filter((e) => !oldArr.includes(e));
   return { deleted, added };
 }
 
@@ -21,14 +21,12 @@ type AnyObjectNode = any;
 function isTypeByName(value: any, typename: string): boolean {
   return getType(value).name === typename;
 }
-//function getStateTreeNodeSafe(value: IAnyStateTreeNode): AnyObjectNode | null {
-//  return (value && value.$treenode) || null;
-//}
 function getStateTreeNode(value: IAnyStateTreeNode): AnyObjectNode {
   if (!isStateTreeNode(value)) {
     // istanbul ignore next
     throw `Value ${value} is no MST Node`;
   }
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   return (value as any).$treenode!;
 }
 

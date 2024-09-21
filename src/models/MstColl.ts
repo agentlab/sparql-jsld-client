@@ -43,9 +43,7 @@ export function getMstLiteralPropValue(mstModel: any, name: string) {
   return undefined;
 }
 
-export interface MstModels {
-  [key: string]: IAnyComplexType;
-}
+export type MstModels = Record<string, IAnyComplexType>;
 
 const mstCollSchemas: MstModels = {};
 

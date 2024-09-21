@@ -10,6 +10,7 @@
 import { expect } from '@jest/globals';
 import { getSnapshot } from 'mobx-state-tree';
 import dayjs from 'dayjs';
+import assert from 'assert';
 
 export function genTimestampedName(name: string): string {
   return name + '_' + dayjs().format('YYYYMMDD_HHmmssSSSS');
@@ -45,4 +46,12 @@ export async function selectHelper(repository: any, data: any, testerFn: (data: 
   const loadedData = coll.dataJs;
   testerFn(loadedData);
   repository.removeColl(coll);
+}
+
+export function failOnError(err: unknown) {
+  if (typeof err === 'string' || err instanceof Error) assert.fail(err);
+  else {
+    console.log(err);
+    assert.fail();
+  }
 }

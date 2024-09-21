@@ -15,13 +15,9 @@ export function json2str(data: any): string {
   return data;
 }
 
-export interface JsObject {
-  [key: string]: any;
-}
+export type JsObject = Record<string, any>;
 
-export interface JsStrObj {
-  [key: string]: string;
-}
+export type JsStrObj = Record<string, string>;
 
 export interface JsStrObjObj {
   [key: string]: string | JsStrObjObj;
@@ -49,11 +45,7 @@ export interface JSONSchema7LDProperty extends JSONSchema7 {
   valueModifiability?: string | undefined; // user or non -- system
   shapeModifiability?: string | undefined; // user or non -- system
 
-  properties?:
-    | {
-        [key: string]: JSONSchema7LDPropertyDefinition;
-      }
-    | undefined;
+  properties?: Record<string, JSONSchema7LDPropertyDefinition> | undefined;
 }
 
 export type JSONSchema7LDDefinition = JSONSchema7LD;
@@ -81,9 +73,7 @@ export interface JSONSchema7LD extends Omit<JSONSchema7, 'allOf'>, JsObject {
   //defaultFormat?: string;
   //iconReference?: string;
 
-  properties: {
-    [key: string]: JSONSchema7LDPropertyDefinition;
-  };
+  properties: Record<string, JSONSchema7LDPropertyDefinition>;
 }
 
 export function copyObjectProps(objTo: JsObject, objFrom: JsObject): void {

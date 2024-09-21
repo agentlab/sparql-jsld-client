@@ -37,7 +37,7 @@ export function createRepositoryConfig(repParam: JsObject = {}, repType = 'nativ
             sail:iterationCacheSyncThreshold "${repParam['Query Iteration Cache size'] || 10000}";
             ns:tripleIndexes "${repParam['Triple indexes'] || 'spoc,posc'}";
             sb:evaluationStrategyFactory "${
-              repParam['EvaluationStrategyFactory'] ||
+              repParam.EvaluationStrategyFactory ||
               'org.eclipse.rdf4j.query.algebra.evaluation.impl.StrictEvaluationStrategyFactory'
             }"
           ]
@@ -71,7 +71,7 @@ export function createRepositoryConfig(repParam: JsObject = {}, repType = 'nativ
             sail:iterationCacheSyncThreshold "${repParam['Query Iteration Cache size'] || 10000}";
             ns:tripleIndexes "${repParam['Triple indexes'] || 'spoc,posc'}";
             sb:evaluationStrategyFactory "${
-              repParam['EvaluationStrategyFactory'] ||
+              repParam.EvaluationStrategyFactory ||
               'org.eclipse.rdf4j.query.algebra.evaluation.impl.StrictEvaluationStrategyFactory'
             }"
           ]
@@ -110,7 +110,7 @@ export function createRepositoryConfig(repParam: JsObject = {}, repType = 'nativ
               sail:iterationCacheSyncThreshold "${repParam['Query Iteration Cache size'] || 10000}";
               ns:tripleIndexes "${repParam['Triple indexes'] || 'spoc,posc'}";
               sb:evaluationStrategyFactory "${
-                repParam['EvaluationStrategyFactory'] ||
+                repParam.EvaluationStrategyFactory ||
                 'org.eclipse.rdf4j.query.algebra.evaluation.impl.StrictEvaluationStrategyFactory'
               }"
             ]
@@ -134,8 +134,8 @@ export function createRepositoryConfig(repParam: JsObject = {}, repType = 'nativ
     rep:repositoryImpl [
       rep:repositoryType "openrdf:VirtuosoRepository" ;
       vr:hostList "${repParam['Host list'] || 'localhost:1111'}" ;
-      vr:username "${repParam['Username'] || 'dba'}" ;
-      vr:password "${repParam['Password'] || 'dba'}" ;
+      vr:username "${repParam.Username || 'dba'}" ;
+      vr:password "${repParam.Password || 'dba'}" ;
       vr:defGraph "${repParam['Default graph name'] || 'sesame:nil'}" ;
       vr:roundRobin ${repParam['Use RoundRobin for connection'] || false} ;
       vr:useLazyAdd ${repParam['Enable using batch optimization'] || false} ;
@@ -144,7 +144,7 @@ export function createRepositoryConfig(repParam: JsObject = {}, repType = 'nativ
       vr:fetchSize ${repParam['Buffer fetch size'] || 100} ;
       vr:ruleSet "${repParam['Inference RuleSet name'] || null}";
       vr:macroLib "${repParam['Inference MacroLib name'] || null}";
-      vr:concurrency ${repParam['ConcurrencyMode'] || 0} ;
+      vr:concurrency ${repParam.ConcurrencyMode || 0} ;
       vr:useDefGraphForQueries ${
         repParam["Use defGraph with SPARQL queries, if query default graph wasn't set"] || true
       }
@@ -168,7 +168,7 @@ export class SparqlClientImpl implements SparqlClient {
   }
 
   setServerUrl(url: string, nsUrl?: string): void {
-    this.nsUrl = nsUrl || '';
+    this.nsUrl = nsUrl ?? '';
     this.serverUrl = url;
     this.regenerateUrls();
   }
@@ -210,7 +210,7 @@ export class SparqlClientImpl implements SparqlClient {
         });
       }
     }
-    ns['sesame'] = 'http://www.openrdf.org/schema/sesame#';
+    ns.sesame = 'http://www.openrdf.org/schema/sesame#';
     return ns;
   }
 
@@ -219,7 +219,7 @@ export class SparqlClientImpl implements SparqlClient {
     statements = statements.replace(/^#.*$/gm, '');
     //console.debug(() => `uploadStatements statements=${statements}`);
     const params: JsObject = { baseURI };
-    if (graph) params['context'] = graph;
+    if (graph) params.context = graph;
     const response = await sendPostStatements(this.statementsUrl, statements, params);
     if (response.status < 200 && response.status > 204) return Promise.reject('Cannot upload statements');
   }
@@ -299,7 +299,7 @@ export class SparqlClientImpl implements SparqlClient {
     }
   }
 
-  async sparqlUpdate(query: string, queryParams: JsObject = {}): Promise<AxiosResponse<any>> {
+  async sparqlUpdate(query: string, queryParams: JsObject = {}): Promise<AxiosResponse> {
     //console.debug(() => `sparqlUpdate url=${this.repositoryUrl} queryParams=${json2str(queryParams)}`);
     return executeUpdate(this.statementsUrl, query, queryParams);
   }

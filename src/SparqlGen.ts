@@ -91,7 +91,7 @@ export function getSchemaPropUri(schema: JSONSchema7LD, propertyKey: string): st
 }
 
 export function getSchemaPropType(
-  properties: { [key: string]: JSONSchema7LDProperty },
+  properties: Record<string, JSONSchema7LDProperty>,
   context: JsObject,
   propertyKey: string,
 ): string | undefined {
@@ -253,7 +253,7 @@ export interface EntConstrInternal extends EntConstrData {
   qTypeFilters: any[];
   // partial query (variables and conditions)
   query: {
-    variables: { [s: string]: any };
+    variables: Record<string, any>;
     bgps: any[];
     filters: any[];
     binds: any[];
@@ -270,12 +270,12 @@ export interface EntConstrInternal extends EntConstrData {
    * Outgoing References dictionary
    * ConditionProp: EntConstrNumberInArray
    */
-  relatedTo: { [s: string]: number };
+  relatedTo: Record<string, number>;
   /**
    * Incoming References dictionary
    * ConditionProp: EntConstrNumberInArray
    */
-  relatedFrom: { [s: string]: number };
+  relatedFrom: Record<string, number>;
   bindsVars: JsObject;
   subEntConstr?: EntConstrInternal;
 }
@@ -819,7 +819,7 @@ export function getDataTriples(entConstr: EntConstrInternal): any[] {
           } else if (property.type === 'array') {
             const prop = {
               ...property,
-              ...(<any>property.items),
+              ...(property.items as any),
             };
             if (Array.isArray(value)) {
               value.forEach((v) => {

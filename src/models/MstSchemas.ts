@@ -313,8 +313,8 @@ export const MstSchemas = types
       if (schemaOrUndef.allOf) {
         const schemaAllOf: any[] = schemaOrUndef.allOf.filter((s1: any) => s1.$ref !== undefined);
         //console.debug('getDirectSuperSchemas allOf', { uri, schema, schemaAllOf });
-        for (let i = 0; i < schemaAllOf.length; i++) {
-          const iri = schemaAllOf[i].$ref;
+        for (const elem of schemaAllOf) {
+          const iri = elem.$ref;
           if (!self.json.has(iri)) {
             //console.log('getDirectSuperSchemas: load schema', iri);
             //@ts-ignore

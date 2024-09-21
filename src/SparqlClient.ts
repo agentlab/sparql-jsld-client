@@ -18,9 +18,7 @@ export interface ServerResponse {
   };
   results: Results;
 }
-export interface Bindings {
-  [key: string]: Term;
-}
+export type Bindings = Record<string, Term>;
 export interface Results {
   bindings: Bindings[];
 }
@@ -241,10 +239,8 @@ export interface SparqlClient {
 
   clearGraph(graph?: string): Promise<any>;
 
-  createRepositoryAndSetCurrent(repParam: JsObject): Promise<void>;
-  createRepositoryAndSetCurrent(repParam: JsObject, repType: string): Promise<void>;
+  createRepositoryAndSetCurrent(repParam: JsObject, repType?: string): Promise<void>;
 
-  createRepository(repParam: JsObject): Promise<void>;
-  createRepository(repParam: JsObject, repType: string): Promise<void>;
+  createRepository(repParam: JsObject, repType?: string): Promise<void>;
   deleteRepository(repId: string): Promise<void>;
 }

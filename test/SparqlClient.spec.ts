@@ -27,7 +27,8 @@ import {
   samplesFiles,
   usersFiles,
 } from './configTests';
-import { genTimestampedName } from './TestHelpers';
+import { failOnError, genTimestampedName } from './TestHelpers';
+import { AxiosError } from 'axios';
 
 // See https://stackoverflow.com/questions/49603939/async-callback-was-not-invoked-within-the-5000ms-timeout-specified-by-jest-setti
 jest.setTimeout(50000);
@@ -52,29 +53,31 @@ beforeAll(async () => {
     await uploadFiles(client, projectsFoldersFiles, rootFolder);
     await uploadFiles(client, samplesFiles, rootFolder);
     await uploadFiles(client, shapesFiles, rootFolder);
-  } catch (err: any) {
-    if (err.response) {
-      // Request made and server responded
-      console.log(err.response.data);
-      console.log(err.response.status);
-      console.log(err.response.headers);
-    } else if (err.request) {
-      // The request was made but no response was received
-      const s = err.request;
-      console.log(err.request);
-    } else {
-      // Something happened in setting up the request that triggered an Error
-      console.log('Error', err.message);
+  } catch (err) {
+    if (err instanceof AxiosError) {
+      if (err.response !== undefined) {
+        // Request made and server responded
+        console.log(err.response.data);
+        console.log(err.response.status);
+        console.log(err.response.headers);
+      } else if (err.request) {
+        // The request was made but no response was received
+        //const s = err.request;
+        console.log(err.request);
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        console.log('Error', err.message);
+      }
+      assert.fail(err);
     }
-    assert.fail(err);
   }
 });
 
 afterAll(async () => {
   try {
     await client.deleteRepository(rmRepositoryID);
-  } catch (err: any) {
-    assert.fail(err);
+  } catch (err) {
+    failOnError(err);
   }
 });
 
@@ -602,156 +605,156 @@ describe('SparqlClient', () => {
   });
 
   //TODO: Federated Queries tests not working due to shut downed services
-  // it('SparqlClient should get federated timeseries', async () => {
-  //   const client = new SparqlClientImpl(rdfServerUrl);
-  //   client.setRepositoryId('mktp-fed');
-  //   const query = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-  //   PREFIX iot: <https://agentlab.eu/ns/iot#>
-  //   CONSTRUCT {
-  //     ?eIri0 rdf:type iot:HSObservation.
-  //     ?eIri0 iot:product <https://www.acme.com/catalog/10477061/detail.aspx>.
-  //     ?eIri0 iot:parsedAt ?parsedAt0.
-  //     ?eIri0 iot:categoryPopularity ?categoryPopularity0.
-  //     ?eIri0 iot:commentsCount ?commentsCount0.
-  //     ?eIri0 iot:price ?price0.
-  //     ?eIri0 iot:questionsCount ?questionsCount0.
-  //     ?eIri0 iot:saleValue ?saleValue0.
-  //     ?eIri0 iot:salesAmountDiff ?salesAmountDiff0.
-  //     ?eIri0 iot:stocksDiffOrders ?stocksDiffOrders0.
-  //     ?eIri0 iot:stocksDiffReturns ?stocksDiffReturns0.
-  //     ?eIri0 iot:stocks ?stocks0.
-  //     ?eIri0 iot:totalSalesDiff ?totalSalesDiff0.
-  //     ?eIri0 iot:totalSales ?totalSales0.
-  //   }
-  //   WHERE {
-  //     SERVICE <http://192.168.1.33:8090/sparql> {
-  //     ?eIri0 rdf:type iot:HSObservation;
-  //       iot:product <https://www.acme.com/catalog/10477061/detail.aspx>;
-  //       iot:parsedAt ?parsedAt0;
-  //       iot:categoryPopularity ?categoryPopularity0;
-  //       iot:commentsCount ?commentsCount0;
-  //       iot:price ?price0;
-  //       iot:questionsCount ?questionsCount0;
-  //       iot:saleValue ?saleValue0;
-  //       iot:salesAmountDiff ?salesAmountDiff0;
-  //       iot:stocksDiffOrders ?stocksDiffOrders0;
-  //       iot:stocksDiffReturns ?stocksDiffReturns0;
-  //       iot:stocks ?stocks0;
-  //       iot:totalSalesDiff ?totalSalesDiff0;
-  //       iot:totalSales ?totalSales0.
-  //   }
-  //   }
-  //   ORDER BY (?parsedAt)`;
-  //   //const markerJsonLdStart = 'json-ld-start';
-  //   //const markerJsonLdStop = 'json-ld-stop';
-  //   //performance.mark(markerJsonLdStart);
-  //   //let results = await client.sparqlConstruct(query, {}, 'application/ld+json');
-  //   //performance.mark(markerJsonLdStop);
-  //   //performance.measure('json-ld measure', markerJsonLdStart, markerJsonLdStop);
-  //   //expect(results.length).toBeGreaterThan(50);
+  it.skip('SparqlClient should get federated timeseries', async () => {
+    const client = new SparqlClientImpl(rdfServerUrl);
+    client.setRepositoryId('mktp-fed');
+    const query = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+    PREFIX iot: <https://agentlab.eu/ns/iot#>
+    CONSTRUCT {
+      ?eIri0 rdf:type iot:HSObservation.
+      ?eIri0 iot:product <https://www.acme.com/catalog/10477061/detail.aspx>.
+      ?eIri0 iot:parsedAt ?parsedAt0.
+      ?eIri0 iot:categoryPopularity ?categoryPopularity0.
+      ?eIri0 iot:commentsCount ?commentsCount0.
+      ?eIri0 iot:price ?price0.
+      ?eIri0 iot:questionsCount ?questionsCount0.
+      ?eIri0 iot:saleValue ?saleValue0.
+      ?eIri0 iot:salesAmountDiff ?salesAmountDiff0.
+      ?eIri0 iot:stocksDiffOrders ?stocksDiffOrders0.
+      ?eIri0 iot:stocksDiffReturns ?stocksDiffReturns0.
+      ?eIri0 iot:stocks ?stocks0.
+      ?eIri0 iot:totalSalesDiff ?totalSalesDiff0.
+      ?eIri0 iot:totalSales ?totalSales0.
+    }
+    WHERE {
+      SERVICE <http://192.168.1.33:8090/sparql> {
+      ?eIri0 rdf:type iot:HSObservation;
+        iot:product <https://www.acme.com/catalog/10477061/detail.aspx>;
+        iot:parsedAt ?parsedAt0;
+        iot:categoryPopularity ?categoryPopularity0;
+        iot:commentsCount ?commentsCount0;
+        iot:price ?price0;
+        iot:questionsCount ?questionsCount0;
+        iot:saleValue ?saleValue0;
+        iot:salesAmountDiff ?salesAmountDiff0;
+        iot:stocksDiffOrders ?stocksDiffOrders0;
+        iot:stocksDiffReturns ?stocksDiffReturns0;
+        iot:stocks ?stocks0;
+        iot:totalSalesDiff ?totalSalesDiff0;
+        iot:totalSales ?totalSales0.
+    }
+    }
+    ORDER BY (?parsedAt)`;
+    //const markerJsonLdStart = 'json-ld-start';
+    //const markerJsonLdStop = 'json-ld-stop';
+    //performance.mark(markerJsonLdStart);
+    //let results = await client.sparqlConstruct(query, {}, 'application/ld+json');
+    //performance.mark(markerJsonLdStop);
+    //performance.measure('json-ld measure', markerJsonLdStart, markerJsonLdStop);
+    //expect(results.length).toBeGreaterThan(50);
 
-  //   //const markerRdfXmlStart = 'rdf+xml-start';
-  //   //const markerRdfXmlStop = 'rdf+xml-stop';
-  //   //performance.mark(markerRdfXmlStart);
-  //   const results = await client.sparqlConstruct(query, {}, 'application/rdf+xml');
-  //   //performance.mark(markerRdfXmlStop);
-  //   //performance.measure('rdf+xml measure', markerRdfXmlStart, markerRdfXmlStop);
+    //const markerRdfXmlStart = 'rdf+xml-start';
+    //const markerRdfXmlStop = 'rdf+xml-stop';
+    //performance.mark(markerRdfXmlStart);
+    const results = await client.sparqlConstruct(query, {}, 'application/rdf+xml');
+    //performance.mark(markerRdfXmlStop);
+    //performance.measure('rdf+xml measure', markerRdfXmlStart, markerRdfXmlStop);
 
-  //   //const markerNTriplesStart = 'n-triples-start';
-  //   //const markerNTriplesStop = 'n-triples-stop';
-  //   //performance.mark(markerNTriplesStart);
-  //   //results = await client.sparqlConstruct(query, {}, 'text/plain');
-  //   //performance.mark(markerNTriplesStop);
-  //   //performance.measure('n-triples measure', markerNTriplesStart, markerNTriplesStop);
+    //const markerNTriplesStart = 'n-triples-start';
+    //const markerNTriplesStop = 'n-triples-stop';
+    //performance.mark(markerNTriplesStart);
+    //results = await client.sparqlConstruct(query, {}, 'text/plain');
+    //performance.mark(markerNTriplesStop);
+    //performance.measure('n-triples measure', markerNTriplesStart, markerNTriplesStop);
 
-  //   // Pull out all of the measurements.
-  //   //console.log(performance.getEntriesByType('measure'));
-  //   // Finally, clean up the entries.
-  //   //performance.clearMarks();
-  //   //performance.clearMeasures();
-  //   //
-  // });
+    // Pull out all of the measurements.
+    //console.log(performance.getEntriesByType('measure'));
+    // Finally, clean up the entries.
+    //performance.clearMarks();
+    //performance.clearMeasures();
+    //
+  });
 
-  // it('SparqlClient should get LIMITed timeseries', async () => {
-  //   const client = new SparqlClientImpl(rdfServerUrl);
-  //   client.setRepositoryId('mktp-fed');
-  //   /*const query = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-  //   PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-  //   PREFIX iot: <https://agentlab.eu/ns/iot#>
-  //   CONSTRUCT {
-  //     ?eIri0 rdf:type iot:ProductCard .
-  //     ?eIri0 iot:name ?name0 .
-  //     ?eIri0 iot:lastMonthSalesValue ?lastMonthSalesValue0 .
-  //     ?eIri0 iot:saleValue ?saleValue0 .
-  //     ?eIri0 iot:brand ?brand0 .
-  //     ?eIri0 iot:seller ?seller0 .
-  //     ?eIri0 iot:imageUrl ?imageUrl0 .
-  //     ?eIri1 rdf:type iot:HSObservation .
-  //     ?eIri1 iot:product ?eIri0 .
-  //     ?eIri1 iot:parsedAt ?parsedAt1 .
-  //     ?eIri1 iot:price ?price1 .
-  //   } WHERE {
-  //     {
-  //       SELECT ?eIri0 ?name0 ?lastMonthSalesValue0 ?seller0 ?saleValue0 ?brand0 ?imageUrl0 WHERE {
-  //         {
-  //           SELECT ?eIri0 ?name0 ?lastMonthSalesValue0 ?seller0 ?saleValue0 ?brand0 WHERE {
-  //             ?eIri0 rdf:type iot:ProductCard ;
-  //               iot:name ?name0 ;
-  //               iot:lastMonthSalesValue ?lastMonthSalesValue0 ;
-  //               iot:seller ?seller0.
-  //             OPTIONAL { ?eIri0 iot:saleValue ?saleValue0. }
-  //             OPTIONAL { ?eIri0 iot:brand ?brand0. }
-  //           }
-  //           ORDER BY DESC(?lastMonthSalesValue0)
-  //           LIMIT 2
-  //         }
-  //         OPTIONAL { ?eIri0 iot:imageUrl ?imageUrl }
-  //       }
-  //     } {
-  //       ?eIri1 rdf:type iot:HSObservation ;
-  //         iot:product ?eIri0 ;
-  //         iot:parsedAt ?parsedAt1 ;
-  //         iot:price ?price1 .
-  //       filter(?parsedAt1 >= "2021-07-01T00:00:00"^^xsd:dateTime)
-  //     }
-  //   }
-  //   ORDER BY DESC(?lastMonthSalesValue0) ?parsedAt1`;*/
-  //   const query = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-  //   PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-  //   PREFIX iot: <https://agentlab.eu/ns/iot#>
-  //   CONSTRUCT {
-  //     ?eIri0 rdf:type iot:ProductCard .
-  //     ?eIri0 iot:name ?name0 .
-  //     ?eIri0 iot:lastMonthSalesValue ?lastMonthSalesValue0 .
-  //     ?eIri0 iot:imageUrl ?imageUrl0 .
-  //     ?eIri1 rdf:type iot:HSObservation .
-  //     ?eIri1 iot:product ?eIri0 .
-  //     ?eIri1 iot:parsedAt ?parsedAt1 .
-  //     ?eIri1 iot:price ?price1 .
-  //   } WHERE {
-  //     {
-  //       SELECT ?eIri0 ?name0 ?lastMonthSalesValue0 ?imageUrl0 WHERE {
-  //         {
-  //           SELECT ?eIri0 ?name0 ?lastMonthSalesValue0 WHERE {
-  //             ?eIri0 rdf:type iot:ProductCard ;
-  //               iot:name ?name0 ;
-  //               iot:lastMonthSalesValue ?lastMonthSalesValue0 .
-  //           }
-  //           ORDER BY DESC(?lastMonthSalesValue0)
-  //           LIMIT 2
-  //         }
-  //         OPTIONAL { ?eIri0 iot:imageUrl ?imageUrl }
-  //       }
-  //     } {
-  //       ?eIri1 rdf:type iot:HSObservation ;
-  //         iot:product ?eIri0 ;
-  //         iot:parsedAt ?parsedAt1 ;
-  //         iot:price ?price1 .
-  //       filter(?parsedAt1 >= "2021-07-01T00:00:00"^^xsd:dateTime)
-  //     }
-  //   }
-  //   ORDER BY DESC(?lastMonthSalesValue0) ?parsedAt1`;
-  //   const results = await client.sparqlConstruct(query);
-  //   expect(results).toHaveLength(2);
-  // });
+  it.skip('SparqlClient should get LIMITed timeseries', async () => {
+    const client = new SparqlClientImpl(rdfServerUrl);
+    client.setRepositoryId('mktp-fed');
+    /*const query = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+    PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+    PREFIX iot: <https://agentlab.eu/ns/iot#>
+    CONSTRUCT {
+      ?eIri0 rdf:type iot:ProductCard .
+      ?eIri0 iot:name ?name0 .
+      ?eIri0 iot:lastMonthSalesValue ?lastMonthSalesValue0 .
+      ?eIri0 iot:saleValue ?saleValue0 .
+      ?eIri0 iot:brand ?brand0 .
+      ?eIri0 iot:seller ?seller0 .
+      ?eIri0 iot:imageUrl ?imageUrl0 .
+      ?eIri1 rdf:type iot:HSObservation .
+      ?eIri1 iot:product ?eIri0 .
+      ?eIri1 iot:parsedAt ?parsedAt1 .
+      ?eIri1 iot:price ?price1 .
+    } WHERE {
+      {
+        SELECT ?eIri0 ?name0 ?lastMonthSalesValue0 ?seller0 ?saleValue0 ?brand0 ?imageUrl0 WHERE {
+          {
+            SELECT ?eIri0 ?name0 ?lastMonthSalesValue0 ?seller0 ?saleValue0 ?brand0 WHERE {
+              ?eIri0 rdf:type iot:ProductCard ;
+                iot:name ?name0 ;
+                iot:lastMonthSalesValue ?lastMonthSalesValue0 ;
+                iot:seller ?seller0.
+              OPTIONAL { ?eIri0 iot:saleValue ?saleValue0. }
+              OPTIONAL { ?eIri0 iot:brand ?brand0. }
+            }
+            ORDER BY DESC(?lastMonthSalesValue0)
+            LIMIT 2
+          }
+          OPTIONAL { ?eIri0 iot:imageUrl ?imageUrl }
+        }
+      } {
+        ?eIri1 rdf:type iot:HSObservation ;
+          iot:product ?eIri0 ;
+          iot:parsedAt ?parsedAt1 ;
+          iot:price ?price1 .
+        filter(?parsedAt1 >= "2021-07-01T00:00:00"^^xsd:dateTime)
+      }
+    }
+    ORDER BY DESC(?lastMonthSalesValue0) ?parsedAt1`;*/
+    const query = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+    PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+    PREFIX iot: <https://agentlab.eu/ns/iot#>
+    CONSTRUCT {
+      ?eIri0 rdf:type iot:ProductCard .
+      ?eIri0 iot:name ?name0 .
+      ?eIri0 iot:lastMonthSalesValue ?lastMonthSalesValue0 .
+      ?eIri0 iot:imageUrl ?imageUrl0 .
+      ?eIri1 rdf:type iot:HSObservation .
+      ?eIri1 iot:product ?eIri0 .
+      ?eIri1 iot:parsedAt ?parsedAt1 .
+      ?eIri1 iot:price ?price1 .
+    } WHERE {
+      {
+        SELECT ?eIri0 ?name0 ?lastMonthSalesValue0 ?imageUrl0 WHERE {
+          {
+            SELECT ?eIri0 ?name0 ?lastMonthSalesValue0 WHERE {
+              ?eIri0 rdf:type iot:ProductCard ;
+                iot:name ?name0 ;
+                iot:lastMonthSalesValue ?lastMonthSalesValue0 .
+            }
+            ORDER BY DESC(?lastMonthSalesValue0)
+            LIMIT 2
+          }
+          OPTIONAL { ?eIri0 iot:imageUrl ?imageUrl }
+        }
+      } {
+        ?eIri1 rdf:type iot:HSObservation ;
+          iot:product ?eIri0 ;
+          iot:parsedAt ?parsedAt1 ;
+          iot:price ?price1 .
+        filter(?parsedAt1 >= "2021-07-01T00:00:00"^^xsd:dateTime)
+      }
+    }
+    ORDER BY DESC(?lastMonthSalesValue0) ?parsedAt1`;
+    const results = await client.sparqlConstruct(query);
+    expect(results).toHaveLength(2);
+  });
 });

@@ -1,8 +1,10 @@
 # SPARQL JSON Schema Linked Data Client
 
-It is an intelligent SPARQL Client with object-oriented reactive blackboard. You could use JSON/JS objects and JSON Schemas to query SPARQL Endpoint, semi-similar to GraphQL.
+It is an intelligent RDF4J SPARQL Client with an object-oriented reactive blackboard. You could use JSON/JS objects and JSON Schemas to query SPARQL Endpoint, semi-similar to GraphQL.
 
-You manipulate JS objects programmatically, client generates SPARQL Queries and interacts with SPARQL Endpoint. The Client retrieves SHACL Shapes to infer available class properties and allowed value types.
+You manipulate programmatically with a query JS objects. The client gathers metadata from the RDF4J SPARQL Endpoint (retrieves SHACL Shapes to infer internal JSON Schema), generates SPARQL Select ot Update queries, submits them to the SPARQL Endpoint and gets results as lazy object collections.
+
+It is ment to use as a base for the schema-driven and SHACL Shapes-driven Web UI [agentlab/ldkg-ui-react](https://github.com/agentlab/ldkg-ui-react).
 
 ![SPARQL JSLD Client Architecture Overview](/docs/ArchitectureOverview.png)
 

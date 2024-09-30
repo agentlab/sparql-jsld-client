@@ -79,13 +79,13 @@ function propertyShapeToJsonSchemaProperty(
     const shapePropKey = propertyNameShapeToSchema(shapePropUri);
     schemaProps[shapePropKey] = {};
     let schemaProp: JSONSchema7LDPropertyDefinition = schemaProps[shapePropKey];
-    //labels
+    //label conversion
     if (shapeProp.name) schemaProp.title = shapeProp.name;
-    if (shapeProp.description) schemaProp.description = shapeProp.description;
-    if (shapeProp.order) schemaProp.order = shapeProp.order;
-    //modifiability
-    if (shapeProp.shapeModifiability) schemaProp.shapeModifiability = shapeProp.shapeModifiability;
-    //if (shapeProp.valueModifiability) schemaProp.valueModifiability = shapeProp.valueModifiability;
+    Object.keys(shapeProp)
+      .filter(
+        (k) => !['@id', '@type', 'name', 'path', 'datatype', 'class', 'nodeKind', 'minCount', 'maxCount'].includes(k),
+      )
+      .forEach((fk: any) => ((schemaProp as JsObject)[fk] = shapeProp[fk]));
     //cardinality
     if (shapeProp.maxCount === undefined || shapeProp.maxCount > 1) {
       schemaProp.type = 'array';
@@ -97,6 +97,8 @@ function propertyShapeToJsonSchemaProperty(
         schemaReqs.push(shapePropKey);
       }
     }
+    //element default value
+    if (shapeProp.defaultValue) schemaProp.default = shapeProp.defaultValue;
     //element type
     if (shapeProp.datatype) {
       if (shapeProp.datatype === 'xsd:dateTime') {

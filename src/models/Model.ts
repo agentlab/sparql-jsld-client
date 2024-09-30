@@ -27,8 +27,14 @@ export const rootModelInitialState: TMstRepositorySnapshotIn = {
       rdf: 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
       rdfs: 'http://www.w3.org/2000/01/rdf-schema#',
       xsd: 'http://www.w3.org/2001/XMLSchema#',
+      owl: 'http://www.w3.org/2002/07/owl#',
+      // shapes
+      sh: 'http://www.w3.org/ns/shacl#',
+      dash: 'http://datashapes.org/dash#',
+      // rdf4j-specific
       sesame: 'http://www.openrdf.org/schema/sesame#', //rdf4j DirectType Inferencer sesame:directSubClassOf
       rdf4j: 'http://rdf4j.org/schema/rdf4j#', //rdf4j Default Graph rdf4j:nil, rdf4j:SHACLShapeGraph
+      // library constant IRIs
       aldkg: 'https://agentlab.eu/ns/ldkg#',
     },
   },

@@ -39,7 +39,15 @@ export interface JSONSchema7LDProperty extends JSONSchema7 {
    */
   '@id'?: string | undefined;
   '@type'?: string | undefined;
-  order?: number | undefined; // SHACL Shapes
+
+  // SHACL Shapes properties
+  order?: number | undefined;
+
+  // DASH properties
+  propertyRole?: string | undefined;
+  editor?: string | undefined;
+  viewer?: string | undefined;
+  singleLine?: boolean;
 
   // permissions extension
   valueModifiability?: string | undefined; // user or non -- system

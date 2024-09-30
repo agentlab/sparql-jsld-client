@@ -464,6 +464,7 @@ describe('constructObjectsQuery', () => {
         orderBy: [{ expression: factory.variable('order1'), descending: false }],
       },
       `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+      PREFIX dash: <http://datashapes.org/dash#>
       PREFIX dcterms: <http://purl.org/dc/terms/>
       PREFIX sh: <http://www.w3.org/ns/shacl#>
       PREFIX rm: <https://agentlab.eu/ns/rm/rdf#>
@@ -488,6 +489,10 @@ describe('constructObjectsQuery', () => {
         ?eIri1 sh:nodeKind ?nodeKind1.
         ?eIri1 sh:minCount ?minCount1.
         ?eIri1 sh:maxCount ?maxCount1.
+        ?eIri1 dash:propertyRole ?propertyRole1.
+        ?eIri1 dash:editor ?editor1.
+        ?eIri1 dash:viewer ?viewer1.
+        ?eIri1 dash:singleLine ?singleLine1.
         ?eIri1 rm:shapeModifiability ?shapeModifiability1.
         ?eIri1 rm:valueModifiability ?valueModifiability1.
       }
@@ -513,6 +518,10 @@ describe('constructObjectsQuery', () => {
           OPTIONAL { ?eIri1 sh:nodeKind ?nodeKind1. }
           OPTIONAL { ?eIri1 sh:minCount ?minCount1. }
           OPTIONAL { ?eIri1 sh:maxCount ?maxCount1. }
+          OPTIONAL { ?eIri1 dash:propertyRole ?propertyRole1. }
+          OPTIONAL { ?eIri1 dash:editor ?editor1. }
+          OPTIONAL { ?eIri1 dash:viewer ?viewer1. }
+          OPTIONAL { ?eIri1 dash:singleLine ?singleLine1. }
           OPTIONAL { ?eIri1 rm:shapeModifiability ?shapeModifiability1. }
           OPTIONAL { ?eIri1 rm:valueModifiability ?valueModifiability1. }
         }
@@ -541,6 +550,7 @@ describe('constructObjectsQuery', () => {
         orderBy: [{ expression: factory.variable('order1'), descending: false }],
       },
       `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+      PREFIX dash: <http://datashapes.org/dash#>
       PREFIX dcterms: <http://purl.org/dc/terms/>
       PREFIX sh: <http://www.w3.org/ns/shacl#>
       PREFIX rm: <https://agentlab.eu/ns/rm/rdf#>
@@ -566,6 +576,10 @@ describe('constructObjectsQuery', () => {
         ?eIri1 sh:nodeKind ?nodeKind1.
         ?eIri1 sh:minCount ?minCount1.
         ?eIri1 sh:maxCount ?maxCount1.
+        ?eIri1 dash:propertyRole ?propertyRole1.
+        ?eIri1 dash:editor ?editor1.
+        ?eIri1 dash:viewer ?viewer1.
+        ?eIri1 dash:singleLine ?singleLine1.
         ?eIri1 rm:shapeModifiability ?shapeModifiability1.
         ?eIri1 rm:valueModifiability ?valueModifiability1.
       }
@@ -591,6 +605,10 @@ describe('constructObjectsQuery', () => {
           OPTIONAL { ?eIri1 sh:nodeKind ?nodeKind1. }
           OPTIONAL { ?eIri1 sh:minCount ?minCount1. }
           OPTIONAL { ?eIri1 sh:maxCount ?maxCount1. }
+          OPTIONAL { ?eIri1 dash:propertyRole ?propertyRole1. }
+          OPTIONAL { ?eIri1 dash:editor ?editor1. }
+          OPTIONAL { ?eIri1 dash:viewer ?viewer1. }
+          OPTIONAL { ?eIri1 dash:singleLine ?singleLine1. }
           OPTIONAL { ?eIri1 rm:shapeModifiability ?shapeModifiability1. }
           OPTIONAL { ?eIri1 rm:valueModifiability ?valueModifiability1. }
         }

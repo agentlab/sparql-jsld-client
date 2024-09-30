@@ -7,14 +7,12 @@
  *
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
+import { rootModelInitialState } from '../src';
 import { JsStrObj } from '../src/ObjectProvider';
 import { FileUploadConfig } from '../src/SparqlClient';
 
 export const testNs: JsStrObj = {
-  rdfs: 'http://www.w3.org/2000/01/rdf-schema#',
-  rdf: 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
-  xsd: 'http://www.w3.org/2001/XMLSchema#',
-  sesame: 'http://www.openrdf.org/schema/sesame#',
+  ...rootModelInitialState.ns.current,
 
   dcterms: 'http://purl.org/dc/terms/',
   //dc: 'http://purl.org/dc/elements/1.1/',
@@ -23,7 +21,6 @@ export const testNs: JsStrObj = {
   oslc: 'http://open-services.net/ns/core#',
   //oslc_rm: 'http://open-services.net/ns/rm#',
   oslc_asset: 'http://open-services.net/ns/asset#',
-  sh: 'http://www.w3.org/ns/shacl#',
 
   //acl: 'http://www.w3.org/ns/auth/acl#',
   ppo: 'http://vocab.deri.ie/ppo#',

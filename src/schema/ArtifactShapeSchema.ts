@@ -59,9 +59,12 @@ export const ArtifactShapeSchema: JSONSchema7LD = {
     },
     title: {
       type: 'string',
+      propertyRole: 'dash:LabelRole',
+      singleLine: true,
     },
     description: {
       type: 'string',
+      propertyRole: 'dash:DescriptionRole',
     },
     property: {
       type: 'array',
@@ -82,6 +85,7 @@ export const ArtifactShapeSchema: JSONSchema7LD = {
     },
     iconReference: {
       type: 'object',
+      propertyRole: 'dash:IconRole',
     },
   },
   required: ['@id', 'targetClass' /*, 'property'*/], // arrays should be required
@@ -132,6 +136,24 @@ export const PropertyShapeSchema: JSONSchema7LD = {
       '@id': 'sh:maxCount',
       '@type': 'xsd:integer',
     },
+    // DASH properties
+    propertyRole: {
+      '@id': 'dash:propertyRole',
+      '@type': '@id',
+    },
+    editor: {
+      '@id': 'dash:editor',
+      '@type': '@id',
+    },
+    viewer: {
+      '@id': 'dash:viewer',
+      '@type': '@id',
+    },
+    singleLine: {
+      '@id': 'dash:singleLine',
+      '@type': 'xsd:boolean',
+    },
+    //permissions extension
     shapeModifiability: 'rm:shapeModifiability',
     valueModifiability: 'rm:valueModifiability',
   },
@@ -148,10 +170,13 @@ export const PropertyShapeSchema: JSONSchema7LD = {
     name: {
       title: 'Name',
       type: 'string',
+      propertyRole: 'dash:LabelRole',
+      singleLine: true,
     },
     description: {
       title: 'Description',
       type: 'string',
+      propertyRole: 'dash:DescriptionRole',
     },
     path: {
       title: 'path',
@@ -183,6 +208,27 @@ export const PropertyShapeSchema: JSONSchema7LD = {
       title: 'Max Count',
       type: 'integer',
     },
+    // DASH properties
+    propertyRole: {
+      type: 'string',
+      format: 'iri',
+      title: 'Property Role',
+    },
+    editor: {
+      type: 'string',
+      format: 'iri',
+      title: 'Editor',
+    },
+    viewer: {
+      type: 'string',
+      format: 'iri',
+      title: 'Viewer',
+    },
+    singleLine: {
+      type: 'boolean',
+      title: 'Single Line',
+    },
+    //permissions extension
     shapeModifiability: {
       type: 'string',
     },

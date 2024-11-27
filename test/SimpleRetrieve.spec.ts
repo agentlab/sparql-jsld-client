@@ -514,8 +514,8 @@ describe('LoadMore', () => {
     repository.removeColl(coll);
   });
 
-  it('should async load incrementally additional data into Coll', () => {
-    return new Promise<void>((done) => {
+  it('should async load incrementally additional data into Coll', () =>
+    new Promise<void>((done) => {
       const coll = repository.addColl(
         {
           entConstrs: [
@@ -545,6 +545,5 @@ describe('LoadMore', () => {
         },
       );
       coll.loadColl();
-    });
-  });
+    }));
 });

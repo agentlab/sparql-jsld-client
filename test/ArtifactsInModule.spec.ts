@@ -163,200 +163,192 @@ const moduleObject: any = {
 };
 
 describe('ArtifactsInModules query should return Module UsedInModules with associated Artifact', () => {
-  it('sorted by bookOrder', () => {
-    return new Promise<void>((done) => {
-      // not necessary to add, it could be retrieved from server by type IRI
-      // used here to increase predictability
-      //provider.addSchema(artifactSchema);
-      //provider.addSchema(usedInSchema);
-      //provider.addSchema(usedInModuleSchema);
+  it('sorted by bookOrder', () => new Promise<void>((done) => {
+    // not necessary to add, it could be retrieved from server by type IRI
+    // used here to increase predictability
+    //provider.addSchema(artifactSchema);
+    //provider.addSchema(usedInSchema);
+    //provider.addSchema(usedInModuleSchema);
 
-      const coll = repository.addColl(usedInModuleCollConstrJs /*{ lazy: false }*/);
-      expectToBeDefined(coll);
-      when(
-        () => coll.data.length > 0,
-        () => {
-          const linksAndArtifacts: JsObject[] = coll.dataJs;
-          expect(linksAndArtifacts.length).toBe(3);
-          expect(linksAndArtifacts[0]).toMatchObject(moduleObject);
-          repository.removeColl(coll);
-          done();
+    const coll = repository.addColl(usedInModuleCollConstrJs /*{ lazy: false }*/);
+    expectToBeDefined(coll);
+    when(
+      () => coll.data.length > 0,
+      () => {
+        const linksAndArtifacts: JsObject[] = coll.dataJs;
+        expect(linksAndArtifacts.length).toBe(3);
+        expect(linksAndArtifacts[0]).toMatchObject(moduleObject);
+        repository.removeColl(coll);
+        done();
+      },
+    );
+  }));
+
+  it('sorted by ASC bookOrder', () => new Promise<void>((done) => {
+    // not necessary to add, it could be retrieved from server by type IRI
+    // used here to increase predictability
+    //provider.addSchema(artifactSchema);
+    //provider.addSchema(usedInSchema);
+    //provider.addSchema(usedInModuleSchema);
+
+    const coll = repository.addColl({
+      ...usedInModuleCollConstrJs,
+      orderBy: [
+        {
+          expression: factory.variable('bookOrder0'),
+          descending: false,
         },
-      );
+      ],
     });
-  });
-
-  it('sorted by ASC bookOrder', () => {
-    return new Promise<void>((done) => {
-      // not necessary to add, it could be retrieved from server by type IRI
-      // used here to increase predictability
-      //provider.addSchema(artifactSchema);
-      //provider.addSchema(usedInSchema);
-      //provider.addSchema(usedInModuleSchema);
-
-      const coll = repository.addColl({
-        ...usedInModuleCollConstrJs,
-        orderBy: [
-          {
-            expression: factory.variable('bookOrder0'),
-            descending: false,
-          },
-        ],
-      });
-      expectToBeDefined(coll);
-      when(
-        () => coll.data.length > 0,
-        () => {
-          const linksAndArtifacts: JsObject[] = coll.dataJs;
-          expect(linksAndArtifacts.length).toBe(3);
-          expect(linksAndArtifacts[0]).toMatchObject({
-            '@id': 'reqs:_M1HusThYEem2Z_XixsC3pQ',
-            '@type': 'rmUserTypes:UsedInModule',
+    expectToBeDefined(coll);
+    when(
+      () => coll.data.length > 0,
+      () => {
+        const linksAndArtifacts: JsObject[] = coll.dataJs;
+        expect(linksAndArtifacts.length).toBe(3);
+        expect(linksAndArtifacts[0]).toMatchObject({
+          '@id': 'reqs:_M1HusThYEem2Z_XixsC3pQ',
+          '@type': 'rmUserTypes:UsedInModule',
+          processArea: 'projects:defaultProject',
+          bookOrder: 1,
+          depth: 1,
+          parentBinding: 'file:///myfile.xml',
+          sectionNumber: '0-1',
+          modifiedBy: 'users:user1',
+          created: '2014-02-10T10:12:16.000Z',
+          creator: 'users:user1',
+          modified: '2014-02-10T10:12:16.000Z',
+          object: 'file:///myfile.xml',
+          subject: {
+            '@id': 'clss:_tHAikozUEeOiy8owVBW5pQ',
+            '@type': 'clss:Grouping',
             processArea: 'projects:defaultProject',
-            bookOrder: 1,
-            depth: 1,
-            parentBinding: 'file:///myfile.xml',
-            sectionNumber: '0-1',
+            artifactFormat: 'rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Text',
+            assetFolder: 'folders:samples_module',
             modifiedBy: 'users:user1',
             created: '2014-02-10T10:12:16.000Z',
             creator: 'users:user1',
+            identifier: 30001,
             modified: '2014-02-10T10:12:16.000Z',
-            object: 'file:///myfile.xml',
-            subject: {
-              '@id': 'clss:_tHAikozUEeOiy8owVBW5pQ',
-              '@type': 'clss:Grouping',
-              processArea: 'projects:defaultProject',
-              artifactFormat: 'rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Text',
-              assetFolder: 'folders:samples_module',
-              modifiedBy: 'users:user1',
-              created: '2014-02-10T10:12:16.000Z',
-              creator: 'users:user1',
-              identifier: 30001,
-              modified: '2014-02-10T10:12:16.000Z',
-              title: 'Requirement Module 30000 - Grouping 30001 Title',
-              hasChild: true,
-            },
-          });
-          repository.removeColl(coll);
-          done();
-        },
-      );
-    });
-  });
+            title: 'Requirement Module 30000 - Grouping 30001 Title',
+            hasChild: true,
+          },
+        });
+        repository.removeColl(coll);
+        done();
+      },
+    );
+  }));
 
   //TODO: sorting is not working
-  it.skip('sorted by DESC bookOrder', () => {
-    return new Promise<void>((done) => {
-      // not necessary to add, it could be retrieved from server by type IRI
-      // used here to increase predictability
-      //provider.addSchema(artifactSchema);
-      //provider.addSchema(usedInSchema);
-      //provider.addSchema(usedInModuleSchema);
+  it.skip('sorted by DESC bookOrder', () => new Promise<void>((done) => {
+    // not necessary to add, it could be retrieved from server by type IRI
+    // used here to increase predictability
+    //provider.addSchema(artifactSchema);
+    //provider.addSchema(usedInSchema);
+    //provider.addSchema(usedInModuleSchema);
 
-      const coll = repository.addColl({
-        ...usedInModuleCollConstrJs,
-        entConstrs: [
-          {
-            '@id': 'rm:UsedInModuleLink_Shape0', // not processed by query generator, could be omitted (object id could be used for mobx JSON-LD storage or server storage)
-            '@type': 'aldkg:EntConstr', // not processed by query generator, could be omitted (object id could be used for mobx JSON-LD storage or server storage)
-            schema: 'rmUserTypes:UsedInModuleShape', // it could be schema object or class IRI string
-            //schema: usedInModuleSchema,
-            conditions: {
-              // key-value JsObject
-              // pay attention to the collisions with '@id', '@type' and other JSON-LD props!
-              // it should be screened like '@_id', '@_type'
-              '@id': 'rmUserTypes:my_link', // IRI of an element, but should be ID of condition object itself ('@id': 'rm:UsedInModuleLink_Shape0_Condition')
-              '@type': 'some conditions type', // normally gets from schema @id
-              //'@_id':
-              //'@_type':
-              object: 'file:///myfile.xml',
-            },
-            //variables: {},
-          },
-        ],
-        orderBy: [
-          {
-            expression: factory.variable('bookOrder0'),
-            descending: true,
-          },
-        ],
-      });
-      expectToBeDefined(coll);
-      when(
-        () => coll.data.length > 0,
-        () => {
-          const linksAndArtifacts: JsObject[] = coll.dataJs;
-          expect(linksAndArtifacts.length).toBe(3);
-          expect(linksAndArtifacts[0]).toMatchObject({
-            '@id': 'reqs:_N1HusThYEem2Z_XixsC3pQ',
-            '@type': ['rmUserTypes:UsedInModule', 'rm:Artifact'],
+    const coll = repository.addColl({
+      ...usedInModuleCollConstrJs,
+      entConstrs: [
+        {
+          '@id': 'rm:UsedInModuleLink_Shape0', // not processed by query generator, could be omitted (object id could be used for mobx JSON-LD storage or server storage)
+          '@type': 'aldkg:EntConstr', // not processed by query generator, could be omitted (object id could be used for mobx JSON-LD storage or server storage)
+          schema: 'rmUserTypes:UsedInModuleShape', // it could be schema object or class IRI string
+          //schema: usedInModuleSchema,
+          conditions: {
+            // key-value JsObject
+            // pay attention to the collisions with '@id', '@type' and other JSON-LD props!
+            // it should be screened like '@_id', '@_type'
+            '@id': 'rmUserTypes:my_link', // IRI of an element, but should be ID of condition object itself ('@id': 'rm:UsedInModuleLink_Shape0_Condition')
+            '@type': 'some conditions type', // normally gets from schema @id
+            //'@_id':
+            //'@_type':
             object: 'file:///myfile.xml',
-            subject: 'clss:///_Ep8ocYzVEeOiy8owVBW5pQ',
-            parentBinding: 'clss:///_zYXy8ozUEeOiy8owVBW5pQ',
-            depth: 3,
-            bookOrder: 10,
-            '@id1': 'clss:///_Ep8ocYzVEeOiy8owVBW5pQ',
-            identifier: 30010,
-            title: 'Requirement Module 30000 - Grouping 30010 Title',
-            creator: 'users:user1',
-            created: '2014-02-10T10:12:16.000Z',
-            modifiedBy: 'users:user1',
-            modified: '2014-02-10T10:12:16.000Z',
-            processArea: 'projects:defaultProject',
-            assetFolder: 'folders:samples_module',
-            artifactFormat: 'rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Text',
-            hasChild: false,
-          });
-          repository.removeColl(coll);
-          done();
-        },
-      );
-    });
-  });
-
-  it.skip('sorted by two: ASC bookOrder and DESC depth', () => {
-    return new Promise<void>((done) => {
-      // not necessary to add, it could be retrieved from server by type IRI
-      // used here to increase predictability
-      //provider.addSchema(artifactSchema);
-      //provider.addSchema(usedInSchema);
-      //provider.addSchema(usedInModuleSchema);
-
-      const coll = repository.addColl({
-        ...usedInModuleCollConstrJs,
-        orderBy: [
-          {
-            expression: factory.variable('depth0'),
-            descending: true,
           },
-          {
-            expression: factory.variable('bookOrder0'),
-            descending: false,
-          },
-        ],
-      });
-      expectToBeDefined(coll);
-      when(
-        () => coll.data.length > 0,
-        () => {
-          const linksAndArtifacts: JsObject[] = coll.dataJs;
-          expect(linksAndArtifacts.length).toBe(3);
-          expect(linksAndArtifacts[0]).toMatchObject({
-            depth: 6,
-            bookOrder: 6,
-            hasChild: false,
-          });
-          expect(linksAndArtifacts[1]).toMatchObject({
-            depth: 6,
-            bookOrder: 7,
-            hasChild: false,
-          });
-          repository.removeColl(coll);
-          done();
+          //variables: {},
         },
-      );
+      ],
+      orderBy: [
+        {
+          expression: factory.variable('bookOrder0'),
+          descending: true,
+        },
+      ],
     });
-  });
+    expectToBeDefined(coll);
+    when(
+      () => coll.data.length > 0,
+      () => {
+        const linksAndArtifacts: JsObject[] = coll.dataJs;
+        expect(linksAndArtifacts.length).toBe(3);
+        expect(linksAndArtifacts[0]).toMatchObject({
+          '@id': 'reqs:_N1HusThYEem2Z_XixsC3pQ',
+          '@type': ['rmUserTypes:UsedInModule', 'rm:Artifact'],
+          object: 'file:///myfile.xml',
+          subject: 'clss:///_Ep8ocYzVEeOiy8owVBW5pQ',
+          parentBinding: 'clss:///_zYXy8ozUEeOiy8owVBW5pQ',
+          depth: 3,
+          bookOrder: 10,
+          '@id1': 'clss:///_Ep8ocYzVEeOiy8owVBW5pQ',
+          identifier: 30010,
+          title: 'Requirement Module 30000 - Grouping 30010 Title',
+          creator: 'users:user1',
+          created: '2014-02-10T10:12:16.000Z',
+          modifiedBy: 'users:user1',
+          modified: '2014-02-10T10:12:16.000Z',
+          processArea: 'projects:defaultProject',
+          assetFolder: 'folders:samples_module',
+          artifactFormat: 'rmUserTypes:_YwcOsRmREemK5LEaKhoOow_Text',
+          hasChild: false,
+        });
+        repository.removeColl(coll);
+        done();
+      },
+    );
+  }));
+
+  it.skip('sorted by two: ASC bookOrder and DESC depth', () => new Promise<void>((done) => {
+    // not necessary to add, it could be retrieved from server by type IRI
+    // used here to increase predictability
+    //provider.addSchema(artifactSchema);
+    //provider.addSchema(usedInSchema);
+    //provider.addSchema(usedInModuleSchema);
+
+    const coll = repository.addColl({
+      ...usedInModuleCollConstrJs,
+      orderBy: [
+        {
+          expression: factory.variable('depth0'),
+          descending: true,
+        },
+        {
+          expression: factory.variable('bookOrder0'),
+          descending: false,
+        },
+      ],
+    });
+    expectToBeDefined(coll);
+    when(
+      () => coll.data.length > 0,
+      () => {
+        const linksAndArtifacts: JsObject[] = coll.dataJs;
+        expect(linksAndArtifacts.length).toBe(3);
+        expect(linksAndArtifacts[0]).toMatchObject({
+          depth: 6,
+          bookOrder: 6,
+          hasChild: false,
+        });
+        expect(linksAndArtifacts[1]).toMatchObject({
+          depth: 6,
+          bookOrder: 7,
+          hasChild: false,
+        });
+        repository.removeColl(coll);
+        done();
+      },
+    );
+  }));
 });
 
 const usedInModuleParentCollConstrJs: any = {

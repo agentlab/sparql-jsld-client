@@ -198,8 +198,11 @@ export const MstRepository = types
        * @param coll -- Coll or CollConstr object or IRI
        */
       removeColl(coll: string | any) {
+        //console.log('Repository.removeColl, ' + coll);
         const id = typeof coll === 'string' ? coll : coll['@id'];
         if (id) {
+          // Because it did not called in delete(id)
+          self.colls.get(id)?.beforeDetach();
           self.colls.delete(id);
         }
       },

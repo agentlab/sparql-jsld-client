@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
-import { expect } from '@jest/globals';
+import { expect } from 'vitest';
 import { getSnapshot } from 'mobx-state-tree';
 import dayjs from 'dayjs';
 import assert from 'assert';

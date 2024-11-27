@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
-import { afterAll, beforeAll, describe, expect, jest, it } from '@jest/globals';
+import { afterAll, beforeAll, describe, expect, vi, it } from 'vitest';
 
 import { rootModelInitialState } from '../../src/models/Model';
 import { MstRepository } from '../../src/models/MstRepository';
@@ -23,7 +23,7 @@ import { artifactSchema, classifierSchema, classifierCompleteSchema } from '../s
 import { failOnError, genTimestampedName } from '../TestHelpers';
 
 // See https://stackoverflow.com/questions/49603939/async-callback-was-not-invoked-within-the-5000ms-timeout-specified-by-jest-setti
-jest.setTimeout(5000000);
+vi.setConfig({ testTimeout: 5_000_000});
 
 const client = new SparqlClientImpl(rdfServerUrl);
 const repository = MstRepository.create(rootModelInitialState, { client });

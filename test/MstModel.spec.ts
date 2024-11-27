@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
-import { afterAll, beforeAll, describe, expect, jest, it } from '@jest/globals';
+import { afterAll, beforeAll, describe, expect, vi, it } from 'vitest';
 import { compact, ContextDefinition } from 'jsonld';
 import { getSnapshot, isReferenceType } from 'mobx-state-tree';
 

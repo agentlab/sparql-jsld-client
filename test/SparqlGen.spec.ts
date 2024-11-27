@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: GPL-3.0-only
  ********************************************************************************/
-import { afterAll, beforeAll, beforeEach, describe, expect, jest, it } from '@jest/globals';
+import { afterAll, beforeAll, beforeEach, describe, expect, vi, it } from 'vitest';
 import { Parser } from 'sparqljs';
 
 import { JsObject, JSONSchema7LD } from '../src/ObjectProvider';
@@ -30,7 +30,7 @@ import { ArtifactShapeSchema, PropertyShapeSchema } from '../src/schema/Artifact
 import { expectToBeDefined } from './TestHelpers';
 
 // See https://stackoverflow.com/questions/49603939/async-callback-was-not-invoked-within-the-5000ms-timeout-specified-by-jest-setti
-jest.setTimeout(500000);
+vi.setConfig({ testTimeout: 500_000});
 
 const SchemaWithoutArrayProperties: JSONSchema7LD = {
   $schema: 'http://json-schema.org/draft-07/schema#',
